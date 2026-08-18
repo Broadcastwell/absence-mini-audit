@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The free mini-audit | Broadcastwell</title>
+<meta name="description" content="Ten buyer questions, one AI answer engine, no call. Returns where you sit on the absence ladder and the chapter of The Absence Manual that addresses it.">
+<meta name="robots" content="index, follow">
+<style>
+  :root {
+    --ink: #101418;
+    --muted: #5a6672;
+    --line: #e2e6ea;
+    --bg: #ffffff;
+    --accent: #123a5f;
+    --soft: #f5f7f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 72px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 0 0 12px; letter-spacing: -0.01em; }
+  h2 { font-size: 20px; margin: 32px 0 8px; }
+  p { margin: 0 0 16px; }
+  .lede { font-size: 18px; color: var(--muted); }
+  .stats { display: flex; gap: 28px; flex-wrap: wrap; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 18px 0; margin: 28px 0; }
+  .stat b { display: block; font-size: 24px; letter-spacing: -0.02em; }
+  .stat span { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  form { margin: 28px 0 0; }
+  label { display: block; font-size: 14px; font-weight: 600; margin: 18px 0 6px; }
+  input {
+    width: 100%; padding: 12px 14px; font-size: 16px; font-family: inherit;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .hint { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  button {
+    margin-top: 24px; width: 100%; padding: 14px 18px; font-size: 16px; font-weight: 600;
+    font-family: inherit; color: #fff; background: var(--accent); border: 0; border-radius: 8px; cursor: pointer;
+  }
+  button[disabled] { opacity: 0.55; cursor: default; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+  .panel { margin-top: 28px; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+  .panel h2 { margin-top: 0; }
+  .position { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .meta { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+  .hidden { display: none; }
+  a { color: var(--accent); }
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .err { color: #8a1c1c; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #eef1f4; --muted: #9aa6b2; --line: #2a3138; --bg: #0f1215; --accent: #7fb2e0; --soft: #171b1f; }
+    input { background: #12161a; }
+    button { color: #0f1215; }
+    .err { color: #ef9a9a; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>The free mini-audit</h1>
+  <p class="lede">Ten buyer questions, one AI answer engine, no call. It returns one thing: where you sit on the absence ladder, and the chapter that addresses it.</p>
+
+  <div class="stats">
+    <div class="stat"><b>10</b><span>Questions</span></div>
+    <div class="stat"><b>1</b><span>Engine, named</span></div>
+    <div class="stat"><b>4</b><span>Ladder positions</span></div>
+    <div class="stat"><b>0</b><span>Cost</span></div>
+  </div>
+
+  <p>The questions come from the published bank in <a href="https://docs.broadcastwell.com/question-bank/">Appendix A of The Absence Manual</a>. Answers are classified with the rules in <a href="https://docs.broadcastwell.com/absence-rules/">Appendix B</a>. Both are public, so anyone can check the result.</p>
+
+  <form id="form" novalidate>
+    <label for="category">Your category, the way a buyer would say it</label>
+    <input id="category" name="category" type="text" maxlength="120" autocomplete="off" placeholder="field service management software" required>
+    <p class="hint">Not your product name. The category a buyer would type.</p>
+
+    <label for="company">Your website</label>
+    <input id="company" name="company" type="text" maxlength="120" autocomplete="off" placeholder="example.com" required>
+
+    <label for="email">Where to send it</label>
+    <input id="email" name="email" type="email" maxlength="200" autocomplete="email" placeholder="you@company.com" required>
+    <p class="hint">Any address works, including a free one. It is used for the daily limit and to send you the result. We keep it for 24 months and then delete it.</p>
+
+    <button id="go" type="submit">Run the free mini-audit</button>
+    <p class="note">One result per address per day. No call, no sales sequence.</p>
+  </form>
+
+  <div id="working" class="panel hidden" role="status" aria-live="polite">
+    <p style="margin:0">Putting the ten questions to the engine. This takes about half a minute. Keep this page open.</p>
+  </div>
+
+  <div id="result" class="panel hidden">
+    <h2>Your position</h2>
+    <p class="position" id="position"></p>
+    <p class="meta" id="meta"></p>
+    <p id="reading"></p>
+    <p id="next"></p>
+    <p class="note">This is a position, not a diagnosis. It rests on one engine and one run per question, and a different question set would move the numbers. <a href="https://docs.broadcastwell.com/measurement-noise/">What that means for any score you are shown.</a></p>
+  </div>
+
+  <div id="error" class="panel hidden">
+    <p class="err" id="errormsg" style="margin:0"></p>
+  </div>
+
+  <h2>What this is not</h2>
+  <p>It is not a score, a report, a competitor set or a fix list. Those need four engines, repeat runs and human work, and they are what <a href="https://docs.broadcastwell.com/for-buyers/">the paid diagnostic</a> is for. This page exists so you can find out which problem you actually have before anyone sells you the answer to a different one.</p>
+
+  <footer>
+    <p>Broadcastwell ran the measurement behind The Absence Manual and sells services in the category it measures. Broadcastwell is excluded from its own sample and from every ranking. The raw data and the analysis code are public.</p>
+    <p><a href="https://docs.broadcastwell.com/">The Absence Manual</a> &middot; <a href="https://docs.broadcastwell.com/absence-manual.pdf">PDF</a> &middot; <a href="https://broadcastwell.com/">Broadcastwell</a></p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var form = document.getElementById('form');
+  var go = document.getElementById('go');
+  var working = document.getElementById('working');
+  var result = document.getElementById('result');
+  var errorBox = document.getElementById('error');
+  var errorMsg = document.getElementById('errormsg');
+
+  var READING = {
+    'named 0 of 10': 'The engine does not treat you as a member of the category. Nearly all of what you lose is questions that never mention a competitor by name. They ask who exists, and the answer does not include you. That is the category door, and it is the constraint to clear first.',
+    'named 1 to 3': 'You appear occasionally, but most of what you lose is still questions about who belongs in the set rather than questions comparing you to a named rival. You are at the category door.',
+    'named 4 to 6': 'You are in the set often enough that the mix has started to turn. Both jobs are live at once: membership is not finished and preference has begun to matter. The published reading is to sequence them rather than split them.',
+    'named 7 to 10': 'You have cleared the category door. What you lose now is direct comparison against a specific named rival. That is preference, not membership, and more category-presence work moves a number that is already moving.'
+  };
+
+  var CHAPTER_TITLE = {
+    '/category-door/': 'Getting named at the category door',
+    '/comparison-gate/': 'Getting quoted at the comparison gate',
+    '/absence-ladder/': 'The Absence Ladder'
+  };
+
+  function show(el) { el.classList.remove('hidden'); }
+  function hide(el) { el.classList.add('hidden'); }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    hide(result);
+    hide(errorBox);
+    show(working);
+    go.disabled = true;
+    go.textContent = 'Running';
+
+    var payload = {
+      category: document.getElementById('category').value.trim(),
+      company: document.getElementById('company').value.trim(),
+      email: document.getElementById('email').value.trim()
+    };
+
+    fetch('/api/run', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (response) {
+      return response.json().then(function (data) {
+        return { ok: response.ok, data: data };
+      });
+    }).then(function (outcome) {
+      hide(working);
+      go.disabled = false;
+      go.textContent = 'Run the free mini-audit';
+
+      if (!outcome.ok) {
+        errorMsg.textContent = (outcome.data && outcome.data.message) || 'Something went wrong on our side. Try again later.';
+        show(errorBox);
+        return;
+      }
+
+      var data = outcome.data;
+      document.getElementById('position').textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
+      document.getElementById('meta').textContent = 'Measured on ' + data.engine + ', ' + data.measured_on + '. Named in ' + data.named + ' of ' + data.asked + ' answers.';
+      document.getElementById('reading').textContent = READING[data.tier] || '';
+
+      var title = CHAPTER_TITLE[data.chapter] || 'The Absence Manual';
+      var next = document.getElementById('next');
+      next.innerHTML = '';
+      next.appendChild(document.createTextNode('The chapter that addresses this: '));
+      var link = document.createElement('a');
+      link.href = 'https://docs.broadcastwell.com' + data.chapter;
+      link.textContent = title;
+      next.appendChild(link);
+      next.appendChild(document.createTextNode('. If you are deciding what to buy next, read '));
+      var buyers = document.createElement('a');
+      buyers.href = 'https://docs.broadcastwell.com/for-buyers/';
+      buyers.textContent = 'the buyer page';
+      next.appendChild(buyers);
+      next.appendChild(document.createTextNode('.'));
+
+      show(result);
+    }).catch(function () {
+      hide(working);
+      go.disabled = false;
+      go.textContent = 'Run the free mini-audit';
+      errorMsg.textContent = 'Something went wrong on our side. Try again later.';
+      show(errorBox);
+    });
+  });
+})();
+</script>
+</body>
+</html>

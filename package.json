@@ -1,0 +1,8 @@
+{
+  "name": "absence-mini-audit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/limits.test.mjs"
+  }
+}

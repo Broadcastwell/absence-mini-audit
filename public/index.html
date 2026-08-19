@@ -67,7 +67,7 @@
 
   <div class="stats">
     <div class="stat"><b>10</b><span>Questions</span></div>
-    <div class="stat"><b>1</b><span>Engine, named</span></div>
+    <div class="stat"><b>1</b><span>Engine: Perplexity</span></div>
     <div class="stat"><b>4</b><span>Ladder positions</span></div>
     <div class="stat"><b>0</b><span>Cost</span></div>
   </div>
@@ -76,25 +76,25 @@
 
   <form id="form" novalidate>
     <label for="category">Your category, the way a buyer would say it</label>
-    <input id="category" name="category" type="text" maxlength="120" autocomplete="off" placeholder="field service management software" required>
+    <input id="category" name="category" type="text" maxlength="120" autocomplete="off" placeholder="contractor payroll software" required>
     <p class="hint">Not your product name. The category a buyer would type.</p>
 
     <label for="company">Your website</label>
     <input id="company" name="company" type="text" maxlength="120" autocomplete="off" placeholder="example.com" required>
 
-    <label for="email">Where to send it</label>
+    <label for="email">Your email address</label>
     <input id="email" name="email" type="email" maxlength="200" autocomplete="email" placeholder="you@company.com" required>
-    <p class="hint">Any address works, including a free one. It is used for the daily limit and to send you the result. We keep it for 24 months and then delete it.</p>
+    <p class="hint">Any address works, including a free one. It exists only for the daily limit of one result per address per day. We keep it for 24 months and then delete it.</p>
 
     <button id="go" type="submit">Run the free mini-audit</button>
     <p class="note">One result per address per day. No call, no sales sequence.</p>
   </form>
 
   <div id="working" class="panel hidden" role="status" aria-live="polite">
-    <p style="margin:0">Putting the ten questions to the engine. This takes about half a minute. Keep this page open.</p>
+    <p style="margin:0">Putting the ten questions to the engine. This usually takes under a minute. Keep this page open.</p>
   </div>
 
-  <div id="result" class="panel hidden">
+  <div id="result" class="panel hidden" role="status" aria-live="polite">
     <h2>Your position</h2>
     <p class="position" id="position"></p>
     <p class="meta" id="meta"></p>
@@ -147,7 +147,7 @@
     hide(errorBox);
     show(working);
     go.disabled = true;
-    go.textContent = 'Running';
+    go.textContent = 'Running. Usually under a minute.';
 
     var payload = {
       category: document.getElementById('category').value.trim(),
@@ -195,6 +195,7 @@
       next.appendChild(document.createTextNode('.'));
 
       show(result);
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }).catch(function () {
       hide(working);
       go.disabled = false;

@@ -7,6 +7,9 @@
  */
 
 import audit from "../lib/audit.js";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 function fakeKV(seed = {}) {
   const store = new Map(Object.entries(seed));
@@ -62,11 +65,11 @@ globalThis.fetch = async () => {
 // one of these is a leak, whatever it says.
 const PUBLISHED = [
   "Check the category and address and try again.",
-  "That does not look like an address we can send to.",
-  "That is one result per address per day. Try again tomorrow.",
-  "That is three results per network per day. Try again tomorrow.",
-  "The mini-audit is at its limit for today. Try again tomorrow.",
-  "Something went wrong on our side. Try again later.",
+  "That does not look like a valid email address.",
+  "You have already run today's check for this address. Read the chapter your result pointed to, or request the four-engine Diagnostic.",
+  "This network has reached its daily check limit. Try again tomorrow.",
+  "Today's runs are full. Come back after 00:00 UTC, or request the four-engine Diagnostic.",
+  "We could not complete this run. Try again, or email hello@broadcastwell.com.",
 ];
 
 const results = [];
@@ -117,8 +120,22 @@ const body = (n) => ({ category: "field service management software", company: "
   const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 9, global_per_day: 9 });
   const r = await call(env, body(200));
   const keys = Object.keys(r.payload).sort().join(",");
-  check("response carries exactly six keys", keys === "asked,chapter,engine,measured_on,named,tier", keys);
+  check("response carries the public result keys", keys === "asked,chapter,engine,measured_on,named,questions,tier", keys);
   check("upstream extra fields do not leak", !("secret_internal_field" in r.payload), keys);
+  check("missing question detail remains an empty public list", Array.isArray(r.payload.questions) && r.payload.questions.length === 0, JSON.stringify(r.payload.questions));
+}
+
+// Public per-question detail is retained only in the narrow expected shape.
+{
+  const saved = upstreamPayload;
+  upstreamPayload = Object.assign({}, saved, {
+    questions: Array.from({ length: 10 }, (_, index) => ({ question: `Buyer question ${index + 1}`, status: index < 2 ? "named" : "not named", internal: "never leak" })),
+  });
+  const env = makeEnv({ per_address_per_day: 9, per_ip_per_day: 99, global_per_day: 99 });
+  const r = await call(env, body(350), "192.0.2.10");
+  check("ten public question statuses are retained", r.status === 200 && r.payload.questions.length === 10 && r.payload.questions[0].status === "named", JSON.stringify(r.payload.questions));
+  check("question internals do not leak", !("internal" in r.payload.questions[0]), JSON.stringify(r.payload.questions[0]));
+  upstreamPayload = saved;
 }
 
 // input validation
@@ -150,6 +167,24 @@ const body = (n) => ({ category: "field service management software", company: "
   const r2 = await call(env, body(401), "192.0.2.21");
   check("an off-manual chapter link is refused", r2.status === 502, `status ${r2.status}`);
   upstreamPayload = saved;
+}
+
+function publicFiles(folder) {
+  return readdirSync(folder).flatMap((name) => {
+    const path = join(folder, name);
+    return statSync(path).isDirectory() ? publicFiles(path) : [path];
+  });
+}
+
+// Static-public copy and palette rules that protect the shared visual system.
+{
+  const copy = publicFiles(fileURLToPath(new URL("../public/", import.meta.url))).map((path) => readFileSync(path, "utf8")).join("\n");
+  check("public copy contains no banned dash characters", !/[\u2013\u2014]|&(?:mdash|ndash|#8211|#8212);/i.test(copy), "dash scan");
+  check("public copy has no independent dark-mode switch", !/prefers-color-scheme\s*:\s*dark/i.test(copy), "theme scan");
+  check("public copy keeps the user-visible engine free of model strings", !/sonar-pro/i.test(copy), "model scan");
+  const allowedColours = new Set(["#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF"]);
+  const colours = [...copy.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toUpperCase());
+  check("public copy uses only the approved blue and neutral palette", colours.every((colour) => allowedColours.has(colour)), colours.join(","));
 }
 
 let failed = 0;

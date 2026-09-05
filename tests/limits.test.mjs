@@ -44,6 +44,7 @@ function post(body, ip = "203.0.113.7") {
 }
 
 let upstreamCalls = 0;
+let upstreamMode = "ok";
 let upstreamPayload = {
   named: 2,
   asked: 10,
@@ -55,6 +56,18 @@ let upstreamPayload = {
 };
 globalThis.fetch = async () => {
   upstreamCalls += 1;
+  if (upstreamMode === "throw") throw new TypeError("network unreachable");
+  if (upstreamMode === "timeout") {
+    const error = new Error("timed out");
+    error.name = "TimeoutError";
+    throw error;
+  }
+  if (upstreamMode === "status") {
+    return new Response("upstream detail that must never be shown", { status: 500 });
+  }
+  if (upstreamMode === "not_json") {
+    return new Response("<html>gateway</html>", { status: 200, headers: { "content-type": "text/html" } });
+  }
   return new Response(JSON.stringify(upstreamPayload), {
     status: 200,
     headers: { "content-type": "application/json" },
@@ -66,10 +79,10 @@ globalThis.fetch = async () => {
 const PUBLISHED = [
   "Check the category and address and try again.",
   "That does not look like a valid email address.",
-  "You have already run today's check for this address. Read the chapter your result pointed to, or request the four-engine Diagnostic.",
+  "You have already run today's check for this address. Read the chapter your result pointed to, or request the AI Visibility Diagnostic.",
   "This network has reached its daily check limit. Try again tomorrow.",
-  "Today's runs are full. Come back after 00:00 UTC, or request the four-engine Diagnostic.",
-  "We could not complete this run. Try again, or email hello@broadcastwell.com.",
+  "Today's runs are full. Come back after 00:00 UTC, or request the AI Visibility Diagnostic.",
+  "We could not complete this run. Your daily check has not been used. Try again in a few minutes, or email hello@broadcastwell.com.",
 ];
 
 const results = [];
@@ -167,6 +180,67 @@ const body = (n) => ({ category: "field service management software", company: "
   const r2 = await call(env, body(401), "192.0.2.21");
   check("an off-manual chapter link is refused", r2.status === 502, `status ${r2.status}`);
   upstreamPayload = saved;
+}
+
+// A run that returns no result must not spend the visitor's daily allowance.
+// Each case reproduces one of the five ways the upstream can fail.
+{
+  const counted = (env) => ({
+    address: env.AUDIT.store.get("count:addr:" + new Date().toISOString().slice(0, 10) + ":person500@example.com"),
+    global: env.AUDIT.store.get("count:global:" + new Date().toISOString().slice(0, 10)),
+  });
+
+  const cases = [
+    ["upstream refused the connection", "throw"],
+    ["upstream timed out", "timeout"],
+    ["upstream answered with an error status", "status"],
+    ["upstream answered with something that is not JSON", "not_json"],
+  ];
+
+  for (const [label, mode] of cases) {
+    const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 3, global_per_day: 100 });
+    upstreamMode = mode;
+    const failed = await call(env, { category: "field service management software", company: "example.com", email: "person500@example.com" }, "198.51.100.90");
+    const after = counted(env);
+    check(`${label}: caller sees 502`, failed.status === 502, `status ${failed.status}`);
+    check(`${label}: refusal is one of the published strings`, PUBLISHED.indexOf(failed.payload.message) !== -1, failed.payload.message);
+    check(`${label}: no upstream detail reaches the caller`, !/gateway|upstream detail|network unreachable|timed out/i.test(JSON.stringify(failed.payload)), JSON.stringify(failed.payload));
+    check(`${label}: the address allowance is given back`, after.address === "0" || after.address === undefined, `counter ${after.address}`);
+    check(`${label}: the global allowance is given back`, after.global === "0" || after.global === undefined, `counter ${after.global}`);
+
+    upstreamMode = "ok";
+    const retry = await call(env, { category: "field service management software", company: "example.com", email: "person500@example.com" }, "198.51.100.90");
+    check(`${label}: the same address can run again the same day`, retry.status === 200, `status ${retry.status}`);
+  }
+}
+
+// A result the allow-lists refuse is also a run that returned nothing.
+{
+  const saved = upstreamPayload;
+  upstreamPayload = Object.assign({}, saved, { tier: "doing great" });
+  const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 3, global_per_day: 100 });
+  const refused = await call(env, { category: "x software", company: "example.com", email: "person501@example.com" }, "198.51.100.91");
+  check("an off-list result gives the allowance back", refused.status === 502 && (env.AUDIT.store.get("count:global:" + new Date().toISOString().slice(0, 10)) === "0"), `status ${refused.status}`);
+  upstreamPayload = saved;
+  const retry = await call(env, { category: "x software", company: "example.com", email: "person501@example.com" }, "198.51.100.91");
+  check("the address refused by the allow-list can run again the same day", retry.status === 200, `status ${retry.status}`);
+}
+
+// A refusal at a limit gate must not spend a different counter either.
+{
+  const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 3, global_per_day: 100 });
+  const day = new Date().toISOString().slice(0, 10);
+  await call(env, { category: "x software", company: "example.com", email: "person600@example.com" }, "198.51.100.92");
+  const globalAfterFirst = env.AUDIT.store.get("count:global:" + day);
+  const refused = await call(env, { category: "x software", company: "example.com", email: "person600@example.com" }, "198.51.100.92");
+  check("a second run for one address is refused", refused.status === 429, `status ${refused.status}`);
+  check("the refused second run does not spend the global cap", env.AUDIT.store.get("count:global:" + day) === globalAfterFirst, `global ${env.AUDIT.store.get("count:global:" + day)} was ${globalAfterFirst}`);
+}
+
+// No user-visible string names the paid product by a retired name.
+{
+  const strings = Object.values(PUBLISHED).join("\n");
+  check("no published refusal uses a retired product name", !/four-engine audit|Four-Engine AI Visibility Audit|four-engine Diagnostic/i.test(strings), "name scan");
 }
 
 function publicFiles(folder) {

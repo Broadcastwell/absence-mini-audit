@@ -251,14 +251,39 @@ function publicFiles(folder) {
 }
 
 // Static-public copy and palette rules that protect the shared visual system.
+const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
 {
-  const copy = publicFiles(fileURLToPath(new URL("../public/", import.meta.url))).map((path) => readFileSync(path, "utf8")).join("\n");
+  const textPaths = publicFiles(fileURLToPath(new URL("../public/", import.meta.url))).filter((path) => TEXT_FILE.test(path));
+  const copy = textPaths.map((path) => readFileSync(path, "utf8")).join("\n");
   check("public copy contains no banned dash characters", !/[\u2013\u2014]|&(?:mdash|ndash|#8211|#8212);/i.test(copy), "dash scan");
   check("public copy has no independent dark-mode switch", !/prefers-color-scheme\s*:\s*dark/i.test(copy), "theme scan");
   check("public copy keeps the user-visible engine free of model strings", !/sonar-pro/i.test(copy), "model scan");
-  const allowedColours = new Set(["#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF"]);
+  // The dark theme values are the ones the marketing site serves: ground, raised panel, heading, body and muted text.
+  const allowedColours = new Set([
+    "#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF",
+    "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1"
+  ]);
   const colours = [...copy.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toUpperCase());
   check("public copy uses only the approved blue and neutral palette", colours.every((colour) => allowedColours.has(colour)), colours.join(","));
+}
+
+// The audit tool sits on the dark token set, and its copy carries the offer the site publishes today.
+{
+  const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
+  check("the page ground and body text are the dark tokens", /--ground:\s*#0A0A0B/i.test(page) && /--ink:\s*#F8FAFC/i.test(page) && /--body:\s*#CBD5E1/i.test(page), "token scan");
+  check("no light ground survives on the page", !/background:\s*#FFFFFF/i.test(page) && !/--paper:/i.test(page), "light ground scan");
+  check("the running state states the wait", page.includes("Running. Usually under a minute."), "running copy");
+  check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
+  check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
+  check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
+  check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
+  check("the paid path names the offer in full and points at the one request route", /Request the AI Visibility Diagnostic/.test(page) && (page.match(/tally\.so\/r\/J9xpbK/g) || []).length === 2, "paid path");
+  check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
+  check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
+  check("the social card file exists at the declared size", (() => {
+    const png = readFileSync(fileURLToPath(new URL("../public/assets/absence-mini-audit-2026-09.png", import.meta.url)));
+    return png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630;
+  })(), "png header");
 }
 
 let failed = 0;

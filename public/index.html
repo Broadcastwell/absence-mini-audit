@@ -6,76 +6,101 @@
 <title>The free mini-audit | Broadcastwell</title>
 <meta name="description" content="Find out whether Perplexity names your company in ten buyer questions.">
 <meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0A0A0B">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Broadcastwell">
+<meta property="og:url" content="https://audit.broadcastwell.com/">
 <meta property="og:title" content="The free mini-audit | Broadcastwell">
 <meta property="og:description" content="Find out whether Perplexity names your company in ten buyer questions.">
-<meta property="og:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-08.svg">
+<meta property="og:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-09.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The free mini-audit. Ten buyer questions. One clear position.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The free mini-audit | Broadcastwell">
 <meta name="twitter:description" content="Find out whether Perplexity names your company in ten buyer questions.">
-<meta name="twitter:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-08.svg">
+<meta name="twitter:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-09.png">
 <link rel="icon" href="https://framerusercontent.com/images/j6xX2NJoWncy5Askq1FGOGo0Vo.png" type="image/png">
+<link rel="canonical" href="https://audit.broadcastwell.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-  :root { --ink: #111827; --muted: #475569; --line: #BFDBFE; --blue: #1D4ED8; --rule: #3B82F6; --soft: #EFF6FF; --paper: #FFFFFF; --shadow: 0 1px 2px rgba(0,0,0,.32), 0 6px 18px rgba(0,0,0,.28); }
+  :root {
+    --ground: #0A0A0B;
+    --raised: #0A0E1A;
+    --ink: #F8FAFC;
+    --body: #CBD5E1;
+    --muted: #94A3B8;
+    --line: rgba(203, 213, 225, .16);
+    --line-strong: rgba(203, 213, 225, .30);
+    --blue: #1D4ED8;
+    --blue-hover: #1E40AF;
+    --rule: #3B82F6;
+    --tint: rgba(59, 130, 246, .10);
+    --field: rgba(255, 255, 255, .055);
+  }
   * { box-sizing: border-box; }
-  html { background: var(--paper); }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 Inter, sans-serif; }
-  a { color: var(--blue); text-underline-offset: .16em; }
-  a:hover { text-decoration-thickness: 2px; }
+  html { background: var(--ground); }
+  body { margin: 0; background: var(--ground); color: var(--body); font: 17px/1.6 Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--body); text-underline-offset: .16em; }
+  a:hover { color: var(--ink); text-decoration-thickness: 2px; }
   a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--rule); outline-offset: 2px; }
   .container { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
-  .site-header { height: 65px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; }
+  .site-header { height: 65px; border-bottom: 1px solid var(--line); display: flex; align-items: center; }
   .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-  .wordmark { color: var(--blue); font-size: 20px; font-weight: 700; letter-spacing: -.04em; text-decoration: none; }
+  .wordmark { color: var(--ink); font-size: 20px; font-weight: 700; letter-spacing: -.04em; text-decoration: none; }
   .back { font-size: 14px; font-weight: 600; }
   .page { padding: 64px 0 96px; }
-  .audit-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; }
-  .eyebrow { margin: 0 0 12px; color: var(--blue); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .audit-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0 48px; align-items: start; }
+  .intro { grid-column: 1; grid-row: 1; }
+  .detail { grid-column: 1; grid-row: 2; }
+  .form-column { grid-column: 2; grid-row: 1 / span 2; }
+  .detail .left-section:first-child { margin-top: 48px; }
+  .eyebrow { margin: 0 0 12px; color: var(--rule); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   h1, h2, h3 { color: var(--ink); line-height: 1.14; letter-spacing: -.035em; }
-  h1 { max-width: 12ch; margin: 0 0 20px; font-size: 48px; }
+  h1 { max-width: 17ch; margin: 0 0 20px; font-size: 48px; }
   h2 { margin: 0 0 16px; font-size: 28px; }
   h3 { margin: 0 0 8px; font-size: 20px; }
   p { margin: 0 0 16px; }
-  .lede { max-width: 30ch; color: var(--muted); font-size: 20px; line-height: 1.5; }
-  .left-section { max-width: 68ch; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--rule); }
+  .lede { max-width: 30ch; color: var(--body); font-size: 20px; line-height: 1.5; }
+  .left-section { max-width: 68ch; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }
+  .left-section p { color: var(--body); }
   .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 0; list-style: none; }
-  .facts li { padding: 16px; border: 1px solid var(--line); background: var(--soft); }
-  .facts strong { display: block; color: var(--blue); font-size: 34px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .facts li { padding: 16px; border: 1px solid var(--line); background: var(--tint); }
+  .facts strong { display: block; color: var(--ink); font-size: 34px; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .facts span { color: var(--muted); font-size: 14px; }
-  .card { border: 1px solid var(--line); background: var(--paper); box-shadow: var(--shadow); padding: 32px; }
-  label { display: block; margin: 20px 0 8px; font-size: 14px; font-weight: 700; }
-  input { width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid #94A3B8; border-radius: 2px; color: var(--ink); font: inherit; }
+  .card { border: 1px solid var(--line); background: var(--raised); padding: 32px; }
+  label { display: block; margin: 20px 0 8px; color: var(--ink); font-size: 14px; font-weight: 700; }
+  input { width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--field); color: var(--ink); font: inherit; }
+  input::placeholder { color: var(--muted); }
   .hint, .small { color: var(--muted); font-size: 14px; }
-  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Inter, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
-  .primary:hover { border-color: #1E40AF; background: #1E40AF; }
+  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
+  .primary:hover { border-color: var(--blue-hover); background: var(--blue-hover); }
   .primary[disabled] { cursor: wait; opacity: .72; }
-  .progress { margin-top: 28px; padding: 24px; border: 1px solid var(--rule); background: var(--soft); }
-  .progress-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .progress { margin-top: 28px; padding: 24px; border: 1px solid var(--line); border-left: 4px solid var(--rule); background: var(--tint); }
+  .progress h3 { margin: 0 0 4px; font-size: 20px; }
+  .progress-head { display: flex; justify-content: space-between; gap: 16px; margin: 12px 0 16px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
   .stages { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
   .stages li { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
-  .stages li::before { width: 18px; height: 18px; border: 1px solid #94A3B8; border-radius: 50%; content: ""; }
+  .stages li::before { width: 18px; height: 18px; border: 1px solid var(--line-strong); border-radius: 50%; content: ""; flex: 0 0 18px; }
   .stages li.active, .stages li.done { color: var(--ink); font-weight: 600; }
-  .stages li.active::before, .stages li.done::before { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 4px var(--soft); }
+  .stages li.active::before, .stages li.done::before { border-color: var(--rule); background: var(--rule); box-shadow: inset 0 0 0 4px var(--raised); }
   .result, .message { margin-top: 28px; }
-  .position { margin: 0 0 8px; color: var(--blue); font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .position { margin: 0 0 8px; color: var(--ink); font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
   .meta { color: var(--muted); font-size: 14px; }
   .question-list { display: grid; gap: 10px; margin: 24px 0; padding: 0; list-style: none; }
-  .question-list li { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 14px; border: 1px solid var(--line); background: var(--soft); font-size: 14px; }
-  .status { color: var(--blue); font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+  .question-list li { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 14px; border: 1px solid var(--line); background: var(--tint); font-size: 14px; }
+  .status { color: var(--ink); font-weight: 700; text-transform: capitalize; white-space: nowrap; }
   .actions { display: grid; gap: 10px; margin: 24px 0 0; }
-  .actions a { display: block; padding: 12px 14px; border: 1px solid var(--line); background: var(--paper); font-weight: 600; text-decoration: none; transition: background 150ms ease, border-color 150ms ease; }
-  .actions a:hover { border-color: var(--blue); background: var(--soft); }
-  .message { border-left: 4px solid var(--rule); background: var(--soft); padding: 18px; }
+  .actions a { display: block; padding: 12px 14px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 600; text-decoration: none; transition: background 150ms ease, border-color 150ms ease; }
+  .actions a:hover { border-color: var(--rule); background: var(--tint); }
+  .message { border-left: 4px solid var(--rule); background: var(--tint); padding: 18px; color: var(--ink); }
   .hidden { display: none; }
-  .site-footer { border-top: 1px solid var(--rule); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+  .site-footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
   .footer-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0; padding: 0; list-style: none; }
-  @media (max-width: 800px) { .audit-grid { grid-template-columns: 1fr; gap: 48px; } h1 { max-width: 15ch; } .card { padding: 24px; } .left-section { margin-top: 40px; } }
+  @media (max-width: 800px) { .audit-grid { display: block; } h1 { max-width: 18ch; } .intro, .detail, .form-column { grid-column: auto; grid-row: auto; } .form-column { margin-top: 40px; } .detail .left-section:first-child { margin-top: 40px; } .card { padding: 24px; } .left-section { margin-top: 40px; } }
   @media (max-width: 420px) { .container { width: min(100% - 40px, 1120px); } .page { padding: 48px 0 64px; } h1 { font-size: 38px; line-height: 1.13; } h2 { font-size: 28px; } .facts { grid-template-columns: 1fr; } .question-list li { grid-template-columns: 1fr; gap: 4px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
 </style>
@@ -83,19 +108,21 @@
 <body>
 <header class="site-header"><div class="container"><a class="wordmark" href="https://broadcastwell.com">Broadcastwell</a><a class="back" href="https://broadcastwell.com">Back to Broadcastwell</a></div></header>
 <main class="container page"><div class="audit-grid">
-  <section aria-labelledby="audit-title">
-    <p class="eyebrow">Free check</p><h1 id="audit-title">Find out whether Perplexity names your company in ten buyer questions.</h1><p class="lede">Enter the category your buyer would type. You get your position on the absence ladder and the chapter that addresses it, in under a minute.</p>
+  <section class="intro" aria-labelledby="audit-title">
+    <p class="eyebrow">The free mini-audit</p><h1 id="audit-title">Find out whether Perplexity names your company in ten buyer questions.</h1><p class="lede">Enter the category your buyer would type. You get your position on the absence ladder and the chapter that addresses it, in under a minute.</p>
+  </section>
+  <section class="form-column" aria-labelledby="form-title">
+    <div class="card"><p class="eyebrow">Run your check</p><h2 id="form-title">Start with the buyer's language</h2><form id="form" novalidate><label for="category">Your category, the way a buyer would say it</label><input id="category" name="category" type="text" maxlength="120" autocomplete="off" placeholder="contractor payroll software" required><p class="hint">Not your product name. The category a buyer would type.</p><label for="company">Your website</label><input id="company" name="company" type="text" maxlength="120" autocomplete="off" placeholder="example.com" required><label for="email">Your email address</label><input id="email" name="email" type="email" maxlength="200" autocomplete="email" placeholder="you@company.com" required><p class="hint">It exists only for the daily limit of one result per address per day. We keep it for 24 months and then delete it.</p><button id="go" class="primary" type="submit">Run the free mini-audit</button></form></div>
+    <section id="working" class="progress hidden" aria-live="polite" aria-label="Mini-audit progress"><h3 id="working-title">Running. Usually under a minute.</h3><p class="small" style="margin:0">Leave this page open. The result appears here when the run finishes.</p><div class="progress-head"><span id="progress-label">Step 1 of 3</span><span id="elapsed">Elapsed: 0 seconds</span></div><ol class="stages"><li>Generating the ten buyer questions</li><li>Running the ten answers</li><li>Scoring names and preparing the result</li></ol></section>
+    <section id="result" class="card result hidden" aria-live="polite" tabindex="-1"><p class="eyebrow">Your result</p><h2>Your position</h2><p class="position" id="position"></p><p class="meta" id="meta"></p><p id="reading"></p><h3>Question results</h3><ul id="question-results" class="question-list"></ul><p id="question-note" class="small hidden">Detailed question status was unavailable for this measurement.</p><p class="small">This is a position, not a diagnosis. It rests on one engine and one run per question, and a different question set would change the numbers. <a href="https://docs.broadcastwell.com/measurement-noise/">What that means for any score you are shown.</a></p><div class="actions" aria-label="Next actions"><a id="chapter-link" href="https://docs.broadcastwell.com/absence-ladder/">Read the relevant Manual chapter</a><a href="#form-title">Run again tomorrow</a><a href="https://tally.so/r/J9xpbK">Request the AI Visibility Diagnostic</a></div></section>
+    <section id="error" class="message hidden" aria-live="assertive" tabindex="-1"><p id="errormsg" style="margin:0"></p></section>
+  </section>
+<section class="detail" aria-label="How the mini-audit works">
     <section class="left-section" aria-labelledby="method-title"><h2 id="method-title">A fixed public method</h2><p>The questions come from the published bank in <a href="https://docs.broadcastwell.com/question-bank/">Appendix A of The Absence Manual</a>. Answers are classified with the rules in <a href="https://docs.broadcastwell.com/absence-rules/">Appendix B</a>.</p><ul class="facts" aria-label="Mini-audit facts"><li><strong>10</strong><span>Buyer questions</span></li><li><strong>1</strong><span>Named engine: Perplexity</span></li><li><strong>4</strong><span>Published ladder positions</span></li><li><strong>Free</strong><span>Under a minute, no call</span></li></ul></section>
     <section class="left-section" aria-labelledby="privacy-title"><h2 id="privacy-title">Your address and the limit</h2><p>Your email address makes the daily limit enforceable. We keep it for 24 months and then delete it. One result per address per day. No call, no sales sequence.</p></section>
-    <section class="left-section" aria-labelledby="diagnostic-title"><h2 id="diagnostic-title">Need a full measurement?</h2><p>Ten buyer questions for the category, four engines, three repeats, 120 observed answers, the citation-source landscape, a competitor set, written findings and a prioritised fix list. $1,500 once.</p><p><a href="https://tally.so/r/J9xpbK">Request the Diagnostic</a></p></section>
+    <section class="left-section" aria-labelledby="diagnostic-title"><h2 id="diagnostic-title">Need a full measurement?</h2><p>Ten buyer questions for the category, four engines, three repeats, 120 observed answers, the citation-source landscape, a competitor set, written findings and a prioritised fix list. $1,500 once.</p><p><a href="https://tally.so/r/J9xpbK">Request the AI Visibility Diagnostic</a></p></section>
   </section>
-  <section aria-labelledby="form-title">
-    <div class="card"><p class="eyebrow">Run your check</p><h2 id="form-title">Start with the buyer's language</h2><form id="form" novalidate><label for="category">Your category, the way a buyer would say it</label><input id="category" name="category" type="text" maxlength="120" autocomplete="off" placeholder="contractor payroll software" required><p class="hint">Not your product name. The category a buyer would type.</p><label for="company">Your website</label><input id="company" name="company" type="text" maxlength="120" autocomplete="off" placeholder="example.com" required><label for="email">Your email address</label><input id="email" name="email" type="email" maxlength="200" autocomplete="email" placeholder="you@company.com" required><p class="hint">It exists only for the daily limit of one result per address per day. We keep it for 24 months and then delete it.</p><button id="go" class="primary" type="submit">Run the free mini-audit</button></form></div>
-    <section id="working" class="progress hidden" aria-live="polite" aria-label="Mini-audit progress"><div class="progress-head"><span id="progress-label">Step 1 of 3</span><span id="elapsed">Elapsed: 0 seconds</span></div><ol class="stages"><li>Generating the ten buyer questions</li><li>Running the ten answers</li><li>Scoring names and preparing the result</li></ol></section>
-    <section id="result" class="card result hidden" aria-live="polite"><p class="eyebrow">Your result</p><h2>Your position</h2><p class="position" id="position"></p><p class="meta" id="meta"></p><p id="reading"></p><h3>Question results</h3><ul id="question-results" class="question-list"></ul><p id="question-note" class="small hidden">Detailed question status was unavailable for this measurement.</p><p class="small">This is a position, not a diagnosis. It rests on one engine and one run per question, and a different question set would change the numbers. <a href="https://docs.broadcastwell.com/measurement-noise/">What that means for any score you are shown.</a></p><div class="actions" aria-label="Next actions"><a id="chapter-link" href="https://docs.broadcastwell.com/absence-ladder/">Read the relevant Manual chapter</a><a href="#form-title">Run again tomorrow</a><a href="https://tally.so/r/J9xpbK">Request the Diagnostic</a></div></section>
-    <section id="error" class="message hidden" aria-live="assertive"><p id="errormsg" style="margin:0"></p></section>
-  </section>
-</div></main>
+  </div></main>
 <footer class="site-footer"><div class="container"><p>Broadcastwell ran the measurement behind The Absence Manual and sells services in the category it measures. Broadcastwell is excluded from its own sample and from every ranking. The raw data and the analysis code are public.</p><ul class="footer-links"><li><a href="https://docs.broadcastwell.com/">The Absence Manual</a></li><li><a href="https://docs.broadcastwell.com/absence-manual.pdf">PDF</a></li><li><a href="https://broadcastwell.com/">Broadcastwell</a></li></ul></div></footer>
 <script>
 (function () {
@@ -106,7 +133,7 @@
   function updateProgress() { var seconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000)), active = seconds < 8 ? 0 : seconds < 22 ? 1 : 2; elapsed.textContent = 'Elapsed: ' + seconds + ' seconds'; progressLabel.textContent = 'Step ' + (active + 1) + ' of 3'; stages.forEach(function (stage, index) { stage.classList.toggle('active', index === active); stage.classList.toggle('done', index < active); }); }
   function startProgress() { startedAt = Date.now(); updateProgress(); timer = window.setInterval(updateProgress, 1000); } function stopProgress() { window.clearInterval(timer); }
   function renderQuestions(questions) { var list = document.getElementById('question-results'), note = document.getElementById('question-note'); list.innerHTML = ''; var rows = Array.isArray(questions) && questions.length === 10 ? questions : Array.from({ length: 10 }, function (_, index) { return { question: 'Buyer question ' + (index + 1), status: 'answer unavailable' }; }); note.classList.toggle('hidden', Array.isArray(questions) && questions.length === 10); rows.forEach(function (row) { var item = document.createElement('li'), question = document.createElement('span'), status = document.createElement('span'); question.textContent = row.question; status.className = 'status'; status.textContent = row.status; item.appendChild(question); item.appendChild(status); list.appendChild(item); }); }
-  form.addEventListener('submit', function (event) { event.preventDefault(); hide(result); hide(errorBox); show(working); go.disabled = true; go.textContent = 'Running the mini-audit'; startProgress(); var payload = { category: document.getElementById('category').value.trim(), company: document.getElementById('company').value.trim(), email: document.getElementById('email').value.trim() }; fetch('/api/run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }).then(function (response) { return response.json().then(function (data) { return { ok: response.ok, data: data }; }); }).then(function (outcome) { stopProgress(); hide(working); go.disabled = false; go.textContent = 'Run the free mini-audit'; if (!outcome.ok) { errorMsg.textContent = (outcome.data && outcome.data.message) || 'We could not complete this run. Try again, or email hello@broadcastwell.com.'; show(errorBox); return; } var data = outcome.data; document.getElementById('position').textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1); document.getElementById('meta').textContent = 'Measured with ' + data.engine + ' on ' + data.measured_on + '. Named in ' + data.named + ' of ' + data.asked + ' answers.'; document.getElementById('reading').textContent = READING[data.tier] || ''; renderQuestions(data.questions); var chapter = data.chapter || '/absence-ladder/', chapterLink = document.getElementById('chapter-link'); chapterLink.href = 'https://docs.broadcastwell.com' + chapter; chapterLink.textContent = 'Read: ' + (CHAPTERS[chapter] || 'The Absence Manual'); show(result); result.scrollIntoView({ behavior: 'smooth', block: 'start' }); }).catch(function () { stopProgress(); hide(working); go.disabled = false; go.textContent = 'Run the free mini-audit'; errorMsg.textContent = 'We could not complete this run. Try again, or email hello@broadcastwell.com.'; show(errorBox); }); });
+  form.addEventListener('submit', function (event) { event.preventDefault(); hide(result); hide(errorBox); show(working); go.disabled = true; go.textContent = 'Running the mini-audit'; startProgress(); var payload = { category: document.getElementById('category').value.trim(), company: document.getElementById('company').value.trim(), email: document.getElementById('email').value.trim() }; fetch('/api/run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }).then(function (response) { return response.json().then(function (data) { return { ok: response.ok, data: data }; }); }).then(function (outcome) { stopProgress(); hide(working); go.disabled = false; go.textContent = 'Run the free mini-audit'; if (!outcome.ok) { errorMsg.textContent = (outcome.data && outcome.data.message) || 'We could not complete this run. Try again in a few minutes, or email hello@broadcastwell.com.'; show(errorBox); errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } var data = outcome.data; document.getElementById('position').textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1); document.getElementById('meta').textContent = 'Measured with ' + data.engine + ' on ' + data.measured_on + '. Named in ' + data.named + ' of ' + data.asked + ' answers.'; document.getElementById('reading').textContent = READING[data.tier] || ''; renderQuestions(data.questions); var chapter = data.chapter || '/absence-ladder/', chapterLink = document.getElementById('chapter-link'); chapterLink.href = 'https://docs.broadcastwell.com' + chapter; chapterLink.textContent = 'Read: ' + (CHAPTERS[chapter] || 'The Absence Manual'); show(result); result.scrollIntoView({ behavior: 'smooth', block: 'start' }); }).catch(function () { stopProgress(); hide(working); go.disabled = false; go.textContent = 'Run the free mini-audit'; errorMsg.textContent = 'We could not complete this run. Try again in a few minutes, or email hello@broadcastwell.com.'; show(errorBox); errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
 })();
 </script>
 </body>

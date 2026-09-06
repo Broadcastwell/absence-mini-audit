@@ -69,5 +69,3 @@ Allow: /
 Disallow: /api/
 
 Sitemap: https://audit.broadcastwell.com/sitemap.xml
-User-agent: *
-Allow: /

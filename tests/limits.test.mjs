@@ -277,9 +277,12 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
   check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
-  check("the paid path names the offer in full and points at the one request route", /Request the AI Visibility Diagnostic/.test(page) && (page.match(/tally\.so\/r\/J9xpbK/g) || []).length === 2, "paid path");
+  check("the paid path names the offer in full and points at the one request route", /Request the AI Visibility Diagnostic/.test(page) && (page.match(/broadcastwell\.com\/ai-visibility-audit#request/g) || []).length === 2 && !/tally\.so/.test(page), "paid path");
   check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
   check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
+  check("the result page does not invent per-question rows", !/Buyer question ' \+/.test(page) && !/answer unavailable/.test(page), "placeholder scan");
+  check("the question list is hidden until ten real rows arrive", /id="question-block" class="hidden"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");
+  check("the six published response keys are the ones the page reads", ["tier", "engine", "measured_on", "named", "asked", "chapter"].every((key) => page.includes("data." + key)), "contract keys");
   check("the social card file exists at the declared size", (() => {
     const png = readFileSync(fileURLToPath(new URL("../public/assets/absence-mini-audit-2026-09.png", import.meta.url)));
     return png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630;

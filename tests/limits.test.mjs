@@ -279,6 +279,8 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
   check("the paid path names the offer in full and points at checkout", /AI Visibility Diagnostic/.test(page) && (page.match(/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401/g) || []).length === 2 && (page.match(/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400/g) || []).length === 2 && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
   check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
+  check("both paid surfaces link to the published price ladder", (page.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
+  check("no retired price or offer term survives in the copy", !/\$3,000|\$6,000|\$5,000|founding|three-month minimum|three month minimum|120 observed|credited against month one|against the first month|starting at|best software in a category/i.test(page), "retired offer scan");
   check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
   check("the result page does not invent per-question rows", !/Buyer question ' \+/.test(page) && !/answer unavailable/.test(page), "placeholder scan");
   check("the question list is hidden until ten real rows arrive", /id="question-block" class="hidden"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");

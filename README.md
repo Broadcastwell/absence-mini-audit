@@ -1,6 +1,6 @@
 # absence-mini-audit
 
-The free mini-audit at [audit.broadcastwell.com](https://audit.broadcastwell.com).
+The free 10-question check at [audit.broadcastwell.com](https://audit.broadcastwell.com).
 
 Ten buyer questions, one AI answer engine, no call. It returns one thing: the
 visitor's position on the absence ladder and the chapter of

@@ -1,0 +1,20 @@
+name: Free check evidence tests
+on:
+  push:
+    branches: [phase1-free-evidence-2026-09-14]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing public contract and limits
+        run: node tests/limits.test.mjs
+      - name: Full evidence and preview execution isolation
+        run: node --test tests/evidence.test.mjs

@@ -17,4 +17,4 @@ jobs:
       - name: Existing public contract and limits
         run: node tests/limits.test.mjs
       - name: Full evidence and preview execution isolation
-        run: node --test tests/evidence.test.mjs
+        run: node --test tests/evidence.test.mjs tests/reservations.test.mjs

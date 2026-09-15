@@ -1,0 +1,18 @@
+name = "absence-mini-audit"
+compatibility_date = "2026-09-14"
+pages_build_output_dir = "public"
+
+# This draft intentionally has no production database binding. Its Pages entry
+# point cannot execute without atomic storage, and all preview hosts are blocked.
+# Production promotion must supply a separate DB after the paid-delivery gates.
+[env.preview]
+
+[env.preview.vars]
+FREE_CHECK_PREVIEW = "true"
+
+[[env.preview.d1_databases]]
+binding = "LIMITS_DB"
+database_name = "absence_mini_audit_preview"
+database_id = "039c784c-3ef3-4c2b-8fce-2257acda0d24"
+preview_database_id = "039c784c-3ef3-4c2b-8fce-2257acda0d24"
+migrations_dir = "migrations"

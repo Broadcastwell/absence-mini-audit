@@ -273,10 +273,21 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
   check("the page ground and body text are the dark tokens", /--ground:\s*#0A0A0B/i.test(page) && /--ink:\s*#F8FAFC/i.test(page) && /--body:\s*#CBD5E1/i.test(page), "token scan");
   check("no light ground survives on the page", !/background:\s*#FFFFFF/i.test(page) && !/--paper:/i.test(page), "light ground scan");
-  check("the running state states the wait", page.includes("Running. Usually under a minute."), "running copy");
+  // The running state used to read "Running. Usually under a minute." That was a time
+  // promise on a run nobody had measured, and this branch removed it deliberately. What
+  // the visitor still has to be told is what to expect while they wait, so that is what
+  // is asserted, together with a ban on any minute or hour promise coming back.
+  check("the running state names the check and tells the visitor what to expect", page.includes("Running your ten-question check.") && page.includes("Leave this page open. The result appears here when the run finishes."), "running copy");
+  check("the running state promises no duration", !/(under|within|less than|about)s+(a|an|one|d+)s*(minute|minutes|second|seconds|hour|hours)/i.test(page), "running duration promise");
   check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
-  check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
+  // Retention changed with the reservation table: lib/reservations.js stores a SHA-256 of
+  // the address, never the address, and deletes any row older than two days on every
+  // reservation. The old "keep it for 24 months" line is now false, so the page must
+  // carry the true one and must not carry the old one.
+  check("the page states what the daily-limit record holds and how long", page.includes("stores a hash of your address and is removed after two days"), "retention line");
+  check("the superseded 24 month retention line is gone", !/24 months/.test(page), "retention line, superseded");
+  check("the page never claims to store the address itself", !/we (store|keep) your (email|address)/i.test(page), "retention line, address");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
   check("the paid path names the offer in full and points at checkout", /AI Visibility Diagnostic/.test(page) && (page.match(/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401/g) || []).length === 2 && (page.match(/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400/g) || []).length === 2 && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
   check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");

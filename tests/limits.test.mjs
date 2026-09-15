@@ -7,7 +7,7 @@
  */
 
 import audit from "../lib/audit.js";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -347,8 +347,10 @@ let failed = 0;
   check("the inline style block is allowed by its own hash", cspHash("style") !== null && (directives.get("style-src") || "").includes(cspHash("style")), "csp style hash");
   check("no style attribute survives, because a hash cannot cover one", !/\sstyle\s*=\s*"/.test(page), "csp style attribute");
   check("the fetch target the page uses is same origin", /fetch\('\/api\/run'/.test(page) && directives.get("connect-src") === "'self'", "csp connect-src");
-  check("every host the page loads from is named in the policy",
-    ["https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://framerusercontent.com"].every(host => policy.includes(host)), "csp hosts");
+  check("every host the page loads from is named in the policy", policy.includes("https://framerusercontent.com"), "csp hosts");
+  // Inter is served from this origin now, so no font CDN should be reachable or named.
+  check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
+  check("both Inter subsets are declared and shipped", (page.match(/@font-face/g) || []).length === 2 && ["inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
 
   check("the content column matches the site at 1152", (page.match(/min\(1152px, calc\(100% - 48px\)\)/g) || []).length === 1 && !/1120px/.test(page), "container width");
 }

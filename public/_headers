@@ -6,13 +6,14 @@
 # checkout to LF and why tests/limits.test.mjs recomputes both hashes from
 # public/index.html and fails if this file has drifted from the page.
 #
-# What the page loads, and nothing else: its own inline stylesheet, the Inter webfont
-# stylesheet from fonts.googleapis.com with the faces from fonts.gstatic.com, the
-# favicon from framerusercontent.com, and a same-origin POST to /api/run.
+# What the page loads, and nothing else: its own inline stylesheet, the two Inter
+# subsets that stylesheet declares as @font-face and serves from this origin, the
+# favicon from framerusercontent.com, and a same-origin POST to /api/run. Inter used
+# to come from a font CDN, which needed two more hosts here.
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-D2MBSMDilD8JP+nkAa8oIEgEyAi5xlQuwHDumnnZ/Nc='; style-src 'self' https://fonts.googleapis.com 'sha256-tGS/uB/RvORRUNfJ353MQhj1/akqoYPK8osxmfCfSa8='; font-src https://fonts.gstatic.com; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-D2MBSMDilD8JP+nkAa8oIEgEyAi5xlQuwHDumnnZ/Nc='; style-src 'self' 'sha256-6AI2n+dbzGvXbDq9YVMG4IkdJN17wHPDBbAPYwN4au8='; font-src 'self'; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

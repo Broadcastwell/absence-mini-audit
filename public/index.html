@@ -141,7 +141,7 @@
     var block=document.getElementById('question-block'),list=document.getElementById('question-results');
     list.replaceChildren();
     var rows=Array.isArray(questions)?questions:[];
-    if(rows.length!==10){block.classList.add('hidden');return;}
+    if (rows.length !== 10) { block.classList.add('hidden'); return; }
     rows.forEach(function(row){
       var item=document.createElement('li'),question=document.createElement('span'),status=document.createElement('span');
       question.textContent=row.question;status.className='status';status.textContent=row.status;

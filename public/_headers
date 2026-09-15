@@ -1,0 +1,18 @@
+# Response headers for the Cloudflare Pages project absence-mini-audit.
+#
+# The page is one document with one inline script and one inline style block, so the
+# policy names those two by hash rather than opening the document to unsafe-inline.
+# A hash covers the exact bytes between the tags, which is why .gitattributes pins the
+# checkout to LF and why tests/limits.test.mjs recomputes both hashes from
+# public/index.html and fails if this file has drifted from the page.
+#
+# What the page loads, and nothing else: its own inline stylesheet, the Inter webfont
+# stylesheet from fonts.googleapis.com with the faces from fonts.gstatic.com, the
+# favicon from framerusercontent.com, and a same-origin POST to /api/run.
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-xmv5pQZGCNJ+zKZqPgY777685J3MQxGeUrpEoiUU20I='; style-src 'self' https://fonts.googleapis.com 'sha256-5I1gdBTxjm6gc9LXCG0EI5iknUPLYXXua64u27ggl2w='; font-src https://fonts.gstatic.com; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

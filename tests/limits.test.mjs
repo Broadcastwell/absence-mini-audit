@@ -8,6 +8,7 @@
 
 import audit from "../lib/audit.js";
 import { readdirSync, readFileSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -303,6 +304,56 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
 }
 
 let failed = 0;
+
+// Response headers. public/_headers is a served file: Cloudflare Pages reads it from the
+// output directory. The Content-Security-Policy names the page's one inline script and one
+// inline style block by hash, so the hashes are recomputed here from public/index.html on
+// every run. An edit to either block that forgets this file fails the suite rather than
+// blocking the page's own script in a visitor's browser with nothing on the page to say so.
+{
+  const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
+  const headers = readFileSync(fileURLToPath(new URL("../public/_headers", import.meta.url)), "utf8");
+
+  const inlineBody = (tag) => {
+    const openAt = page.indexOf("<" + tag);
+    const second = openAt < 0 ? -1 : page.indexOf("<" + tag, openAt + 1);
+    if (openAt < 0 || second >= 0) return null;
+    const bodyAt = page.indexOf(">", openAt) + 1;
+    const closeAt = page.indexOf("</" + tag + ">", bodyAt);
+    return closeAt < 0 ? null : page.slice(bodyAt, closeAt);
+  };
+  const cspHash = (tag) => {
+    const body = inlineBody(tag);
+    return body === null ? null : "'sha256-" + createHash("sha256").update(body, "utf8").digest("base64") + "'";
+  };
+
+  check("the served directory carries a headers file that applies to every path", /^\/\*$/m.test(headers), "headers file");
+  for (const header of [
+    "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+    "X-Frame-Options: DENY",
+    "X-Content-Type-Options: nosniff",
+    "Referrer-Policy: strict-origin-when-cross-origin"
+  ]) check("the headers file sends " + header.split(":")[0], headers.includes(header), "headers file");
+
+  const policy = (/Content-Security-Policy:\s*(.+)/.exec(headers) || [])[1] || "";
+  const directives = new Map(policy.split(";").map(part => part.trim()).filter(Boolean)
+    .map(part => [part.split(/\s+/)[0], part.split(/\s+/).slice(1).join(" ")]));
+  check("the policy starts closed", directives.get("default-src") === "'none'", "csp default-src");
+  check("the policy refuses framing, base rewriting and off-site form posts",
+    directives.get("frame-ancestors") === "'none'" && directives.get("base-uri") === "'none'" && directives.get("form-action") === "'self'", "csp hardening");
+  check("the policy allows no inline execution wholesale",
+    !policy.includes("unsafe-inline") && !policy.includes("unsafe-eval") && !policy.includes("unsafe-hashes"), "csp unsafe");
+  check("the inline script is allowed by its own hash", cspHash("script") !== null && (directives.get("script-src") || "").includes(cspHash("script")), "csp script hash");
+  check("the inline style block is allowed by its own hash", cspHash("style") !== null && (directives.get("style-src") || "").includes(cspHash("style")), "csp style hash");
+  check("no style attribute survives, because a hash cannot cover one", !/\sstyle\s*=\s*"/.test(page), "csp style attribute");
+  check("the fetch target the page uses is same origin", /fetch\('\/api\/run'/.test(page) && directives.get("connect-src") === "'self'", "csp connect-src");
+  check("every host the page loads from is named in the policy",
+    ["https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://framerusercontent.com"].every(host => policy.includes(host)), "csp hosts");
+
+  check("the content column matches the site at 1152", (page.match(/min\(1152px, calc\(100% - 48px\)\)/g) || []).length === 1 && !/1120px/.test(page), "container width");
+}
+
+
 for (const r of results) {
   if (!r.pass) failed += 1;
   console.log(`${r.pass ? "PASS" : "FAIL"}  ${r.name}${r.detail ? "  (" + r.detail + ")" : ""}`);

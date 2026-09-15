@@ -1,0 +1,10 @@
+# The working tree uses LF on every platform.
+#
+# public/_headers pins Content-Security-Policy hashes for the page's one inline
+# script and one inline style block, and a CSP hash is taken over the exact bytes
+# between the tags. A CRLF checkout changes those bytes and so changes the hash,
+# which would block the page's own script in the browser with nothing in the page
+# to say why. Pinning eol=lf keeps the hash the same wherever the file is read.
+* text=auto eol=lf
+
+*.png binary

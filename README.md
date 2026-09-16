@@ -49,6 +49,15 @@ redeploy.
 | Per network per day | 3 |
 | Global per day | 100 |
 
+The check runs from the category and the website alone, and the result is on
+the page before any email is asked for. An email address is optional in the
+request: when one is sent it is validated and held to the per address limit
+under the same key as before; when none is sent, no address record is written
+and the network and global limits are the ones that apply. The page itself
+sends no address. Below the result it offers "Email me this result with its
+sources", which opens the visitor's own mail app addressed to
+hello@broadcastwell.com.
+
 The global cap is checked first, so a breach there consumes nobody's personal
 allowance. A refused request costs nothing beyond the counter read: no request
 leaves this handler. That is what the suite proves.

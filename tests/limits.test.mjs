@@ -409,9 +409,12 @@ let failed = 0;
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
   const headers = readFileSync(fileURLToPath(new URL("../public/_headers", import.meta.url)), "utf8");
 
+  // The bare tag, so the structured data block (type application/ld+json, which a browser
+  // never executes and script-src does not govern) is not mistaken for the page script.
+  // A second bare tag of either kind still fails, because one hash cannot cover two blocks.
   const inlineBody = (tag) => {
-    const openAt = page.indexOf("<" + tag);
-    const second = openAt < 0 ? -1 : page.indexOf("<" + tag, openAt + 1);
+    const openAt = page.indexOf("<" + tag + ">");
+    const second = openAt < 0 ? -1 : page.indexOf("<" + tag + ">", openAt + 1);
     if (openAt < 0 || second >= 0) return null;
     const bodyAt = page.indexOf(">", openAt) + 1;
     const closeAt = page.indexOf("</" + tag + ">", bodyAt);
@@ -455,6 +458,95 @@ let failed = 0;
   check("the page reads the reason word the handler sends", page.includes("outcome.data && outcome.data.reason"), "reason wiring");
 
   check("the content column matches the site at 1152", (page.match(/min\(1152px, calc\(100% - 48px\)\)/g) || []).length === 1 && !/1120px/.test(page), "container width");
+
+  const scriptTags = [...page.matchAll(/<script([^>]*)>/g)].map((match) => match[1].trim());
+  check("every script tag is either the one hashed page script or a structured data block",
+    scriptTags.filter((attributes) => attributes === "").length === 1
+    && scriptTags.filter((attributes) => attributes !== "").every((attributes) => attributes === 'type="application/ld+json"'), scriptTags.join(" | "));
+}
+
+// Result before email: the run starts from the category and the website alone.
+{
+  const day = new Date().toISOString().slice(0, 10);
+  const noEmail = (n) => ({ category: "field service management software", company: `site${n}.example` });
+
+  const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 3, global_per_day: 100 });
+  const r = await call(env, noEmail(1), "198.51.100.60");
+  check("a run with no email returns a result", r.status === 200 && r.payload.tier === "named 1 to 3", `status ${r.status}`);
+  check("a run with no email writes no address record", ![...env.AUDIT.store.keys()].some((key) => key.startsWith("count:addr:")), [...env.AUDIT.store.keys()].join(","));
+  check("a run with no email still counts the network and the global allowance",
+    env.AUDIT.store.get(`count:ip:${day}:198.51.100.60`) === "1" && env.AUDIT.store.get(`count:global:${day}`) === "1", [...env.AUDIT.store.entries()].join(";"));
+
+  const statuses = [];
+  for (let i = 2; i <= 4; i++) statuses.push((await call(env, noEmail(i), "198.51.100.60")).status);
+  check("runs with no email are still refused at the network limit", statuses.join(",") === "200,200,429", statuses.join(","));
+
+  const capEnv = makeEnv({ per_address_per_day: 9, per_ip_per_day: 9, global_per_day: 1 });
+  await call(capEnv, noEmail(10), "198.51.100.61");
+  const capped = await call(capEnv, noEmail(11), "198.51.100.62");
+  check("runs with no email are still refused at the global cap", capped.status === 503 && capped.payload.reason === "global", `status ${capped.status}`);
+
+  const withEmail = makeEnv({ per_address_per_day: 1, per_ip_per_day: 9, global_per_day: 9 });
+  await call(withEmail, body(900), "198.51.100.63");
+  check("an address that is given is still counted under the same key", withEmail.AUDIT.store.get(`count:addr:${day}:person900@example.com`) === "1", [...withEmail.AUDIT.store.keys()].join(","));
+
+  const failing = makeEnv({ per_address_per_day: 1, per_ip_per_day: 3, global_per_day: 100 });
+  upstreamMode = "status";
+  const failed = await call(failing, noEmail(20), "198.51.100.64");
+  upstreamMode = "ok";
+  check("a failed run with no email gives the allowance back", failed.status === 502 && failing.AUDIT.store.get(`count:global:${day}`) === "0" && failing.AUDIT.store.get(`count:ip:${day}:198.51.100.64`) === "0", `status ${failed.status}`);
+
+  let sent = null;
+  const savedFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { sent = JSON.parse(init.body); return savedFetch(url, init); };
+  await call(makeEnv(null), noEmail(30), "198.51.100.65");
+  globalThis.fetch = savedFetch;
+  check("the upstream request keeps its three field shape with an empty address", sent && Object.keys(sent).sort().join(",") === "category,company,email" && sent.email === "", JSON.stringify(sent));
+}
+
+// The page: result first, one engine stated twice, a buy path at the end of the result.
+{
+  const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
+  const pageBody = page.slice(page.indexOf("<main"), page.indexOf("</main>"));
+  const formBlock = page.slice(page.indexOf('<form id="form"'), page.indexOf("</form>", page.indexOf('<form id="form"')));
+  const resultBlock = page.slice(page.indexOf('<section id="result"'), page.indexOf("</section>", page.indexOf('class="buy-path"')));
+  const script = page.slice(page.indexOf("<script>"), page.indexOf("</script>", page.indexOf("<script>")));
+
+  check("the check form asks for the category and the website and no email", /id="category"/.test(formBlock) && /id="company"/.test(formBlock) && !/type="email"/.test(formBlock), "form fields");
+  check("the run the page sends carries no email", /var payload = \{ category: [^}]+, company: [^}]+\};/.test(script) && !/payload\.email|email: document/.test(script), "payload");
+  check("the optional email sits below the result and is offered for one thing",
+    page.indexOf('id="email-card"') > page.indexOf('id="result"') && /id="email-card" class="card email-card hidden"/.test(page)
+    && />Email me this result with its sources</.test(page) && !/id="email"[^>]*required/.test(page), "email placement");
+  check("asking for the result by email sends nothing from the page", /mailto:hello@broadcastwell\.com/.test(script) && (script.match(/fetch\(/g) || []).length === 1, "no second request");
+
+  const oneEngine = "This check asks ten buyer questions on one engine, Perplexity, once each.";
+  check("the one engine is stated above the form", pageBody.indexOf(oneEngine) !== -1 && pageBody.indexOf(oneEngine) < pageBody.indexOf('<form id="form"'), "above form");
+  check("the one engine is stated again in the result", /This result comes from one engine, Perplexity, with one run per question\./.test(resultBlock), "in result");
+  const visible = pageBody.replace(/<[^>]+>/g, " ");
+  check("the five engines are named once on the page", ["ChatGPT", "Claude", "Google AI Overviews", "Google AI Mode"].every((name) => visible.split(name).length === 2), "engine names");
+  // A sentence may set the free result beside the five engine products, but no sentence may
+  // put five engines on the free check without naming the paid product that runs them.
+  const claims = visible.split(/\.\s/).filter((sentence) => /(10-question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit|Diagnostic/.test(sentence));
+  check("no sentence gives the free 10-question check more than one engine", claims.length === 0, claims.join(" | "));
+
+  const buyAt = resultBlock.indexOf('class="buy-path"');
+  const buy = resultBlock.slice(buyAt);
+  check("the result ends with the buy path", buyAt !== -1 && !/<(p|ul|div) [^>]*id=/.test(buy), "buy path last");
+  check("the buy path leads with what the $490 adds", /The \$490 Category Audit adds what this result leaves out: ten questions on five engines, three measured runs each, the sources behind every answer, and three prioritised fixes within 48 hours\./.test(buy), "buy sentence");
+  check("the buy path is the filled $490, the outlined $990 and the sample link, in that order",
+    /<a class="cta cta-filled" href="https:\/\/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400">Start with the \$490 Category Audit<\/a><a class="cta cta-outline" href="https:\/\/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401">Get the Diagnostic, \$990<\/a><\/div><p class="flush"><a href="https:\/\/app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
+  check("the $490 in the result is the only filled button in the page body", (pageBody.match(/cta-filled/g) || []).length === 1 && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled");
+  check("the submit is filled before a result and steps down once one is shown",
+    /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
+    && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");
+
+  const ld = (/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(page) || [])[1];
+  let graph = [];
+  try { graph = JSON.parse(ld)["@graph"]; } catch (_) { graph = []; }
+  const app = graph.find((node) => node["@type"] === "WebApplication");
+  const audit = graph.find((node) => node["@type"] === "Service");
+  check("the structured data names the Free 10-question check as a free web application", app && app.name === "Free 10-question check" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
+  check("the structured data carries the $490 offer at its checkout", audit && audit.offers.price === "490" && audit.offers.url === "https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400", JSON.stringify(audit || {}).slice(0, 80));
 }
 
 

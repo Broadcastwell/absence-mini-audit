@@ -6,7 +6,7 @@
  * Run: node tests/limits.test.mjs
  */
 
-import audit from "../lib/audit.js";
+import audit, { previewHost } from "../lib/audit.js";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
@@ -238,6 +238,88 @@ const body = (n) => ({ category: "field service management software", company: "
   check("the refused second run does not spend the global cap", env.AUDIT.store.get("count:global:" + day) === globalAfterFirst, `global ${env.AUDIT.store.get("count:global:" + day)} was ${globalAfterFirst}`);
 }
 
+// Every refusal carries the fixed reason word the page turns into its own sentence,
+// and a result never carries one.
+{
+  const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 2, global_per_day: 3 });
+  const ok = await call(env, body(700), "198.51.100.30");
+  check("a result carries no reason word", ok.status === 200 && !("reason" in ok.payload), JSON.stringify(Object.keys(ok.payload)));
+
+  const again = await call(env, body(700), "198.51.100.30");
+  check("the address refusal says address", again.status === 429 && again.payload.reason === "address", String(again.payload.reason));
+
+  const ipEnv = makeEnv({ per_address_per_day: 9, per_ip_per_day: 1, global_per_day: 9 });
+  await call(ipEnv, body(701), "198.51.100.31");
+  const ipRefused = await call(ipEnv, body(702), "198.51.100.31");
+  check("the network refusal says network", ipRefused.status === 429 && ipRefused.payload.reason === "network", String(ipRefused.payload.reason));
+
+  const capEnv = makeEnv({ per_address_per_day: 9, per_ip_per_day: 9, global_per_day: 1 });
+  await call(capEnv, body(703), "198.51.100.32");
+  const capRefused = await call(capEnv, body(704), "198.51.100.33");
+  check("the daily allowance refusal says global", capRefused.status === 503 && capRefused.payload.reason === "global", String(capRefused.payload.reason));
+
+  const failing = makeEnv({ per_address_per_day: 9, per_ip_per_day: 9, global_per_day: 9 });
+  upstreamMode = "status";
+  const unavailable = await call(failing, body(705), "198.51.100.34");
+  upstreamMode = "ok";
+  check("a run that returned nothing says unavailable", unavailable.status === 502 && unavailable.payload.reason === "unavailable", String(unavailable.payload.reason));
+
+  const badInput = await call(failing, { category: "", company: "", email: "x@example.com" }, "198.51.100.35");
+  check("a refused input says input", badInput.status === 400 && badInput.payload.reason === "input", String(badInput.payload.reason));
+  const badEmail = await call(failing, { category: "x", company: "y", email: "nope" }, "198.51.100.36");
+  check("a refused address says email", badEmail.status === 400 && badEmail.payload.reason === "email", String(badEmail.payload.reason));
+
+  const words = ["input", "email", "address", "network", "global", "unavailable"];
+  const source = readFileSync(fileURLToPath(new URL("../lib/audit.js", import.meta.url)), "utf8");
+  const declared = [...source.matchAll(/^  [a-z_]+: "([a-z]+)",$/gm)].map((match) => match[1]);
+  check("the reason words are a closed set", declared.every((word) => words.indexOf(word) !== -1), declared.join(","));
+}
+
+// The acceptance double answers only on a preview alias of this project, and is refused
+// by name on every host that serves a real visitor.
+{
+  const live = ["audit.broadcastwell.com", "absence-mini-audit.pages.dev"];
+  const preview = ["code2-free-check-2026-09-16.absence-mini-audit.pages.dev", "abc123.absence-mini-audit.pages.dev", "localhost"];
+  for (const host of live) {
+    check("the double is refused on " + host, previewHost(new Request("https://" + host + "/api/run")) === false, host);
+  }
+  for (const host of preview) {
+    check("the double answers on " + host, previewHost(new Request("https://" + host + "/api/run")) === true, host);
+  }
+
+  // No upstream address, no upstream secret and no key-value store: exactly what the
+  // preview environment is, and every state still renders.
+  const bare = { ASSETS: { fetch: async () => new Response("front end", { status: 200 }) } };
+  const previewCall = async (state) => {
+    const request = new Request("https://code2-free-check-2026-09-16.absence-mini-audit.pages.dev/api/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ category: "field service management software", company: "example.com", email: "person800@example.com", state }),
+    });
+    const response = await audit.fetch(request, bare, {});
+    return { status: response.status, payload: await response.json() };
+  };
+  const before = upstreamCalls;
+  const started = await previewCall("");
+  check("the double returns a complete result with no upstream and no store", started.status === 200 && started.payload.questions.length === 10, JSON.stringify(started.payload).slice(0, 80));
+  for (const [state, status, reason] of [["address", 429, "address"], ["network", 429, "network"], ["global", 503, "global"], ["unavailable", 502, "unavailable"]]) {
+    const r = await previewCall(state);
+    check("the double renders the " + state + " state", r.status === status && r.payload.reason === reason, state + " " + r.status + " " + r.payload.reason);
+    check("the " + state + " state is one of the published strings", PUBLISHED.indexOf(r.payload.message) !== -1, r.payload.message);
+  }
+  check("no state of the double calls an upstream", upstreamCalls === before, "upstream calls " + (upstreamCalls - before));
+
+  // The same body on a live host is handled normally: the state field is ignored.
+  const liveEnv = makeEnv({ per_address_per_day: 9, per_ip_per_day: 9, global_per_day: 9 });
+  const liveRequest = new Request("https://audit.broadcastwell.com/api/run", {
+    method: "POST",
+    headers: { "content-type": "application/json", "cf-connecting-ip": "198.51.100.40" },
+    body: JSON.stringify({ category: "field service management software", company: "example.com", email: "person801@example.com", state: "unavailable" }),
+  });
+  const liveResponse = await audit.fetch(liveRequest, liveEnv, {});
+  check("a live host ignores the state field and runs normally", liveResponse.status === 200, "status " + liveResponse.status);
+}
+
 // No user-visible string names the paid product by a retired name.
 {
   const strings = Object.values(PUBLISHED).join("\n");
@@ -278,9 +360,33 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
   check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
-  check("the paid path names the offer in full and points at checkout", /AI Visibility Diagnostic/.test(page) && (page.match(/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401/g) || []).length === 2 && (page.match(/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400/g) || []).length === 2 && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
+  const pageBody = page.slice(page.indexOf("<main"), page.indexOf("</main>"));
+  check("the paid path names the offer in full and points at checkout", /AI Visibility Diagnostic/.test(page) && (pageBody.match(/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401/g) || []).length === 2 && (pageBody.match(/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400/g) || []).length === 2 && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
   check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
-  check("both paid surfaces link to the published price ladder", (page.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
+  check("both paid surfaces link to the published price ladder", (pageBody.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
+
+  // The shell the three subdomains share with the site.
+  const head = page.slice(page.indexOf("<header"), page.indexOf("</header>"));
+  const foot = page.slice(page.indexOf("<footer"), page.indexOf("</footer>"));
+  check("the header carries the wordmark, both text links and the filled pill",
+    head.includes('class="wordmark" href="https://broadcastwell.com"')
+    && head.includes('href="https://broadcastwell.com/pricing">Pricing<')
+    && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
+    && head.includes('class="pill" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">$490 Audit<'), "header shell");
+  check("the pill and every phone menu target clear 44 px",
+    /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
+  check("the text links collapse behind one disclosure at phone widths and the pill stays",
+    page.includes("@media (max-width: 640px) { .site-nav { display: none; } .menu { display: block; }") && !/\.pill \{ display: none/.test(page), "phone header");
+  check("the footer carries the site's four columns and the bottom bar",
+    ["Product", "Research", "Company", "Contact"].every((name) => foot.includes(">" + name + "</h2>"))
+    && foot.includes("Broadcastwell LLC. Indiana, USA. Copyright 2026.")
+    && ["privacy", "terms", "cookies"].every((slug) => foot.includes('href="https://broadcastwell.com/' + slug + '">')), "footer shell");
+  check("the footer keeps this surface's own disclosure note above the columns",
+    foot.indexOf("Broadcastwell is excluded from its own sample") < foot.indexOf("footer-columns"), "disclosure note");
+  check("the footer columns stack below 640", page.includes(".footer-columns { grid-template-columns: 1fr;"), "footer stacking");
+  check("no label on the page is set in capitals", !/text-transform:\s*uppercase/i.test(page), "sentence case");
+  check("the header and footer add no third party request",
+    !/<script[^>]+src=/i.test(page) && !/<link[^>]+rel="stylesheet"/i.test(page), "no third party");
   check("no retired price or offer term survives in the copy", !/\$3,000|\$6,000|\$5,000|founding|three-month minimum|three month minimum|120 observed|credited against month one|against the first month|starting at|best software in a category/i.test(page), "retired offer scan");
   check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
   check("the result page does not invent per-question rows", !/Buyer question ' \+/.test(page) && !/answer unavailable/.test(page), "placeholder scan");
@@ -340,6 +446,13 @@ let failed = 0;
   // Inter is served from this origin now, so no font CDN should be reachable or named.
   check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
   check("both Inter subsets are declared and shipped", (page.match(/@font-face/g) || []).length === 2 && ["inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
+
+  check("the started state is named and brought into view", page.includes("Your check has started") && page.includes("working.scrollIntoView"), "started state");
+  check("the refusal names itself and its reason in one sentence",
+    page.includes("Your check could not start") && page.includes('id="errorwhy"')
+    && ["address", "network", "global", "unavailable"].every((reason) => page.includes(reason + ":")), "refused state");
+  check("a run that never answers still ends in a stated outcome", page.includes("WAIT_MS") && page.includes("refuse('unavailable'); }, WAIT_MS)"), "late run");
+  check("the page reads the reason word the handler sends", page.includes("outcome.data && outcome.data.reason"), "reason wiring");
 
   check("the content column matches the site at 1152", (page.match(/min\(1152px, calc\(100% - 48px\)\)/g) || []).length === 1 && !/1120px/.test(page), "container width");
 }

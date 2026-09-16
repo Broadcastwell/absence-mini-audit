@@ -13,7 +13,7 @@
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-xmv5pQZGCNJ+zKZqPgY777685J3MQxGeUrpEoiUU20I='; style-src 'self' 'sha256-XrSxRT10akDk/xsEA/4v+esLce+fP5HPE3kVBLj2uPU='; font-src 'self'; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-Vq8u1umOuS1aQIlee5yaml6wDvvWzJlC/5eqA5C+U3Y='; style-src 'self' 'sha256-YFncOxtV83+5uiC8zq3fqAwM5+Lm/3QfJ9h0dqYdJUI='; font-src 'self'; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

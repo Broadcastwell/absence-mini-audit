@@ -17,7 +17,7 @@ visitor's position on the absence ladder and the chapter of
 
 ## The response contract
 
-Six keys, and no more. Two of them are allow-listed rather than copied, so an
+Seven keys, and no more. Two of them are allow-listed rather than copied, so an
 upstream that returns an unrecognised ladder position or an off-manual link
 produces an error rather than putting either in a browser.
 
@@ -28,7 +28,10 @@ produces an error rather than putting either in a browser.
   "tier": "named 0 of 10",
   "chapter": "/category-door/",
   "engine": "Perplexity",
-  "measured_on": "2026-08-18"
+  "measured_on": "2026-08-18",
+  "questions": [
+    { "question": "What is the best contractor payroll software?", "status": "not named" }
+  ]
 }
 ```
 
@@ -36,6 +39,13 @@ The four tiers are verbatim from
 [the published classification rules](https://docs.broadcastwell.com/absence-rules/).
 The chapter is one of `/category-door/`, `/comparison-gate/` or
 `/absence-ladder/`.
+
+`questions` always carries the ten questions when a result is returned. The upstream
+answers with counts only, so the handler rebuilds the ten questions from the category
+with the same wording the upstream uses. A status is stated only where the count
+settles it: `not named` on all ten at named 0, `named` on all ten at named 10, and
+`not itemised` on every row for any count in between. Rows the upstream supplies itself,
+in the narrow expected shape, take precedence.
 
 ## The limits
 

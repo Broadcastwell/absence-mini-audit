@@ -136,7 +136,20 @@ const body = (n) => ({ category: "field service management software", company: "
   const keys = Object.keys(r.payload).sort().join(",");
   check("response carries the public result keys", keys === "asked,chapter,engine,measured_on,named,questions,tier", keys);
   check("upstream extra fields do not leak", !("secret_internal_field" in r.payload), keys);
-  check("missing question detail remains an empty public list", Array.isArray(r.payload.questions) && r.payload.questions.length === 0, JSON.stringify(r.payload.questions));
+  check("without upstream rows the ten questions are rebuilt from the category", Array.isArray(r.payload.questions) && r.payload.questions.length === 10 && r.payload.questions[0].question === "What is the best field service management software?" && r.payload.questions[9].question === "How can field service management software reduce manual work for an operations team?", JSON.stringify(r.payload.questions));
+  check("a count between none and all marks no question either way", r.payload.questions.every((row) => row.status === "not itemised"), JSON.stringify(r.payload.questions.map((row) => row.status)));
+}
+
+// A count of none or of all settles every question's status on its own.
+{
+  const saved = upstreamPayload;
+  for (const [named, tier, status] of [[0, "named 0 of 10", "not named"], [10, "named 7 to 10", "named"]]) {
+    upstreamPayload = Object.assign({}, saved, { named: named, tier: tier });
+    const env = makeEnv({ per_address_per_day: 9, per_ip_per_day: 99, global_per_day: 99 });
+    const r = await call(env, body(360 + named), "192.0.2." + (20 + named));
+    check("named " + named + " of 10 marks all ten questions " + status, r.status === 200 && r.payload.questions.length === 10 && r.payload.questions.every((row) => row.status === status && row.question), JSON.stringify(r.payload.questions.map((row) => row.status)));
+  }
+  upstreamPayload = saved;
 }
 
 // Public per-question detail is retained only in the narrow expected shape.
@@ -368,11 +381,14 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   // The shell the three subdomains share with the site.
   const head = page.slice(page.indexOf("<header"), page.indexOf("</header>"));
   const foot = page.slice(page.indexOf("<footer"), page.indexOf("</footer>"));
-  check("the header carries the wordmark, both text links and the filled pill",
+  check("the header carries the wordmark, both text links and the pill",
     head.includes('class="wordmark" href="https://broadcastwell.com"')
     && head.includes('href="https://broadcastwell.com/pricing">Pricing<')
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
     && head.includes('class="pill" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">$490 Audit<'), "header shell");
+  check("the header pill is outlined, so the result's $490 button is the one filled purchase control",
+    /\.pill \{[^}]*background: transparent;/.test(page) && !/\.pill \{[^}]*background: var\(--blue\)/.test(page) && (pageBody.match(/class="cta cta-filled"/g) || []).length === 1, "pill outline");
+  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
   check("the text links collapse behind one disclosure at phone widths and the pill stays",
@@ -390,6 +406,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("no retired price or offer term survives in the copy", !/\$3,000|\$6,000|\$5,000|founding|three-month minimum|three month minimum|120 observed|credited against month one|against the first month|starting at|best software in a category/i.test(page), "retired offer scan");
   check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
   check("the result page does not invent per-question rows", !/Buyer question ' \+/.test(page) && !/answer unavailable/.test(page), "placeholder scan");
+  check("the page says when a count does not itemise the questions", /id="question-note" class="small hidden"/.test(page) && /row\.status === 'not itemised'/.test(page), "question note");
   check("the question list is hidden until ten real rows arrive", /id="question-block" class="hidden"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");
   check("the six published response keys are the ones the page reads", ["tier", "engine", "measured_on", "named", "asked", "chapter"].every((key) => page.includes("data." + key)), "contract keys");
   check("the social card file exists at the declared size", (() => {

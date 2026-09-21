@@ -171,8 +171,8 @@ async function run(website, env, ip) {
   check("only same site pages are followed", read.links.length === 1 && read.links[0] === "https://www.acmefield.com/about", read.links.join(","));
   check("the brand is what the site calls itself", proposeBrand([read], "www.acmefield.com") === "Acme Field", proposeBrand([read], "www.acmefield.com"));
   check("the category is proposed in buyer words", classify([read])[0].label === "field service management software", JSON.stringify(classify([read]).slice(0, 3)));
-  const dashed = readPage("<title>Acme — dispatch – now -- today</title>", "https://acmefield.com/");
-  check("text read back never carries a dash the site does not print", !/[–—]|--/.test(dashed.title), dashed.title);
+  const dashed = readPage("<title>Acme \u2014 dispatch \u2013 now -- today</title>", "https://acmefield.com/");
+  check("text read back never carries a dash the site does not print", !/[\u2013\u2014]|--/.test(dashed.title), dashed.title);
 }
 
 // The handler end to end
@@ -245,7 +245,7 @@ async function run(website, env, ip) {
   }
   check("every lexicon entry has a unique id, a unique label, a group and lower case terms", shapeOk, LEXICON.length + " entries");
   check("the lexicon covers the horizontal staples and the vertical list", ["crm", "project_management", "core_hr", "lms", "help_desk", "marketing_automation", "dealership", "field_service", "radiology", "dental", "veterinary", "behavioral_health", "home_health", "pharmacy", "medical_billing", "legal_practice", "accounting_practice", "optometry", "chiropractic", "construction", "property_management", "self_storage", "title_escrow", "mortgage", "insurance_agency", "claims", "credit_union", "lending", "restaurant", "salon_spa", "fitness", "tms", "fleet", "freight_brokerage", "agriculture", "energy", "k12", "higher_ed", "church", "nonprofit_crm", "public_safety", "mes", "quality", "food_safety", "equipment_rental"].every((id) => ids.has(id)), "coverage");
-  check("every label reads as a buyer's category in the questions", LEXICON.every((entry) => /(software|platform|system|EHR|CRM)$/.test(entry.label) && !/[–—]|--/.test(entry.label)), "label endings");
+  check("every label reads as a buyer's category in the questions", LEXICON.every((entry) => /(software|platform|system|EHR|CRM)$/.test(entry.label) && !/[\u2013\u2014]|--/.test(entry.label)), "label endings");
   check("the question sentences carry the category marker", questionTemplate()[0] === "What is the best {category}?", questionTemplate()[0]);
 }
 

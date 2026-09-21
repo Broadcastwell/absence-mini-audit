@@ -160,6 +160,8 @@ const RUN = { category: "field service management software", company: "acmefield
   const face = file("public/assets/fonts/inter-embed.css");
   const faceHash = "'sha256-" + createHash("sha256").update(face, "utf8").digest("base64") + "'";
   check("the one font rule exported images embed is allowed by its hash, and only it", /^@font-face\{font-family:Inter;[^}]*src:url\(data:font\/woff2;base64,[A-Za-z0-9+/=]+\) format\('woff2'\)\}$/.test(face) && (/style-src ([^;]+)/.exec(csp) || [])[1].split(" ").length === 3 && csp.includes(faceHash) && !/unsafe/.test(csp), faceHash);
+  const sampleRule = headers.slice(headers.indexOf("/assets/sample/*"));
+  check("the sample image has an image's own policy: nothing runs, only the font rule by hash", /! Content-Security-Policy/.test(sampleRule) && sampleRule.includes("Content-Security-Policy: default-src 'none'; style-src " + faceHash + "; font-src data:") && !/script-src|unsafe/.test(sampleRule), sampleRule.slice(0, 80));
   check("the page and the sample wheel embed that same rule", PAGE.includes("fetch('/assets/fonts/inter-embed.css')") && file("public/assets/sample/kalvenor-wheel.svg").includes('<style type="text/css">' + face + "</style>"), "embed");
   const main = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
   const visible = main.replace(/<[^>]+>/g, " ");

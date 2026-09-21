@@ -27,3 +27,11 @@
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+
+# The sample wheel is a standalone SVG image with Inter embedded. Served as its own
+# document it would carry the page's policy above, which some browsers apply to its
+# stylesheet and its data: font. It gets an image's policy instead: nothing runs, and the
+# one fixed font rule is allowed by its hash. scripts/build-page.mjs keeps the hash current.
+/assets/sample/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; style-src 'sha256-7N3Rbo/cV2nIFxwN2KqGWQs18yi890aJoN+COVpucAA='; font-src data:

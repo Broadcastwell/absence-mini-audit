@@ -8,12 +8,18 @@
 #
 # What the page loads, and nothing else: its own inline stylesheet, the two Inter
 # subsets that stylesheet declares as @font-face and serves from this origin, the
-# favicon from framerusercontent.com, and a same-origin POST to /api/run. Inter used
-# to come from a font CDN, which needed two more hosts here.
+# favicon from framerusercontent.com, the sample wheel from this origin, and same-origin
+# requests to /api/analyze, /api/run, /api/link and /api/event. Inter used to come from a
+# font CDN, which needed two more hosts here.
+#
+# img-src allows data: and blob: for one reason: the wheel's image export draws an SVG
+# into a canvas in the browser, through a blob: URL, with Inter embedded as data:. No
+# other directive was opened for it. scripts/build-page.mjs rewrites the two hashes and
+# lib/headers.js; run it after editing the page.
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-oHaKEhtetBmYHi3QiQ8SfdbVj0bMgBYk8AHKuNYgGCY='; style-src 'self' 'sha256-5ZEzg5svg4FUoN3eDeOfj2QJFk6N0ahBIT0U4HmRUrw='; font-src 'self'; img-src https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-8Wt6z2bNIC+HwnolBGNhXp4OlAuuJpIDh3gGgoANMEM='; style-src 'self' 'sha256-IxuLEtes6udnh+JDq5wBkNrPcEblUxey38smFIfNWGQ='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

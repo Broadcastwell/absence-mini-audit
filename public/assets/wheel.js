@@ -186,6 +186,14 @@
     });
     // Centre.
     var sum = summary(data);
+    // A wheel drawn at phone size keeps only what can be read there: the name and the count.
+    if (o.compact) {
+      var cb = fit(data.brand, 190 * s, 30 * s, 16 * s, 700);
+      out.push(text(cx, cy - 26 * s, cb.text, { size: num(cb.size), weight: 700, anchor: "middle" }));
+      out.push(text(cx, cy + 30 * s, sum.named + " of " + sum.asked, { size: num(52 * s), weight: 800, anchor: "middle" }));
+      out.push(text(cx, cy + 62 * s, data.sample ? "named, SAMPLE DATA" : "named", { size: num(22 * s), fill: C.body, anchor: "middle" }));
+      return out.join("");
+    }
     // The centre holds four lines inside the inner ring's numbers, about 180 units across.
     var k = Math.min(L, 1.3), room = 176 * s;
     var brand = fit(data.brand, room, 22 * s * k, 12 * s, 700);

@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "brand": "Kalvenor Systems",
+  "category": "field service management software",
+  "website": "kalvenor.example",
+  "measured_on": "2026-07-12",
+  "sample": true,
+  "sample_url": "https://app.broadcastwell.com/sample",
+  "engines": [
+    {
+      "id": "chatgpt",
+      "measured": true
+    },
+    {
+      "id": "claude",
+      "measured": true
+    },
+    {
+      "id": "perplexity",
+      "measured": true
+    },
+    {
+      "id": "google_aio",
+      "measured": true
+    },
+    {
+      "id": "google_ai_mode",
+      "measured": true
+    }
+  ],
+  "spokes": [
+    {
+      "question": "What is field service management software?",
+      "type": "shortlist",
+      "type_label": "Shortlist",
+      "named": {
+        "chatgpt": false,
+        "claude": true,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Trakwell",
+        "Orbit Field"
+      ]
+    },
+    {
+      "question": "Which software helps a company schedule and dispatch field technicians?",
+      "type": "shortlist",
+      "type_label": "Shortlist",
+      "named": {
+        "chatgpt": true,
+        "claude": false,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Orbit Field",
+        "Cindermark"
+      ]
+    },
+    {
+      "question": "What are the strongest field service management platforms for a mid sized service business?",
+      "type": "shortlist",
+      "type_label": "Shortlist",
+      "named": {
+        "chatgpt": true,
+        "claude": true,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": true
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Cindermark",
+        "Trakwell"
+      ]
+    },
+    {
+      "question": "As a service operations director, which software should I evaluate to cut technician drive time?",
+      "type": "role",
+      "type_label": "Role",
+      "named": {
+        "chatgpt": true,
+        "claude": true,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": true
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Cindermark",
+        "Trakwell"
+      ]
+    },
+    {
+      "question": "As a service manager, which software helps a team hit first time fix rate targets?",
+      "type": "role",
+      "type_label": "Role",
+      "named": {
+        "chatgpt": false,
+        "claude": true,
+        "perplexity": false,
+        "google_aio": true,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Cindermark",
+        "Northvale FSM"
+      ]
+    },
+    {
+      "question": "How does a service business reduce repeat visits caused by missing parts?",
+      "type": "use_case",
+      "type_label": "Use case",
+      "named": {
+        "chatgpt": false,
+        "claude": false,
+        "perplexity": true,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Asterforge",
+        "Verano FSM"
+      ]
+    },
+    {
+      "question": "How can a service business quote and invoice from the field on the same day?",
+      "type": "use_case",
+      "type_label": "Use case",
+      "named": {
+        "chatgpt": false,
+        "claude": false,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Orbit Field",
+        "Cindermark"
+      ]
+    },
+    {
+      "question": "What tool routes technicians across a large territory efficiently?",
+      "type": "use_case",
+      "type_label": "Use case",
+      "named": {
+        "chatgpt": true,
+        "claude": false,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Orbit Field",
+        "Trakwell"
+      ]
+    },
+    {
+      "question": "How much does field service management software cost per technician?",
+      "type": "evaluation",
+      "type_label": "Evaluation",
+      "named": {
+        "chatgpt": true,
+        "claude": false,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Northvale FSM",
+        "Cindermark"
+      ]
+    },
+    {
+      "question": "What is a typical implementation timeline for field service software?",
+      "type": "evaluation",
+      "type_label": "Evaluation",
+      "named": {
+        "chatgpt": false,
+        "claude": false,
+        "perplexity": false,
+        "google_aio": false,
+        "google_ai_mode": false
+      },
+      "named_instead": [
+        "Asterforge",
+        "Cindermark",
+        "Trakwell"
+      ]
+    }
+  ]
+}

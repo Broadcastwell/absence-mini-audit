@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/limits.test.mjs && node tests/analyze.test.mjs && node tests/wheel.test.mjs"
+    "test": "node tests/limits.test.mjs && node tests/analyze.test.mjs && node tests/wheel.test.mjs && node tests/frontdoor.test.mjs"
   }
 }

@@ -2,18 +2,27 @@
 
 The free 10-question check at [audit.broadcastwell.com](https://audit.broadcastwell.com).
 
-Ten buyer questions, one AI answer engine, no call. It returns one thing: the
-visitor's position on the absence ladder and the chapter of
+Ten buyer questions, one AI answer engine, no call. The visitor types a website; the
+page reads it and proposes the company name and the category in a buyer's words; the
+visitor confirms with one click and the check runs. The result is drawn as the shortlist
+wheel, with the visitor's position on the absence ladder and the chapter of
 [The Absence Manual](https://docs.broadcastwell.com/) that addresses it.
 
 ## What is in here
 
 | Path | What it is |
 |-|-|
-| `public/` | The whole front end. One file, no external requests. |
-| `lib/audit.js` | The request handler: validation, the three limits, the spend cap, and the response contract. |
-| `functions/api/run.js` | The entry point. It does nothing but hand the request to `lib/audit.js`. |
-| `tests/limits.test.mjs` | The limit and contract suite. `npm test`. |
+| `public/` | The whole front end. One page, no external requests. |
+| `public/assets/wheel.js` | The shortlist wheel, one dependency free module. Its contract is [WHEEL_CONTRACT.md](WHEEL_CONTRACT.md). |
+| `lib/audit.js` | The request handler: validation, the three limits, the spend cap, and the response contract. It also routes the calls below. |
+| `lib/analyze.js`, `lib/guard.js`, `lib/lexicon.js` | `POST /api/analyze`: reads the visitor's homepage and at most two more pages through the fetch guard, and proposes a name and a category from the lexicon. Free: it never calls the upstream. |
+| `lib/seal.js`, `lib/link.js` | `POST /api/link` and `GET /r/<id>`: result links, made only on request, kept 30 days, only for a result this handler sealed. |
+| `lib/event.js` | `POST /api/event`: the daily funnel count. No personal data. |
+| `functions/` | Entry points. Each does nothing but hand the request to `lib/audit.js`. |
+| `scripts/build-page.mjs` | Inlines the wheel into the page and recomputes the CSP hashes. Run after editing the page. |
+| `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints. |
+| `scripts/funnel.mjs` | Prints the daily funnel counts with the owner's own Cloudflare sign in. |
+| `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite and the front door suite. `npm test`. |
 
 ## The response contract
 
@@ -50,14 +59,22 @@ in the narrow expected shape, take precedence.
 ## The limits
 
 Held in the `config:limits` record in the key-value store, not in this
-repository and not in environment variables, so all three change without a
+repository and not in environment variables, so every one changes without a
 redeploy.
 
-| Limit | Value |
-|-|-|
-| Per address per day | 1 |
-| Per network per day | 3 |
-| Global per day | 100 |
+| Limit | Key | Value |
+|-|-|-|
+| Runs per address per day | `per_address_per_day` | 1 |
+| Runs per network per day | `per_ip_per_day` | 3 |
+| Runs for the whole site per day | `global_per_day` | 100 |
+| Website reads per network per day | `analyze_per_ip_per_day` | 10 |
+| Website reads for the whole site per day | `analyze_global_per_day` | 150 |
+| Result links per network per day | `link_per_ip_per_day` | 10 |
+| Result links for the whole site per day | `link_global_per_day` | 40 |
+| Funnel count writes per day | `funnel_writes_per_day` | 100 |
+
+The last five are sized so that a full day of every counter stays inside the
+key-value store's free daily write allowance.
 
 The check runs from the category and the website alone, and the result is on
 the page before any email is asked for. An email address is optional in the
@@ -81,7 +98,9 @@ leaves this handler. That is what the suite proves.
 | `UPSTREAM_TOKEN` | Secret | The shared secret it is called with |
 
 Both secrets are set in the deployment platform and appear nowhere in this
-repository, in any commit, or in anything a browser can see.
+repository, in any commit, or in anything a browser can see. The result seal is an
+HMAC with a key derived from `UPSTREAM_TOKEN` under a fixed label, so no new secret
+is needed and the token itself never leaves the handler.
 
 ## Author
 

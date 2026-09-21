@@ -75,7 +75,7 @@ BwWheel.fromFreeCheck(result, { brand, category, website })  // from a Free 10-q
 `svg` options: `size` (side in px, default 720), `interactive` (focusable nodes, each with an
 `aria-label` naming its question and status), `idPrefix` (unique per wheel on a page),
 `labelScale` (raise when the wheel is shown smaller than 720 px), `nodeScale` (raise on
-phones), `fontCss` (a CSS font face rule; pass it for files that leave the browser so Inter
+phones), `compact` (a phone centre: the name and "N of 10 named" only), `fontCss` (a CSS font face rule; pass it for files that leave the browser so Inter
 travels with them).
 
 `card` draws a footer strip on every image: broadcastwell.com, "Free 10-question check (one

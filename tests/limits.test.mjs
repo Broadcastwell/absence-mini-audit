@@ -534,7 +534,16 @@ let failed = 0;
   check("the optional email sits below the result and is offered for one thing",
     page.indexOf('id="email-card"') > page.indexOf('id="result"') && /id="email-card" class="card email-card hidden"/.test(page)
     && />Email me this result with its sources</.test(page) && !/id="email"[^>]*required/.test(page), "email placement");
-  check("asking for the result by email sends nothing from the page", /mailto:hello@broadcastwell\.com/.test(script) && (script.match(/fetch\(/g) || []).length === 1, "no second request");
+  // The page now makes other same-origin requests (reading the website, a result link, the
+  // export font), so the email path is checked directly: its handler makes no request of any
+  // kind, and every request the page makes at all goes to a fixed path on this origin.
+  const emailAt = script.indexOf("emailForm.addEventListener('submit'");
+  const emailHandler = script.slice(emailAt, script.indexOf("\n", emailAt));
+  const requestTargets = [...script.matchAll(/(?:fetch|sendBeacon)\(([^,)]*)/g)].map((match) => match[1].trim());
+  check("asking for the result by email sends nothing from the page",
+    /mailto:hello@broadcastwell\.com/.test(script) && emailHandler.length > 40 && /mailto:/.test(emailHandler)
+    && !/fetch\(|XMLHttpRequest|sendBeacon|new Image|\.submit\(|WebSocket|EventSource/.test(emailHandler)
+    && requestTargets.length >= 1 && requestTargets.every((target) => /^'\/(api|assets)\/[a-z0-9/._-]+'$/.test(target)), "no second request: " + requestTargets.join(" "));
 
   const oneEngine = "This check asks ten buyer questions on one engine, Perplexity, once each.";
   check("the one engine is stated above the form", pageBody.indexOf(oneEngine) !== -1 && pageBody.indexOf(oneEngine) < pageBody.indexOf('<form id="form"'), "above form");

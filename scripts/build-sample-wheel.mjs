@@ -81,11 +81,29 @@ const wheel = globalThis.BwWheel;
 const problems = wheel.validate(data);
 if (problems.length) throw new Error("the sample does not fit the contract: " + problems.join("; "));
 
-const font = readFileSync(root("public/assets/fonts/inter-latin-var.woff2")).toString("base64");
-const fontCss = "@font-face{font-family:Inter;font-weight:400 800;src:url(data:font/woff2;base64," + font + ") format('woff2')}";
+// The same fixed rule the page embeds in exported files, so one hash in the page's policy
+// covers both. scripts/build-page.mjs writes it.
+const fontCss = readFileSync(root("public/assets/fonts/inter-embed.css"), "utf8");
 
 mkdirSync(root("public/assets/sample"), { recursive: true });
 writeFileSync(root("public/assets/sample/kalvenor-wheel.json"), JSON.stringify(data, null, 2) + "\n");
 writeFileSync(root("public/assets/sample/kalvenor-wheel.svg"), wheel.svg(data, { size: 720, fontCss: fontCss }) + "\n");
 const sum = wheel.summary(data);
 console.log("Kalvenor sample wheel: " + spokes.length + " spokes, named in " + sum.named + " of " + sum.asked + " answers, measured " + data.measured_on);
+
+// The page shows a PNG of the wheel: an image with no stylesheet and no font of its own draws
+// the same in every browser. Drawing it needs a browser, which this repository does not ship,
+// so the step runs only where Playwright is installed and says so otherwise.
+try {
+  const { chromium } = await import("playwright");
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1080, height: 1080 } });
+  await page.setContent('<html><body style="margin:0;background:#0A0A0B">' + wheel.svg(data, { size: 1080, fontCss: fontCss }) + "</body></html>");
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: root("public/assets/sample/kalvenor-wheel.png"), clip: { x: 0, y: 0, width: 1080, height: 1080 } });
+  await browser.close();
+  console.log("Wrote public/assets/sample/kalvenor-wheel.png");
+} catch (error) {
+  console.log("PNG not redrawn (" + (error && error.code === "ERR_MODULE_NOT_FOUND" ? "Playwright is not installed" : error.message) + "). The committed PNG is unchanged.");
+}

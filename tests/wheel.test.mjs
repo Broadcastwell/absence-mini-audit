@@ -47,6 +47,8 @@ const W = globalThis.BwWheel;
   check("the wheel names no other engine and never four engines", !/Gemini|four engines/i.test(every), "engines");
   const size = statSync(fileURLToPath(new URL("../public/assets/wheel.js", import.meta.url))).size;
   check("the wheel module stays small, under 24 KB unminified", size < 24 * 1024, size + " bytes");
+  const compact = W.svg(free, { compact: true, interactive: true });
+  check("the compact centre keeps the name and the count for phone widths", compact.includes(">3 of 10<") && compact.includes(">named<") && !compact.includes("Named in 3 of 10 answers") && (compact.match(/class="wheel-node"/g) || []).length === 10, "compact");
   const escaped = W.svg(W.fromFreeCheck(UPSTREAM, { brand: "<img src=x onerror=alert(1)>", category: "a & b" }), {});
   check("text in the wheel is escaped", !escaped.includes("<img") && escaped.includes("&lt;img"), "escape");
 }

@@ -657,8 +657,8 @@
   // A result, from a run on this page or from a result link.
   function renderResult(ctx, data) {
     last = ctx; last.data = data;
+    // Drawn once the result is on screen, so it is sized to the width it is shown at.
     wheelData = window.BwWheel.fromFreeCheck(data, { brand: ctx.brand || ctx.company, category: ctx.category, website: ctx.company });
-    drawWheel();
     wheelDetail.textContent = 'Hover over or tab to a mark to read its question.';
     document.getElementById('key-dashed').classList.toggle('hidden', !wheelData.spokes.some(function (spoke) { return spoke.named.perplexity === null; }));
     document.getElementById('phone-rings').textContent = 'Rings from the centre: ' + window.BwWheel.ENGINES.map(function (engine) { return engine.label + (engine.id === 'perplexity' ? ' (measured here)' : ''); }).join(', ') + '.';
@@ -685,7 +685,7 @@
       if (!outcome.ok) { refuse((outcome.data && outcome.data.reason) || 'unavailable', outcome.data && outcome.data.message); return; }
       settle(true); linkId = null; setReference(null); hide(document.getElementById('link-out')); show(document.getElementById('link-create')); show(document.getElementById('link-hint')); hide(document.getElementById('shared-note'));
       renderResult({ category: payload.category, company: payload.company, brand: payload.brand, seal: outcome.seal }, outcome.data);
-      hide(emailError); show(result); show(emailCard); result.scrollIntoView({ behavior: smooth(), block: 'start' });
+      hide(emailError); show(result); show(emailCard); drawWheel(); result.scrollIntoView({ behavior: smooth(), block: 'start' });
     }).catch(function () { if (!late) return; window.clearTimeout(late); refuse('unavailable'); });
   });
 
@@ -740,7 +740,7 @@
       renderResult({ category: record.category, company: record.website, brand: record.brand, seal: null }, record.result);
       var note = document.getElementById('shared-note'); note.textContent = 'A shared result for ' + (record.brand || record.website) + ', measured on ' + longDate(record.result.measured_on) + '. This link is kept until ' + longDate(record.expires_on) + ', then deleted. Run your own check above.'; show(note);
       showLink(record.id, location.origin + '/r/' + record.id, record.expires_on);
-      go.classList.add('settled'); show(result); show(emailCard);
+      go.classList.add('settled'); show(result); show(emailCard); drawWheel();
     } else {
       document.getElementById('errortitle').textContent = 'This result link has expired';
       document.getElementById('errorwhy').textContent = 'Result links are kept for 30 days and then deleted, or the address is not complete.';

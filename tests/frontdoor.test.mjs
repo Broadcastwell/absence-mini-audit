@@ -157,6 +157,10 @@ const RUN = { category: "field service management software", company: "acmefield
   const csp = (/Content-Security-Policy:\s*(.+)/.exec(headers) || [])[1];
   check("lib/headers.js matches the headers file", PAGE_HEADERS["Content-Security-Policy"] === csp && PAGE_HEADERS["Strict-Transport-Security"] === "max-age=31536000; includeSubDomains", "run node scripts/build-page.mjs");
   check("the policy opened images to data and blob for export, and nothing else", /img-src 'self' data: blob: https:\/\/framerusercontent\.com;/.test(csp) && /connect-src 'self';/.test(csp) && /font-src 'self';/.test(csp) && !/script-src[^;]*(data:|blob:|'self')/.test(csp), csp);
+  const face = file("public/assets/fonts/inter-embed.css");
+  const faceHash = "'sha256-" + createHash("sha256").update(face, "utf8").digest("base64") + "'";
+  check("the one font rule exported images embed is allowed by its hash, and only it", /^@font-face\{font-family:Inter;[^}]*src:url\(data:font\/woff2;base64,[A-Za-z0-9+/=]+\) format\('woff2'\)\}$/.test(face) && (/style-src ([^;]+)/.exec(csp) || [])[1].split(" ").length === 3 && csp.includes(faceHash) && !/unsafe/.test(csp), faceHash);
+  check("the page and the sample wheel embed that same rule", PAGE.includes("fetch('/assets/fonts/inter-embed.css')") && file("public/assets/sample/kalvenor-wheel.svg").includes('<style type="text/css">' + face + "</style>"), "embed");
   const main = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
   const visible = main.replace(/<[^>]+>/g, " ");
   check("the entry asks for a website and nothing else first", /<label for="company">Your website<\/label><input id="company"/.test(PAGE) && PAGE.indexOf('id="confirm" class="confirm hidden"') > PAGE.indexOf('id="company"'), "entry");

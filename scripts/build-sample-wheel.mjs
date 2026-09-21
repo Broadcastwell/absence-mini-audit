@@ -81,8 +81,9 @@ const wheel = globalThis.BwWheel;
 const problems = wheel.validate(data);
 if (problems.length) throw new Error("the sample does not fit the contract: " + problems.join("; "));
 
-const font = readFileSync(root("public/assets/fonts/inter-latin-var.woff2")).toString("base64");
-const fontCss = "@font-face{font-family:Inter;font-weight:400 800;src:url(data:font/woff2;base64," + font + ") format('woff2')}";
+// The same fixed rule the page embeds in exported files, so one hash in the page's policy
+// covers both. scripts/build-page.mjs writes it.
+const fontCss = readFileSync(root("public/assets/fonts/inter-embed.css"), "utf8");
 
 mkdirSync(root("public/assets/sample"), { recursive: true });
 writeFileSync(root("public/assets/sample/kalvenor-wheel.json"), JSON.stringify(data, null, 2) + "\n");

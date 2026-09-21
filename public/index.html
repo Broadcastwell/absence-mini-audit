@@ -683,14 +683,12 @@
   // Images, drawn in the browser. Inter is embedded so a saved file draws the same anywhere.
   function slug(text) { return String(text || 'result').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'result'; }
   function save(blob, name) { var url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); window.setTimeout(function () { URL.revokeObjectURL(url); }, 4000); }
-  // The saved file embeds the page's own Inter face: the rule this page's stylesheet
-  // declares for the latin subset, with its address swapped for the font's bytes.
+  // The saved file embeds Inter so it draws the same anywhere. The rule is one fixed file,
+  // allowed by its hash in the page's policy, because some browsers hold an image's own
+  // stylesheet to the page's policy.
   function font() {
     if (fontCss !== null) return Promise.resolve(fontCss);
-    var rule = null;
-    try { Array.prototype.forEach.call(document.styleSheets, function (sheet) { Array.prototype.forEach.call(sheet.cssRules, function (item) { if (!rule && item.type === 5 && item.cssText.indexOf('inter-latin-var.woff2') !== -1) rule = item; }); }); } catch (_) { rule = null; }
-    if (!rule) { fontCss = ''; return Promise.resolve(''); }
-    return fetch('/assets/fonts/inter-latin-var.woff2').then(function (response) { return response.arrayBuffer(); }).then(function (buffer) { var bytes = new Uint8Array(buffer), text = ''; for (var i = 0; i < bytes.length; i += 8192) text += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)); fontCss = rule.cssText.replace(/url([^)]*)/, 'url(data:font/woff2;base64,' + btoa(text) + ')'); return fontCss; }).catch(function () { fontCss = ''; return ''; });
+    return fetch('/assets/fonts/inter-embed.css').then(function (response) { if (!response.ok) throw new Error('font'); return response.text(); }).then(function (text) { fontCss = text; return text; }).catch(function () { fontCss = ''; return ''; });
   }
   Array.prototype.forEach.call(document.querySelectorAll('[data-export]'), function (button) {
     button.addEventListener('click', function () {

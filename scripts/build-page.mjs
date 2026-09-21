@@ -9,7 +9,10 @@
  *    with one hashed script, and the module file stays the portable copy other surfaces load.
  * 2. Recomputes the sha256 hashes of the inline script and the inline style block and
  *    writes them into the Content-Security-Policy line in public/_headers.
- * 3. Writes lib/headers.js from the "/*" block of public/_headers, so a page served by a
+ * 3. Writes public/assets/fonts/inter-embed.css, the one font rule exported images embed,
+ *    and adds its hash to style-src: some browsers hold an SVG image's own stylesheet to the
+ *    page's policy, and the hash allows exactly that rule and nothing else.
+ * 4. Writes lib/headers.js from the "/*" block of public/_headers, so a page served by a
  *    function (a result link) carries exactly the headers a static page does.
  *
  * `npm test` fails if any of the three has drifted, so a forgotten run cannot ship.
@@ -38,9 +41,12 @@ function inline(tag) {
 }
 const hash = (text) => "'sha256-" + createHash("sha256").update(text, "utf8").digest("base64") + "'";
 
+const face = "@font-face{font-family:Inter;font-style:normal;font-weight:400 800;src:url(data:font/woff2;base64," + readFileSync(path("public/assets/fonts/inter-latin-var.woff2")).toString("base64") + ") format('woff2')}";
+writeFileSync(path("public/assets/fonts/inter-embed.css"), face);
+
 let headers = readFileSync(path("public/_headers"), "utf8");
 headers = headers.replace(/script-src '[^']+'/, "script-src " + hash(inline("script")));
-headers = headers.replace(/style-src 'self' '[^']+'/, "style-src 'self' " + hash(inline("style")));
+headers = headers.replace(/style-src 'self' '[^']+'( '[^']+')?/, "style-src 'self' " + hash(inline("style")) + " " + hash(face));
 writeFileSync(path("public/_headers"), headers);
 
 const block = headers.slice(headers.indexOf("/*\n"));

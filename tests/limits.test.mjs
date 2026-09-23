@@ -357,17 +357,18 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   // The dark theme values are the ones the marketing site serves: ground, raised panel, heading, body and muted text.
   const allowedColours = new Set([
     "#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF",
-    "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1"
+    "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1",
+    "#F7F9FC", "#EFF4FB", "#101828", "#475467", "#D5DDE8", "#98A2B3"
   ]);
   const colours = [...copy.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toUpperCase());
   check("public copy uses only the approved blue and neutral palette", colours.every((colour) => allowedColours.has(colour)), colours.join(","));
 }
 
-// The audit tool sits on the dark token set, and its copy carries the offer the site publishes today.
+// The audit tool uses the shared light reading surface and the published offers.
 {
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
-  check("the page ground and body text are the dark tokens", /--ground:\s*#0A0A0B/i.test(page) && /--ink:\s*#F8FAFC/i.test(page) && /--body:\s*#CBD5E1/i.test(page), "token scan");
-  check("no light ground survives on the page", !/background:\s*#FFFFFF/i.test(page) && !/--paper:/i.test(page), "light ground scan");
+  check("the page uses the shared light surface and readable ink", /--bw-canvas:\s*#F7F9FC/i.test(page) && /--bw-ink:\s*#101828/i.test(page) && /--bw-muted:\s*#475467/i.test(page), "token scan");
+  check("the page aliases the shared surface tokens", /--ground:\s*var\(--bw-canvas\)/.test(page) && /--body:\s*var\(--bw-muted\)/.test(page), "shared tokens");
   check("the running state states the wait", page.includes("Running. Usually under a minute."), "running copy");
   check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
@@ -386,8 +387,8 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     && head.includes('href="https://broadcastwell.com/pricing">Pricing<')
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
     && head.includes('class="pill" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">$490 Audit<'), "header shell");
-  check("the header pill is outlined, so the result's $490 button is the one filled purchase control",
-    /\.pill \{[^}]*background: transparent;/.test(page) && !/\.pill \{[^}]*background: var\(--blue\)/.test(page) && (pageBody.match(/class="cta cta-filled"/g) || []).length === 1, "pill outline");
+  check("the header repeats the filled $490 purchase control",
+    /\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400"'), "primary offer");
   check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
@@ -474,7 +475,7 @@ let failed = 0;
   check("a run that never answers still ends in a stated outcome", page.includes("WAIT_MS") && page.includes("refuse('unavailable'); }, WAIT_MS)"), "late run");
   check("the page reads the reason word the handler sends", page.includes("outcome.data && outcome.data.reason"), "reason wiring");
 
-  check("the content column matches the site at 1152", (page.match(/min\(1152px, calc\(100% - 48px\)\)/g) || []).length === 1 && !/1120px/.test(page), "container width");
+  check("the content column matches the shared 1200px container", /\.container\s*\{[^}]*max-width:1200px;[^}]*padding-inline:var\(--bw-gutter\)/.test(page), "container width");
 
   const scriptTags = [...page.matchAll(/<script([^>]*)>/g)].map((match) => match[1].trim());
   check("every script tag is either the one hashed page script or a structured data block",
@@ -561,7 +562,8 @@ let failed = 0;
   check("the buy path leads with what the $490 adds", /The \$490 Category Audit adds what this result leaves out: ten questions on five engines, three measured runs each, the sources behind every answer, and three prioritised fixes within 48 hours\./.test(buy), "buy sentence");
   check("the buy path is the filled $490, the outlined $990 and the sample link, in that order",
     /<a class="cta cta-filled" href="https:\/\/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400">Start with the \$490 Category Audit<\/a><a class="cta cta-outline" href="https:\/\/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401">Get the Diagnostic, \$990<\/a><\/div><p class="flush"><a href="https:\/\/app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
-  check("the $490 in the result is the only filled button in the page body", (pageBody.match(/cta-filled/g) || []).length === 1 && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled");
+  const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
+  check("every filled purchase button is the $490 Category Audit", filledOffers.length === 2 && filledOffers.every(match => match[1] === 'https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one primary kind");
   check("the submit is filled before a result and steps down once one is shown",
     /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
     && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");

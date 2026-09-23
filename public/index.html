@@ -6,7 +6,7 @@
 <title>Free AI visibility check for B2B software: Free 10-question check (one engine) | Broadcastwell</title>
 <meta name="description" content="Type your website and see whether Perplexity names your company in ten buyer questions, drawn as one shortlist wheel. Free, no email needed, about 25 seconds.">
 <meta name="robots" content="index, follow">
-<meta name="theme-color" content="#0A0A0B">
+<meta name="theme-color" content="#F7F9FC">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Broadcastwell">
 <meta property="og:url" content="https://audit.broadcastwell.com/">
@@ -31,20 +31,22 @@
      the portal serves, byte identical to its copies, SIL Open Font License 1.1. */
   @font-face{font-family:Inter;font-style:normal;font-weight:400 800;font-display:swap;src:url(/assets/fonts/inter-latin-ext-var.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
   @font-face{font-family:Inter;font-style:normal;font-weight:400 800;font-display:swap;src:url(/assets/fonts/inter-latin-var.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+/* Broadcastwell design system 2.0.0, 23 September 2026. */
+:root {
+ --bw-canvas:#F7F9FC; --bw-surface:#FFFFFF; --bw-subtle:#EFF4FB;
+ --bw-ink:#101828; --bw-muted:#475467; --bw-border:#D5DDE8;
+ --bw-accent:#1D4ED8; --bw-decoration:#3B82F6;
+ --bw-container:1200px; --bw-gutter:40px; --bw-gap:24px;
+ --bw-card-radius:16px; --bw-control-radius:10px; --bw-header:72px;
+}
+@media(max-width:1024px){:root{--bw-gutter:32px;--bw-gap:20px}}
+@media(max-width:810px){:root{--bw-gutter:28px}}
+@media(max-width:640px){:root{--bw-gutter:20px;--bw-gap:16px;--bw-header:64px}}
   :root {
-    --ground: #0A0A0B;
-    --raised: #0A0E1A;
-    --ink: #F8FAFC;
-    --body: #CBD5E1;
-    --muted: #94A3B8;
-    --line: rgba(203, 213, 225, .16);
-    --line-strong: rgba(203, 213, 225, .30);
-    --blue: #1D4ED8;
-    --blue-hover: #1E40AF;
-    --rule: #3B82F6;
-    --pale: #BFDBFE;
-    --tint: rgba(59, 130, 246, .10);
-    --field: rgba(255, 255, 255, .055);
+    --ground:var(--bw-canvas); --raised:var(--bw-surface); --ink:var(--bw-ink);
+    --body:var(--bw-muted); --muted:var(--bw-muted); --line:var(--bw-border);
+    --line-strong:#98A2B3; --blue:#1D4ED8; --blue-hover:#1E40AF;
+    --rule:#3B82F6; --pale:#1D4ED8; --tint:#EFF4FB; --field:#FFFFFF;
   }
   * { box-sizing: border-box; }
   html { background: var(--ground); }
@@ -206,6 +208,40 @@
      Content-Security-Policy hash, so keeping them would have meant allowing
      unsafe-inline for the whole document. */
   .flush { margin: 0; }
+
+  /* Shared geometry, readable results and restrained component treatment. */
+  html{scroll-padding-top:96px}
+  [id]{scroll-margin-top:96px}
+  body{font-size:16px;line-height:1.65}
+  a{color:var(--blue)}
+  .container{width:100%;max-width:1200px;padding-inline:var(--bw-gutter)}
+  .site-header{height:var(--bw-header);background:var(--raised)}
+  .site-nav a,.wordmark{color:var(--ink)}
+  .menu-panel{top:calc(var(--bw-header) - 1px);box-shadow:0 8px 32px rgb(16 24 40 / 8%)}
+  .page{padding-block:72px 96px}
+  .audit-grid{gap:0 48px}
+  .audit-grid>*{min-width:0}
+  h1{font-size:clamp(36px,4vw,56px);font-weight:600;line-height:1.12;max-width:20ch;text-wrap:balance}
+  h2{font-size:28px;font-weight:600;line-height:1.25}
+  .lede{font-size:19px;line-height:1.6}
+  .eyebrow{color:var(--blue);font-weight:600}
+  .card{border-radius:24px;box-shadow:0 1px 3px rgb(16 24 40 / 4%)}
+  .facts li,.question-list li,.read,.message,.progress{border-radius:12px}
+  input,.primary,.cta,.outline-button,.small-button,.pill,.menu summary{border-radius:10px}
+  .primary{font-weight:600}
+  .sample-figure img,.beside img{border-radius:16px}
+  .wheel{background:#0A0A0B;border-radius:16px}
+  .wheel-node:focus-visible circle:last-child,.wheel-node:hover circle:last-child{stroke:#F8FAFC}
+  .wheel-key{gap:12px 20px}
+  .footer-list a{overflow-wrap:anywhere}
+  .footer-columns>*{min-width:0}
+  .pill{background:var(--blue);border-color:var(--blue);color:#fff}
+  .pill:hover{background:var(--blue-hover);color:#fff}
+  .site-footer{padding-block:48px}
+  @media(max-width:1024px){.audit-grid{gap:32px}.footer-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:810px){.audit-grid{display:block}.form-column{margin-top:32px}.page{padding-block:48px 64px}.card{padding:24px}.intro,.detail,.form-column{grid-column:auto;grid-row:auto}}
+  @media(max-width:640px){.container{width:100%;padding-inline:20px}.card{padding:20px;border-radius:16px}.footer-columns{grid-template-columns:1fr}.wordmark{font-size:16px}.site-header .container{gap:8px}.pill,.menu summary{padding-inline:10px}}
+
 </style>
 </head>
 <body>
@@ -226,7 +262,7 @@
     <section class="left-section" aria-labelledby="method-title"><h2 id="method-title">A fixed public method</h2><p>The questions come from the published bank in <a href="https://docs.broadcastwell.com/question-bank/">Appendix A of The Absence Manual</a>: three best of, three alternatives, two comparison, one evaluation and one use case. Answers are classified with the rules in <a href="https://docs.broadcastwell.com/absence-rules/">Appendix B</a>.</p><ul class="facts" aria-label="Check facts"><li><strong>10</strong><span>Buyer questions</span></li><li><strong>1</strong><span>Named engine: Perplexity</span></li><li><strong>4</strong><span>Published ladder positions</span></li><li><strong>Free</strong><span>About 25 seconds, no email</span></li></ul></section>
     <section class="left-section" aria-labelledby="privacy-title"><h2 id="privacy-title">No email needed</h2><p>The check runs from your website, your company name and your category. Its daily limits are counted per network and for the whole site, so no address is asked for. We read your public pages only to propose the name and category, and keep nothing we read. If you ask for the result by email, your address is used for that reply and nothing else. We keep it for 24 months and then delete it. No call, no sales sequence.</p></section>
     <section class="left-section faq" aria-labelledby="faq-title"><h2 id="faq-title">Questions about the Free 10-question check</h2><details><summary>What does the Free 10-question check (one engine) measure?</summary><p>Whether Perplexity names your company when a buyer asks ten shortlist questions in your category: three best of, three alternatives, two comparison, one evaluation and one use case. Each answer is marked named or not named, and the count places you on the published absence ladder.</p></details><details><summary>Is it free, and do I need an email?</summary><p>It is free. No email is needed; runs are limited per network and per day, and by the site's daily allowance.</p></details><details id="how-we-read-your-site"><summary>Why do you read my website?</summary><p>To propose your company name and your category in a buyer's words, so the only thing you type is your address. We read your homepage and at most two more public pages, with a user agent that names Broadcastwell, and keep nothing we read. Nothing runs until you confirm.</p></details><details><summary>How is it different from the $490 Category Audit?</summary><p>The Category Audit is ten questions, five engines, three runs: 150 scheduled observed answers and three prioritised fixes. Findings within 48 hours of the category being confirmed. It also shows who is named instead of you and the sources visible in those answers.</p></details><details><summary>Does one run tell me where I stand?</summary><p>It is one run on one engine, and answers vary between runs. That is why the paid measurements ask every question three times on every engine and report the disagreement.</p></details><details><summary>What does a result link keep, and for how long?</summary><p>Only what the wheel shows: your company name, website, category, the ten questions and their marks. No email and nothing about you. It is kept for 30 days and then deleted.</p></details></section>
-    <section class="left-section" aria-labelledby="diagnostic-title"><h2 id="diagnostic-title">Need a full measurement?</h2><p>The AI Visibility Diagnostic. 35 buyer questions across shortlist, role, use case and evaluation groups on the same five engines, three scheduled runs per question and engine pair, 525 scheduled observed answers, plus up to two adaptive runs per cell when verdicts disagree. AI answers vary. Findings report every rate with its numerator, denominator and a 95 percent confidence interval, competitor and source analysis, a receipts appendix, and a prioritised evidence, content and distribution plan. $990 once, credited in full against the program's first monthly invoice.</p><div class="buy-actions"><a class="cta cta-outline" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">Start with the $490 Category Audit</a><a class="cta cta-outline" href="https://buy.stripe.com/4gM7sMgDOdmYbi93grds401">Get the Diagnostic, $990</a></div><p class="small">The Category Audit is one category, ten buyer questions, five engines and three measured runs, with findings within 48 hours of category confirmation, and its full $490 credits against the Diagnostic within 30 days. <a href="https://broadcastwell.com/pricing">The published price ladder</a>.</p></section>
+    <section class="left-section" aria-labelledby="diagnostic-title"><h2 id="diagnostic-title">Need a full measurement?</h2><p>The AI Visibility Diagnostic. 35 buyer questions across shortlist, role, use case and evaluation groups on the same five engines, three scheduled runs per question and engine pair, 525 scheduled observed answers, plus up to two adaptive runs per cell when verdicts disagree. AI answers vary. Findings report every rate with its numerator, denominator and a 95 percent confidence interval, competitor and source analysis, a receipts appendix, and a prioritised evidence, content and distribution plan. $990 once, credited in full against the program's first monthly invoice.</p><div class="buy-actions"><a class="cta cta-filled" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">Start with the $490 Category Audit</a><a class="cta cta-outline" href="https://buy.stripe.com/4gM7sMgDOdmYbi93grds401">Get the Diagnostic, $990</a></div><p class="small">The Category Audit is one category, ten buyer questions, five engines and three measured runs, with findings within 48 hours of category confirmation, and its full $490 credits against the Diagnostic within 30 days. <a href="https://broadcastwell.com/pricing">The published price ladder</a>.</p></section>
   </section>
   </div></main>
 <footer class="site-footer"><div class="container"><p>Broadcastwell ran the measurement behind The Absence Manual and sells services in the category it measures. Broadcastwell is excluded from its own sample and from every ranking. The raw data and the analysis code are public.</p><nav class="footer-columns" aria-label="Broadcastwell footer"><div><h2 class="footer-heading" id="footer-col-0">Product</h2><ul class="footer-list" aria-labelledby="footer-col-0"><li><a href="https://broadcastwell.com/pricing">Category Audit</a></li><li><a href="https://broadcastwell.com/ai-visibility-audit">AI Visibility Diagnostic</a></li><li><a href="https://broadcastwell.com/pricing#monthly">The program</a></li><li><a href="https://broadcastwell.com/for-agencies">For agencies</a></li><li><a href="https://broadcastwell.com/partners">Partner Network</a></li><li><a href="https://audit.broadcastwell.com">Free 10-question check (one engine)</a></li><li><a href="https://app.broadcastwell.com/sample">Sample account</a></li><li><a href="https://app.broadcastwell.com/signin">Sign in or create a free account</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-1">Research</h2><ul class="footer-list" aria-labelledby="footer-col-1"><li><a href="https://broadcastwell.com/state-of-geo">The 2026 State of GEO</a></li><li><a href="https://index.broadcastwell.com/">The Absence Index</a></li><li><a href="https://docs.broadcastwell.com/">The Absence Manual</a></li><li><a href="https://docs.broadcastwell.com/absence-manual.pdf">The Absence Manual (PDF)</a></li><li><a href="https://broadcastwell.com/engine-divergence">Engine divergence</a></li><li><a href="https://broadcastwell.com/absence-ladder">The Absence Ladder</a></li><li><a href="https://broadcastwell.com/methodology">Methodology</a></li><li><a href="https://broadcastwell.com/insights">Insights</a></li><li><a href="https://broadcastwell.com/best-geo-agencies">Agency comparisons</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-2">Company</h2><ul class="footer-list" aria-labelledby="footer-col-2"><li><a href="https://broadcastwell.com/about">About</a></li><li><a href="https://broadcastwell.com/company-facts">Company facts</a></li><li><a href="https://broadcastwell.com/careers">Careers</a></li><li><a href="https://broadcastwell.com/security">Security and data handling</a></li><li><a href="https://broadcastwell.com/faq">Questions and answers</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-3">Contact</h2><ul class="footer-list" aria-labelledby="footer-col-3"><li><a href="tel:+18123457272">(812) 345-7272</a></li><li><a href="mailto:hello@broadcastwell.com?subject=Broadcastwell%20enquiry">hello@broadcastwell.com</a></li><li><a href="https://broadcastwell.com/contact">Contact page</a></li><li><a href="https://www.linkedin.com/company/broadcastwell">LinkedIn</a></li><li><a href="https://broadcastwell.substack.com">Writing</a></li></ul></div></nav><div class="footer-bottom"><p class="flush">Broadcastwell LLC. Indiana, USA. Copyright 2026.</p><ul class="footer-links"><li><a href="https://broadcastwell.com/privacy">Privacy</a></li><li><a href="https://broadcastwell.com/terms">Terms</a></li><li><a href="https://broadcastwell.com/cookies">Cookies</a></li></ul></div></div></footer>

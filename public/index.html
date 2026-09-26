@@ -272,6 +272,15 @@
   .status{display:inline-flex;align-items:center;align-self:start;justify-self:start;padding:2px 10px;border:1px solid #D5DDE8;border-radius:999px;background:#F7F9FC;color:#475467;font-size:13px;font-weight:600;line-height:20px}
   .status-named{border-color:#BFDBFE;background:#EFF4FB;color:#1D4ED8}
   .status-not-itemised{border-style:dashed;background:#FFFFFF}
+  /* Ask the engine yourself: one label above the rows, then three text links under each
+     question. The page builds them only when a result is drawn. Each link is a 40 px tap
+     target with a hover state and a 2 px focus ring. */
+  .ask-label{margin:16px 0 0;color:var(--muted);font-size:14px}
+  .ask-label+.question-list{margin-top:12px}
+  .q-ask{display:flex;flex-wrap:wrap;gap:4px 8px;margin:6px 0 0 -8px}
+  .q-ask a{display:inline-flex;align-items:center;min-height:40px;padding:0 8px;border-radius:8px;color:var(--blue);font-size:14px;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em;transition:background-color 150ms ease,color 150ms ease}
+  .q-ask a:hover{background:var(--tint);color:var(--blue-hover);text-decoration-thickness:2px}
+  .q-ask a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   #link-create{margin-top:12px}
   @media(max-width:560px){.export-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.export-actions .small-button,#link-create{width:100%}.export-actions .small-button{padding-inline:8px}}
   @media(max-width:374px){.pill{padding-inline:8px;font-size:12px}.wordmark{font-size:15px}}
@@ -737,12 +746,27 @@
     if (urls.length) { var cited = para('q-sources', 'Cited: '); urls.forEach(function (url) { var a = document.createElement('a'); a.href = url.toString(); a.rel = 'nofollow noopener noreferrer'; a.target = '_blank'; a.textContent = shortUrl(url); cited.appendChild(a); }); box.appendChild(cited); }
     return box.childNodes.length ? box : null;
   }
+  // Ask the engine yourself: under each question, three plain links that open ChatGPT,
+  // Perplexity and Claude with the exact question text. Built with DOM calls only, and only
+  // when a result is drawn. Nothing is requested until the visitor opens one.
+  var ASK_LABEL = 'Ask the engine yourself; answers vary by run.';
+  var ASK_ENGINES = [['ChatGPT', 'https://chatgpt.com/?q='], ['Perplexity', 'https://www.perplexity.ai/search?q='], ['Claude', 'https://claude.ai/new?q=']];
+  function askLinks(question, number) {
+    var box = document.createElement('div'); box.className = 'q-ask'; box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Ask question ' + number + ' yourself');
+    ASK_ENGINES.forEach(function (engine) {
+      var a = document.createElement('a'); a.setAttribute('href', engine[1] + encodeURIComponent(question)); a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer');
+      a.setAttribute('aria-label', 'Ask ' + engine[0] + ' question ' + number + ', opens in a new tab'); a.textContent = engine[0]; box.appendChild(a);
+    });
+    return box;
+  }
   function renderQuestions(questions) {
     var block = document.getElementById('question-block'), list = document.getElementById('question-results'); list.innerHTML = '';
     var rows = Array.isArray(questions) ? questions.filter(function (row) { return row && row.question && row.status; }) : [];
     var note = document.getElementById('question-note'), receiptNote = document.getElementById('receipt-note');
     if (rows.length !== 10) { block.classList.add('hidden'); return; }
     note.classList.toggle('hidden', !rows.some(function (row) { return row.status === 'not itemised'; }));
+    var askLabel = document.getElementById('ask-label');
+    if (!askLabel) { askLabel = para('ask-label', ASK_LABEL); askLabel.setAttribute('id', 'ask-label'); list.parentNode.insertBefore(askLabel, list); }
     var receipts = 0;
     rows.forEach(function (row, index) {
       var item = document.createElement('li'), main = document.createElement('div'), question = document.createElement('span'), type = document.createElement('span'), status = document.createElement('span');
@@ -750,6 +774,7 @@
       status.className = 'status status-' + row.status.replace(/\s+/g, '-'); status.textContent = row.status.charAt(0).toUpperCase() + row.status.slice(1);
       main.appendChild(question); main.appendChild(status); item.appendChild(main);
       var receipt = receiptOf(row); if (receipt) { receipts += 1; item.appendChild(receipt); }
+      item.appendChild(askLinks(row.question, index + 1));
       list.appendChild(item);
     });
     receiptNote.classList.toggle('hidden', receipts > 0);

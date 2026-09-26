@@ -13,6 +13,7 @@ import { PAGE_HEADERS } from "../lib/headers.js";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const results = [];
 function check(name, condition, detail) {
@@ -264,6 +265,155 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the FAQ on the page matches the FAQ in the structured data", faq.mainEntity.every((q) => main.includes("<summary>" + q.name.replace(/&/g, "&amp;") + "</summary>")), "faq match");
   check("the page title says what a searcher wants and never audit", /<title>Free AI visibility check[^<]*<\/title>/.test(PAGE) && !/<title>[^<]*[Aa]udit/.test(PAGE), (/<title>[^<]*<\/title>/.exec(PAGE) || [""])[0]);
   check("Kalvenor is labelled SAMPLE DATA wherever it is shown", (main.match(/Kalvenor/g) || []).length > 0 && main.split("Kalvenor").slice(1).every((after) => /SAMPLE DATA/.test(after.slice(0, 260))), "sample label");
+}
+
+// Ask the engine yourself: the page's own script, run in Node against a small fake DOM, so
+// what is checked is what a browser builds. Elements named in the markup are made on first
+// lookup; an element the script creates is found by id only once it is in the tree.
+function fakePage(options) {
+  const opts = options || {};
+  const markupIds = new Set([...PAGE.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+  const byId = new Map();
+  const requests = [];
+  class Text { constructor(text) { this.nodeType = 3; this.parentNode = null; this.data = String(text); } get textContent() { return this.data; } }
+  class El {
+    constructor(tag) {
+      this.nodeType = 1; this.tagName = String(tag).toUpperCase(); this.childNodes = []; this.parentNode = null; this.attrs = new Map(); this.listeners = {}; this.value = ""; this.clientWidth = 600; this.html = "";
+      const names = () => new Set(this.className.split(/\s+/).filter(Boolean));
+      const store = (set) => { this.className = [...set].join(" "); };
+      this.classList = {
+        add: (...c) => { const s = names(); c.forEach((x) => s.add(x)); store(s); },
+        remove: (...c) => { const s = names(); c.forEach((x) => s.delete(x)); store(s); },
+        toggle: (c, force) => { const s = names(); const on = force === undefined ? !s.has(c) : !!force; if (on) s.add(c); else s.delete(c); store(s); return on; },
+        contains: (c) => names().has(c),
+      };
+    }
+    get className() { return this.attrs.get("class") || ""; }
+    set className(v) { this.attrs.set("class", String(v)); }
+    setAttribute(name, value) { this.attrs.set(name, String(value)); if (name === "id") byId.set(String(value), this); }
+    getAttribute(name) { return this.attrs.has(name) ? this.attrs.get(name) : null; }
+    removeAttribute(name) { this.attrs.delete(name); }
+    appendChild(child) { if (child.parentNode) child.parentNode.removeChild(child); child.parentNode = this; this.childNodes.push(child); return child; }
+    insertBefore(child, ref) {
+      if (!ref) return this.appendChild(child);
+      if (this.childNodes.indexOf(ref) < 0) throw new Error("insertBefore: the reference is not a child");
+      if (child.parentNode) child.parentNode.removeChild(child);
+      child.parentNode = this; this.childNodes.splice(this.childNodes.indexOf(ref), 0, child); return child;
+    }
+    removeChild(child) { const at = this.childNodes.indexOf(child); if (at >= 0) this.childNodes.splice(at, 1); child.parentNode = null; return child; }
+    remove() { if (this.parentNode) this.parentNode.removeChild(this); }
+    get children() { return this.childNodes.filter((n) => n.nodeType === 1); }
+    get textContent() { return this.childNodes.map((n) => n.textContent).join(""); }
+    set textContent(v) { this.childNodes.forEach((n) => { n.parentNode = null; }); this.childNodes = []; if (String(v)) this.appendChild(new Text(v)); }
+    get innerHTML() { return this.html; }
+    set innerHTML(v) { this.childNodes.forEach((n) => { n.parentNode = null; }); this.childNodes = []; this.html = String(v); }
+    addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
+    focus() {} scrollIntoView() {} select() {} click() {}
+    querySelector() { return null; }
+    querySelectorAll() { return []; }
+    closest() { return null; }
+    all() { const out = []; const walk = (n) => n.childNodes.forEach((c) => { if (c.nodeType === 1) { out.push(c); walk(c); } }); walk(this); return out; }
+  }
+  const body = new El("body");
+  const connected = (el) => { let n = el; while (n.parentNode) n = n.parentNode; return n === body; };
+  const make = (id, tag) => { const el = new El(tag || "div"); el.setAttribute("id", id); body.appendChild(el); return el; };
+  // The result block as the markup nests it, so the label can be placed above the list.
+  const questionBlock = make("question-block"); const questionList = new El("ul"); questionList.setAttribute("id", "question-results"); questionBlock.appendChild(questionList);
+  const document = {
+    body,
+    createElement: (tag) => new El(tag),
+    createTextNode: (text) => new Text(text),
+    getElementById(id) {
+      const known = byId.get(id);
+      if (known && connected(known)) return known;
+      if (id === "shared-result") { if (!opts.shared) return null; const el = make(id, "script"); el.textContent = JSON.stringify(opts.shared); return el; }
+      return markupIds.has(id) ? make(id) : null;
+    },
+    querySelector: () => new El("div"),
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  const timers = { next: 1 };
+  const storage = new Map();
+  const context = {
+    document,
+    location: { search: opts.search || "", origin: "https://audit.broadcastwell.com", href: "https://audit.broadcastwell.com/" },
+    navigator: { sendBeacon: (url) => { requests.push("beacon " + url); return true; } },
+    fetch: async (url, init) => { requests.push("fetch " + url); return opts.respond(String(url), init); },
+    URL, URLSearchParams, Response, Blob, console,
+    setTimeout: () => timers.next++, clearTimeout() {}, setInterval: () => timers.next++, clearInterval() {},
+    matchMedia: () => ({ matches: false }),
+    addEventListener() {},
+    localStorage: { getItem: (k) => (storage.has(k) ? storage.get(k) : null), setItem: (k, v) => storage.set(k, String(v)) },
+  };
+  context.window = context;
+  vm.createContext(context);
+  const script = PAGE.slice(PAGE.indexOf("<script>") + 8, PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  vm.runInContext(script, context);
+  const submit = () => (document.getElementById("form").listeners.submit || []).forEach((fn) => fn({ preventDefault() {} }));
+  const settle = async () => { for (let i = 0; i < 20; i++) await new Promise((resolve) => setImmediate(resolve)); };
+  const askGroups = () => body.all().filter((el) => el.className === "q-ask" && connected(el));
+  const askAnchors = () => body.all().filter((el) => el.tagName === "A" && /^https:\/\/(chatgpt\.com|www\.perplexity\.ai|claude\.ai)\//.test(el.getAttribute("href") || ""));
+  return { document, body, requests, submit, settle, askGroups, askAnchors, questionList, questionBlock };
+}
+
+{
+  const TRICKY = "Which is better for a 40-person team, Acme or Beta? Pricing & support, compared";
+  const QUESTIONS = [TRICKY, "What is the best field service management software?", "C++ & C# tools: which, and why? 100% sure #1", "Qu'est-ce que le meilleur logiciel, s'il vous plaît?"].concat(Array.from({ length: 6 }, (_, i) => "Buyer question " + (i + 5) + " for field service management software?"));
+  const RESULT = { named: 3, asked: 10, tier: "named 1 to 3", chapter: "/category-door/", engine: "Perplexity", measured_on: "2026-09-26", questions: QUESTIONS.map((question, i) => ({ question, status: i < 3 ? "named" : "not named" })) };
+  const FOUND = { found: true, website: "acmefield.com", brand: "Acme Field", category: "field service management software", alternatives: [] };
+  const respond = (url) => {
+    if (url === "/api/analyze") return new Response(JSON.stringify(FOUND), { status: 200, headers: { "content-type": "application/json" } });
+    if (url === "/api/run") return new Response(JSON.stringify(RESULT), { status: 200, headers: { "content-type": "application/json", "x-result-seal": "test-seal" } });
+    return new Response("{}", { status: 404 });
+  };
+  const ENGINE_BASES = ["https://chatgpt.com/", "https://www.perplexity.ai/search", "https://claude.ai/new"];
+  const LABEL = "Ask the engine yourself; answers vary by run.";
+
+  // Before a result: nothing built, nothing requested.
+  const idle = fakePage({ respond });
+  await idle.settle();
+  check("no ask link and no ask label exist before a result", idle.askAnchors().length === 0 && idle.askGroups().length === 0 && idle.document.getElementById("ask-label") === null && !idle.body.all().some((el) => el.textContent === LABEL), String(idle.askAnchors().length));
+  check("loading the page makes no request at all", idle.requests.length === 0, idle.requests.join(","));
+  const markup = PAGE.slice(0, PAGE.indexOf("<script>")) + PAGE.slice(PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  check("the markup carries no engine link and no ask label; only the script can build them", !/chatgpt\.com|perplexity\.ai\/search|claude\.ai\/new/.test(markup) && !markup.includes(LABEL), "markup");
+
+  // A result from the run path, with the fetch stubbed: website read, confirm, run.
+  const page = fakePage({ respond });
+  page.document.getElementById("company").value = "acmefield.com";
+  page.submit(); await page.settle();
+  const beforeRun = page.askAnchors().length;
+  page.submit(); await page.settle();
+  const rows = page.questionList.children;
+  const groups = rows.map((li) => li.children.filter((el) => el.className === "q-ask"));
+  check("confirming the category alone builds no ask link", beforeRun === 0, String(beforeRun));
+  check("a result renders ten rows, each with one group of three ask links", rows.length === 10 && groups.every((g) => g.length === 1 && g[0].children.length === 3 && g[0].children.every((a) => a.tagName === "A")), rows.length + " rows");
+  check("the three links read ChatGPT, Perplexity and Claude, in that order", groups.every((g) => g[0].children.map((a) => a.textContent).join(",") === "ChatGPT,Perplexity,Claude"), groups[0] && groups[0][0].children.map((a) => a.textContent).join(","));
+  const label = page.document.getElementById("ask-label");
+  check("one label, above the first row", label && label.textContent === LABEL && label.parentNode === page.questionBlock && label.parentNode.childNodes.indexOf(label) === label.parentNode.childNodes.indexOf(page.questionList) - 1 && page.body.all().filter((el) => el.textContent === LABEL).length === 1, label ? label.textContent : "missing");
+  const roundTrip = rows.every((li, i) => li.children.find((el) => el.className === "q-ask").children.every((a, n) => {
+    const url = new URL(a.getAttribute("href"));
+    return (url.origin + url.pathname) === ENGINE_BASES[n] && [...url.searchParams.keys()].join(",") === "q" && url.searchParams.get("q") === QUESTIONS[i];
+  }));
+  check("every href carries the exact question text through URLSearchParams, including ?, & and ,", roundTrip, rows[0] && rows[0].children.find((el) => el.className === "q-ask").children[0].getAttribute("href"));
+  check("the question with ?, & and , is encoded, not split", rows[0].children.find((el) => el.className === "q-ask").children.every((a) => a.getAttribute("href").endsWith("=" + encodeURIComponent(TRICKY)) && !/[?&,]/.test(a.getAttribute("href").split("?q=")[1])), "encoding");
+  check("every ask link opens in a new tab with rel noopener noreferrer", page.askAnchors().length === 30 && page.askAnchors().every((a) => a.getAttribute("target") === "_blank" && a.getAttribute("rel") === "noopener noreferrer"), String(page.askAnchors().length));
+  check("every ask link names its engine and question for screen readers", page.askAnchors().every((a) => /^Ask (ChatGPT|Perplexity|Claude) question (10|[1-9]), opens in a new tab$/.test(a.getAttribute("aria-label")) && a.getAttribute("aria-label").includes(a.textContent)), "aria-label");
+  check("the ask links add no request: the run path made exactly its two", page.requests.filter((r) => r.startsWith("fetch")).join(",") === "fetch /api/analyze,fetch /api/run", page.requests.join(","));
+  page.submit(); await page.settle();
+  check("a second run replaces the links and keeps one label", page.askAnchors().length === 30 && page.body.all().filter((el) => el.textContent === LABEL).length === 1, String(page.askAnchors().length));
+
+  // A result link renders the same links, and still requests nothing on its own.
+  const shared = fakePage({ respond, shared: { id: "a".repeat(32), brand: "Acme Field", category: "field service management software", website: "acmefield.com", result: RESULT, created_on: "2026-09-26", expires_on: "2026-10-26" } });
+  await shared.settle();
+  check("a shared result link renders the ask links too, with no request", shared.askAnchors().length === 30 && shared.document.getElementById("ask-label") !== null && shared.requests.length === 0, shared.askAnchors().length + " / " + shared.requests.join(","));
+
+  // The builder: DOM calls only, no request, nothing on load.
+  const script = PAGE.slice(PAGE.indexOf("<script>"), PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  const builder = script.slice(script.indexOf("function askLinks("), script.indexOf("function renderQuestions("));
+  check("the ask links are built with DOM calls, never innerHTML, and request nothing", builder.length > 200 && /setAttribute\('href', engine\[1\] \+ encodeURIComponent\(question\)\)/.test(builder) && /a\.textContent = engine\[0\]/.test(builder) && !/innerHTML|insertAdjacentHTML|fetch\(|sendBeacon|window\.open/.test(builder), "builder");
+  check("askLinks is called only from the row renderer", (script.match(/askLinks\(/g) || []).length === 2 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script), "calls");
+  check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:2px solid var\(--blue\);outline-offset:2px\}/.test(PAGE), "css");
 }
 
 let failed = 0;

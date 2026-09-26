@@ -24,7 +24,7 @@
     { id: "google_aio", label: "Google AI Overviews" },
     { id: "google_ai_mode", label: "Google AI Mode" }
   ];
-  var C = { ground: "#0A0A0B", raised: "#0A0E1A", ink: "#F8FAFC", body: "#CBD5E1", muted: "#94A3B8", accent: "#1D4ED8", rule: "#3B82F6", pale: "#BFDBFE", faint: "rgba(203,213,225,0.22)", spoke: "rgba(203,213,225,0.12)" };
+  var C = { ground: "#111727", raised: "#0A0E1A", ink: "#F8FAFC", body: "#CBD5E1", muted: "#94A3B8", accent: "#1D4ED8", rule: "#3B82F6", pale: "#BFDBFE", faint: "rgba(255,255,255,0.18)", spoke: "rgba(203,213,225,0.12)" };
   var FONT = "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial, sans-serif";
   var UNMEASURED = "Measured in the $490 Category Audit";
   var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -104,11 +104,12 @@
     return measured.length === 5 ? "Five engines" : measured.length + " engines";
   }
 
-  function statusWord(value) { return value === true ? "Named" : value === false ? "Not named" : "Not itemised"; }
+  function statusWord(value) { return value === true ? "Named" : value === false ? "Not named" : "Not itemized"; }
 
   /**
    * The wheel alone. Options: size (the square's side in px, default 720), idPrefix,
-   * interactive (focusable nodes with labels), x and y (to place it inside a card).
+   * interactive (focusable nodes with labels), x and y (to place it inside a card),
+   * ringLabelSize (engine label size in wheel units, so a page can print it at 12 px).
    */
   function svg(data, options) {
     var o = options || {};
@@ -135,9 +136,9 @@
       var d = "M " + num(a[0]) + " " + num(a[1]) + " A " + num(r * s) + " " + num(r * s) + " 0 1 1 " + num(b[0]) + " " + num(b[1]);
       out.push(engine.measured
         ? '<path d="' + d + '" fill="none" stroke="' + C.rule + '" stroke-opacity="0.6" stroke-width="' + num(1.6 * s) + '"/>'
-        : '<path d="' + d + '" fill="none" stroke="' + C.faint + '" stroke-width="' + num(1 * s) + '" stroke-dasharray="' + num(3 * s) + " " + num(5 * s) + '"/>');
+        : '<path d="' + d + '" fill="none" stroke="' + C.faint + '" stroke-width="' + num(1.2 * s) + '" stroke-dasharray="' + num(3 * s) + " " + num(5 * s) + '"/>');
       var label = ENGINES[k].label;
-      out.push(text(cx, cy - r * s + 4 * s * L, label, { size: num((engine.measured ? 12 : 11) * s * L), weight: engine.measured ? 700 : 500, fill: engine.measured ? C.ink : C.muted, anchor: "middle", cls: "wheel-ring-label" }));
+      out.push(text(cx, cy - r * s + 4 * s * L, label, { size: num(o.ringLabelSize || (engine.measured ? 12 : 11) * s * L), weight: engine.measured ? 700 : 500, fill: engine.measured ? C.ink : C.body, anchor: "middle", cls: "wheel-ring-label" }));
     });
     // Question type arcs outside the outer ring, with their labels.
     var groups = [];
@@ -225,7 +226,7 @@
 
   function legend(x, y, s, data, vertical) {
     var out = [], items = [["filled", "Named"], ["open", "Not named"]];
-    if (data.spokes.some(function (sp) { return data.engines.some(function (e) { return e.measured && sp.named && sp.named[e.id] === null; }); })) items.push(["dashed", "Not itemised"]);
+    if (data.spokes.some(function (sp) { return data.engines.some(function (e) { return e.measured && sp.named && sp.named[e.id] === null; }); })) items.push(["dashed", "Not itemized"]);
     if (data.engines.some(function (e) { return !e.measured; })) items.push(["ring", UNMEASURED]);
     var cx = x;
     items.forEach(function (item, i) {

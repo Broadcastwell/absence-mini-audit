@@ -80,9 +80,9 @@ globalThis.fetch = async () => {
 const PUBLISHED = [
   "Check the category and address and try again.",
   "That does not look like a valid email address.",
-  "You have already run today's check for this address. Read the chapter your result pointed to, or request the AI Visibility Diagnostic.",
+  "You have already run today's check for this address. Read the chapter your result pointed to, or start with the $490 Category Audit.",
   "This network has reached its daily check limit. Try again tomorrow.",
-  "Today's runs are full. Come back after 00:00 UTC, or request the AI Visibility Diagnostic.",
+  "Today's runs are full. Come back after 00:00 UTC, or start with the $490 Category Audit.",
   "We could not complete this run. Your daily check has not been used. Try again in a few minutes, or email hello@broadcastwell.com.",
 ];
 
@@ -358,7 +358,11 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   const allowedColours = new Set([
     "#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF",
     "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1",
-    "#F7F9FC", "#EFF4FB", "#101828", "#475467", "#D5DDE8", "#98A2B3"
+    "#F7F9FC", "#EFF4FB", "#101828", "#475467", "#D5DDE8", "#98A2B3",
+    // The one Paused state every Broadcastwell surface shares: this text on this fill.
+    "#92400E", "#FEF3C7",
+    // The site navy behind the wheel and the card rule of the site (release review, 26 September 2026).
+    "#111727", "#E2E8F0"
   ]);
   const colours = [...copy.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toUpperCase());
   check("public copy uses only the approved blue and neutral palette", colours.every((colour) => allowedColours.has(colour)), colours.join(","));
@@ -369,13 +373,15 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
   check("the page uses the shared light surface and readable ink", /--bw-canvas:\s*#F7F9FC/i.test(page) && /--bw-ink:\s*#101828/i.test(page) && /--bw-muted:\s*#475467/i.test(page), "token scan");
   check("the page aliases the shared surface tokens", /--ground:\s*var\(--bw-canvas\)/.test(page) && /--body:\s*var\(--bw-muted\)/.test(page), "shared tokens");
-  check("the running state states the wait", page.includes("Running. Usually under a minute."), "running copy");
+  check("the running state states the wait", page.includes("Running. It can take up to 55 seconds."), "running copy");
   check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
   check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
   const pageBody = page.slice(page.indexOf("<main"), page.indexOf("</main>"));
-  check("the paid path names the offer in full and points at checkout", /AI Visibility Diagnostic/.test(page) && (pageBody.match(/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401/g) || []).length === 2 && (pageBody.match(/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400/g) || []).length === 2 && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
+  check("the paid path names the offer in full and goes only through the site's /buy switch", /AI Visibility Diagnostic/.test(page) && (pageBody.match(/href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>/g) || []).length === 2 && !/buy\.stripe\.com/.test(page) && !/\/buy\/diagnostic/.test(page) && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
+  check("the Diagnostic is shown Paused, with the shared line and no button of its own", /<span class="paused">Paused<\/span> The Diagnostic reopens after our next Audit delivery\. Start with the \$490 Category Audit; it credits in full within 30 days\./.test(pageBody) && !/Get the Diagnostic/.test(page), "paused");
+  check("no purchase control is a mailto", !/<a [^>]*href="mailto:[^"]*"[^>]*>[^<]*(\$490|\$990|Audit|Diagnostic|availability)/i.test(page), "mailto buy");
   check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
   check("both paid surfaces link to the published price ladder", (pageBody.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
 
@@ -386,9 +392,11 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     head.includes('class="wordmark" href="https://broadcastwell.com"')
     && head.includes('href="https://broadcastwell.com/pricing">Pricing<')
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
-    && head.includes('class="pill" href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400">$490 Audit<'), "header shell");
+    && head.includes('class="pill" href="https://broadcastwell.com/buy/audit" data-buy aria-label="Get the Category Audit, $490"><span class="pill-long">Get the Category Audit, $490</span><span class="pill-short">Get the Audit, $490</span></a>'), "header shell");
+  check("the phone menu is an icon button with a name, as on the main site",
+    /<summary aria-label="Open menu"><svg class="menu-icon"[^>]*aria-hidden="true"/.test(head) && !/<summary>Menu<\/summary>/.test(head) && /setAttribute\('aria-label', siteMenu\.open \? 'Close menu' : 'Open menu'\)/.test(page), "icon menu");
   check("the header repeats the filled $490 purchase control",
-    /\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400"'), "primary offer");
+    /\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "primary offer");
   check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
@@ -547,7 +555,8 @@ let failed = 0;
     && requestTargets.length >= 1 && requestTargets.every((target) => /^'\/(api|assets)\/[a-z0-9/._-]+'$/.test(target)), "no second request: " + requestTargets.join(" "));
 
   const oneEngine = "This check asks ten buyer questions on one engine, Perplexity, once each.";
-  check("the one engine is stated above the form", pageBody.indexOf(oneEngine) !== -1 && pageBody.indexOf(oneEngine) < pageBody.indexOf('<form id="form"'), "above form");
+  // The note sits under the button, so the website field and the button fit the first phone screen.
+  check("the one engine is stated in the form, under the button", pageBody.indexOf(oneEngine) > pageBody.indexOf('<button id="go"') && pageBody.indexOf(oneEngine) < pageBody.indexOf("</form>"), "under the button");
   check("the one engine is stated again in the result", /This result comes from one engine, Perplexity, with one run per question\./.test(resultBlock), "in result");
   const visible = pageBody.replace(/<[^>]+>/g, " ");
   check("the five engines are named once on the page", ["ChatGPT", "Claude", "Google AI Overviews", "Google AI Mode"].every((name) => visible.split(name).length === 2), "engine names");
@@ -556,14 +565,16 @@ let failed = 0;
   const claims = visible.split(/\.\s/).filter((sentence) => /(10-question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit|Diagnostic/.test(sentence));
   check("no sentence gives the free 10-question check more than one engine", claims.length === 0, claims.join(" | "));
 
-  const buyAt = resultBlock.indexOf('class="buy-path"');
-  const buy = resultBlock.slice(buyAt);
-  check("the result ends with the buy path", buyAt !== -1 && !/<(p|ul|div) [^>]*id=/.test(buy), "buy path last");
-  check("the buy path leads with what the $490 adds", /The \$490 Category Audit adds what this result leaves out: ten questions on five engines, three measured runs each, the sources behind every answer, and three prioritised fixes within 48 hours\./.test(buy), "buy sentence");
-  check("the buy path is the filled $490, the outlined $990 and the sample link, in that order",
-    /<a class="cta cta-filled" href="https:\/\/buy\.stripe\.com\/dRm7sM3R23Mo0Dv6sDds400">Start with the \$490 Category Audit<\/a><a class="cta cta-outline" href="https:\/\/buy\.stripe\.com\/4gM7sMgDOdmYbi93grds401">Get the Diagnostic, \$990<\/a><\/div><p class="flush"><a href="https:\/\/app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
+  const fullResult = page.slice(page.indexOf('<section id="result"'), page.indexOf('<section id="email-card"'));
+  const buyAt = fullResult.indexOf('class="buy-path"');
+  const buy = fullResult.slice(buyAt, fullResult.indexOf('id="keep"'));
+  check("the buy path follows the questions and comes before the keep and share block", buyAt > fullResult.indexOf('id="question-block"') && buyAt < fullResult.indexOf('id="keep"'), "buy path place");
+  check("the buy path leads with one engine against five", /<h3 id="buy-title">One engine, one run\. Your buyers use five\.<\/h3>/.test(buy) && /The \$490 Category Audit asks these ten questions on ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode, three measured runs each\./.test(buy), "buy sentence");
+  check("the buy path has one priced button, then the terms and the sample link",
+    /<div class="buy-actions"><a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Run it on all five engines, \$490<\/a><\/div><p class="small flush">Findings within 48 hours of category confirmation\. Refundable in full within 30 days of delivery\. The full \$490 credits against the Diagnostic within 30 days\.<\/p>/.test(buy)
+    && (buy.match(/class="cta /g) || []).length === 1 && /app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
   const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
-  check("every filled purchase button is the $490 Category Audit", filledOffers.length === 2 && filledOffers.every(match => match[1] === 'https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one primary kind");
+  check("every filled purchase button is the $490 Category Audit", filledOffers.length === 2 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one primary kind");
   check("the submit is filled before a result and steps down once one is shown",
     /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
     && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");
@@ -574,7 +585,7 @@ let failed = 0;
   const app = graph.find((node) => node["@type"] === "WebApplication");
   const audit = graph.find((node) => node["@type"] === "Service");
   check("the structured data names the Free 10-question check as a free web application", app && app.name === "Free 10-question check" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
-  check("the structured data carries the $490 offer at its checkout", audit && audit.offers.price === "490" && audit.offers.url === "https://buy.stripe.com/dRm7sM3R23Mo0Dv6sDds400", JSON.stringify(audit || {}).slice(0, 80));
+  check("the structured data carries the $490 offer at the site's /buy switch", audit && audit.offers.price === "490" && audit.offers.url === "https://broadcastwell.com/buy/audit" && audit.offers.availability === "https://schema.org/InStock", JSON.stringify(audit || {}).slice(0, 80));
 }
 
 

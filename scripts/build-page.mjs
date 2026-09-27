@@ -26,8 +26,10 @@ const path = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 const BEGIN = "/* wheel module: begin */";
 const END = "/* wheel module: end */";
 
-let page = readFileSync(path("public/index.html"), "utf8");
-const wheel = readFileSync(path("public/assets/wheel.js"), "utf8").trim();
+// Editors can write CRLF even with .gitattributes. Hash the LF bytes browsers parse.
+const textFile = (p) => readFileSync(path(p), "utf8").replace(/\r\n?/g, "\n");
+let page = textFile("public/index.html");
+const wheel = textFile("public/assets/wheel.js").trim();
 const at = page.indexOf(BEGIN);
 const end = page.indexOf(END);
 if (at < 0 || end < at) throw new Error("the wheel markers are missing from public/index.html");
@@ -44,7 +46,7 @@ const hash = (text) => "'sha256-" + createHash("sha256").update(text, "utf8").di
 const face = "@font-face{font-family:Inter;font-style:normal;font-weight:400 800;src:url(data:font/woff2;base64," + readFileSync(path("public/assets/fonts/inter-latin-var.woff2")).toString("base64") + ") format('woff2')}";
 writeFileSync(path("public/assets/fonts/inter-embed.css"), face);
 
-let headers = readFileSync(path("public/_headers"), "utf8");
+let headers = textFile("public/_headers");
 headers = headers.replace(/script-src '[^']+'/, "script-src " + hash(inline("script")));
 headers = headers.replace(/style-src 'self' '[^']+'( '[^']+')?/, "style-src 'self' " + hash(inline("style")) + " " + hash(face));
 headers = headers.replace(/default-src 'none'; style-src '[^']+'; font-src data:/, "default-src 'none'; style-src " + hash(face) + "; font-src data:");

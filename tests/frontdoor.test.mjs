@@ -254,7 +254,7 @@ const RUN = { category: "field service management software", company: "acmefield
   check("a cited link is only ever http or https, and opens without a referrer", /url\.protocol === 'https:' \|\| url\.protocol === 'http:'/.test(PAGE) && /a\.rel = 'nofollow noopener noreferrer'/.test(PAGE), "cited links");
   check("the link wording says private, not indexed and deletable", /It is private and not indexed by search engines\./.test(PAGE) && /Delete this link/.test(PAGE) && /fetch\('\/api\/unlink'/.test(PAGE), "revocable");
   check("the delete token lives only in this browser's storage, read and written inside try", /try \{ var all = JSON\.parse\(window\.localStorage\.getItem\(TOKENS_KEY\)/.test(PAGE) && (PAGE.match(/window\.localStorage\.setItem/g) || []).length === 2, "storage");
-  check("?domain= fills the website and reads it, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; readSite\(\); \}/.test(PAGE), "domain");
+  check("?domain= fills the website and reads it, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; readSite\(true\); \}/.test(PAGE), "domain");
   check("no Stripe address and no retired $990 button remain", !/buy\.stripe\.com|Get the Diagnostic, \$990|4gM7sMgDOdmYbi93grds401|dRm7sM3R23Mo0Dv6sDds400/.test(PAGE), "stripe");
   check("exports wait for fonts before drawing", /document\.fonts\.ready/.test(PAGE), "fonts");
   check("the wheel respects reduced motion and hides its labels at phone width", /prefers-reduced-motion: reduce/.test(PAGE) && /@media \(max-width: 560px\) \{ \.wheel \.wheel-arc-label, \.wheel \.wheel-ring-label \{ display: none; \}/.test(PAGE), "responsive");

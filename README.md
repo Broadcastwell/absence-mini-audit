@@ -22,7 +22,7 @@ wheel, with the visitor's position on the absence ladder and the chapter of
 | `scripts/build-page.mjs` | Inlines the wheel into the page and recomputes the CSP hashes. Run after editing the page. |
 | `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints. |
 | `scripts/funnel.mjs` | Prints the daily funnel counts with the owner's own Cloudflare sign in. |
-| `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite and the front door suite. `npm test`. |
+| `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite, the front door suite and the frame suite. `npm test`. |
 
 ## The response contract
 
@@ -78,8 +78,29 @@ link first, so the order can start from it) and `prefilled_email`, only when the
 typed an address into the optional email field. The AI Visibility Diagnostic is shown
 Paused, with no button of its own.
 
-A visitor arriving with `?domain=example.com` (the website field on broadcastwell.com) has
-the website filled in and read at once. Reading is free; nothing runs until they confirm.
+A visitor arriving with `?site=example.com` (the find-your-company box on broadcastwell.com)
+or `?domain=example.com` has the website filled in and read at once. Reading is free; nothing
+runs until they confirm.
+
+## The frame
+
+`/embed` is the same page in a compact mode, for the find-your-company box on
+broadcastwell.com: the check alone, full width, with no site header, footer or long sections.
+It serves the same bytes as `/` (`scripts/build-page.mjs` writes `public/embed.html`), so the
+same hashes cover it, and it switches mode by path. Its headers differ in one directive:
+`frame-ancestors` allows broadcastwell.com, its subdomains and Framer's hosts; every other path
+still refuses all framing.
+
+The frame reports its height to the parent page whenever it changes:
+
+```js
+{ type: 'broadcastwell:free-check:height', height: 1490 }
+```
+
+The height is `document.documentElement.getBoundingClientRect().height`, rounded up, so it is
+never floored at the frame's current height. Every link that leaves the check opens in the top
+window, so a checkout never loads inside the frame; links that already open a new tab (the
+receipts and "ask the engine yourself") keep doing so. `tests/embed.test.mjs` holds all of this.
 
 ## Run time
 

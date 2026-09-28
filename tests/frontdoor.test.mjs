@@ -13,6 +13,7 @@ import { PAGE_HEADERS } from "../lib/headers.js";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const results = [];
 function check(name, condition, detail) {
@@ -27,6 +28,7 @@ function fakeKV(seed = {}) {
     store, ttl,
     async get(key, type) { const raw = store.get(key); if (raw === undefined) return null; return type === "json" ? JSON.parse(raw) : raw; },
     async put(key, value, options) { store.set(key, String(value)); if (options && options.expirationTtl) ttl.set(key, options.expirationTtl); },
+    async delete(key) { store.delete(key); ttl.delete(key); },
   };
 }
 
@@ -88,7 +90,8 @@ const RUN = { category: "field service management software", company: "acmefield
   check("making a link costs no upstream call", upstreamCalls - before === callsForRun, String(upstreamCalls - before));
   const stored = JSON.parse(e.AUDIT.store.get("link:" + made.body.id));
   check("the link is kept 30 days by the store itself", e.AUDIT.ttl.get("link:" + made.body.id) === LINK_TTL_DAYS * 86400, String(e.AUDIT.ttl.get("link:" + made.body.id)));
-  check("the stored record holds only what the wheel shows", Object.keys(stored).sort().join(",") === "brand,category,created_on,expires_on,id,result,v,website" && !JSON.stringify(stored).includes("198.51.100.20") && !/@/.test(JSON.stringify(stored)), Object.keys(stored).join(","));
+  check("the stored record holds only what the wheel shows, plus a hash of the delete token", Object.keys(stored).sort().join(",") === "brand,category,created_on,expires_on,id,result,revoke_hash,v,website" && !JSON.stringify(stored).includes("198.51.100.20") && !/@/.test(JSON.stringify(stored)), Object.keys(stored).join(","));
+  check("the delete token goes to the browser that asked and is never stored", /^[0-9a-f]{32}$/.test(made.body.revoke_token) && made.body.revoke_token !== made.body.id && !JSON.stringify(stored).includes(made.body.revoke_token) && /^[0-9a-f]{64}$/.test(stored.revoke_hash), String(made.body.revoke_token));
   check("the expiry date is 30 days out", stored.expires_on === new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), stored.expires_on);
 
   const forged = await makeLink(e, { brand: "Acme Field", category: RUN.category, website: RUN.company, result: Object.assign({}, r.body, { named: 10, tier: "named 7 to 10" }), seal: r.seal });
@@ -128,6 +131,63 @@ const RUN = { category: "field service management software", company: "acmefield
   check("a malformed link id reads nothing from the store", bad.status === 404, String(bad.status));
   const previewLink = await makeLink({}, { brand: "Acme Field", category: RUN.category, website: RUN.company, result: (await runCheck({}, RUN, "abc123.absence-mini-audit.pages.dev")).body, seal: (await runCheck({}, RUN, "abc123.absence-mini-audit.pages.dev")).seal }, "abc123.absence-mini-audit.pages.dev");
   check("preview with no store says links are unavailable", previewLink.status === 503, String(previewLink.status));
+}
+
+// Receipts: excerpt, cited URLs and vendors named instead, when the upstream supplies them
+{
+  const long = "word ".repeat(200);
+  const RECEIPTS = Object.assign({}, UPSTREAM, {
+    questions: UPSTREAM.questions.map((row, i) => Object.assign({}, row, {
+      excerpt: i === 0 ? long : "  The leading tools are\nAcme and Beta.  ",
+      citations: i === 1 ? ["javascript:alert(1)", "https://user:pw@example.com/x", "ftp://example.com/a", "https://example.com/a", "https://example.com/a"].concat(Array.from({ length: 8 }, (_, n) => "https://example.org/" + n)) : ["https://g2.com/categories/fsm"],
+      named_instead: ["ServiceTitan", "servicetitan", "Jobber", ""],
+      secret_note: "must never pass",
+    })),
+  });
+  const saved = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify(RECEIPTS), { headers: { "content-type": "application/json" } });
+  const e = env();
+  const r = await runCheck(e, RUN, null, "198.51.100.50");
+  globalThis.fetch = saved;
+  const rows = r.body.questions || [];
+  check("the seven key contract still holds with receipts", r.status === 200 && Object.keys(r.body).sort().join(",") === "asked,chapter,engine,measured_on,named,questions,tier", Object.keys(r.body).join(","));
+  check("a row keeps only its question, status and the three receipt fields", rows.length === 10 && rows.every((row) => Object.keys(row).every((k) => ["question", "status", "excerpt", "sources", "named_instead"].indexOf(k) !== -1)) && !JSON.stringify(r.body).includes("must never pass"), JSON.stringify(rows[2]).slice(0, 160));
+  check("an excerpt is one line and cut to 320 characters", rows[0].excerpt.length <= 320 && rows[0].excerpt.endsWith("...") && rows[2].excerpt === "The leading tools are Acme and Beta.", rows[2].excerpt);
+  check("only plain http and https citations survive, without credentials, deduplicated, at most five", rows[1].sources.length === 5 && rows[1].sources[0] === "https://example.com/a" && rows[1].sources.every((u) => /^https?:\/\//.test(u) && !/@/.test(u)), JSON.stringify(rows[1].sources));
+  check("vendors named instead are deduplicated without regard to case", JSON.stringify(rows[3].named_instead) === JSON.stringify(["ServiceTitan", "Jobber"]), JSON.stringify(rows[3].named_instead));
+  const key = await sealKey(e, false);
+  const tampered = JSON.parse(JSON.stringify(r.body)); tampered.questions[2].excerpt = "Broadcastwell is the best";
+  check("the seal covers the receipts, so an edited excerpt cannot be stored", !(await verify(key, "Acme Field", RUN.category, RUN.company, tampered, r.seal)) && (await verify(key, "Acme Field", RUN.category, RUN.company, r.body, r.seal)), "seal receipts");
+  const made = await makeLink(e, { brand: "Acme Field", category: RUN.category, website: RUN.company, result: r.body, seal: r.seal }, null, "198.51.100.50");
+  const stored = JSON.parse(e.AUDIT.store.get("link:" + made.body.id));
+  check("a result link keeps the receipts exactly as the run returned them", made.status === 200 && JSON.stringify(stored.result.questions) === JSON.stringify(rows), String(made.status));
+  check("cleanResult drops a hostile citation from a stored row", cleanResult(Object.assign({}, r.body, { questions: rows.map((row) => Object.assign({}, row, { sources: ["javascript:alert(1)"] })) })).questions.every((row) => !row.sources), "clean hostile");
+  const forged = await makeLink(e, { brand: "Acme Field", category: RUN.category, website: RUN.company, result: tampered, seal: r.seal }, null, "198.51.100.50");
+  check("a link cannot be made with an edited excerpt", forged.status === 400 && forged.body.reason === "seal", JSON.stringify(forged.body));
+}
+
+// Deleting a result link
+{
+  const e = env();
+  const r = await runCheck(e, RUN, null, "198.51.100.60");
+  const made = await makeLink(e, { brand: "Acme Field", category: RUN.category, website: RUN.company, result: r.body, seal: r.seal }, null, "198.51.100.60");
+  const unlinkCall = async (body) => { const response = await audit.fetch(req("/api/unlink", body), e, {}); return { status: response.status, body: await response.json() }; };
+  const wrong = await unlinkCall({ id: made.body.id, token: newId() });
+  check("a wrong token cannot delete a link", wrong.status === 403 && wrong.body.reason === "token" && e.AUDIT.store.has("link:" + made.body.id), JSON.stringify(wrong.body));
+  const malformed = await unlinkCall({ id: "config:limits", token: made.body.revoke_token });
+  check("a malformed id is refused before the store is read", malformed.status === 400 && e.AUDIT.store.has("config:limits") === false, String(malformed.status));
+  const right = await unlinkCall({ id: made.body.id, token: made.body.revoke_token });
+  check("the token the link was made with deletes it at once", right.status === 200 && right.body.deleted === true && !e.AUDIT.store.has("link:" + made.body.id), JSON.stringify(right.body));
+  const after = await audit.fetch(new Request("https://audit.broadcastwell.com/r/" + made.body.id), e, {});
+  check("a deleted link answers 404 with the expired state", after.status === 404 && (await after.text()).includes('"expired":true'), String(after.status));
+  const again = await unlinkCall({ id: made.body.id, token: made.body.revoke_token });
+  check("deleting twice says deleted and reveals nothing", again.status === 200 && again.body.deleted === true, JSON.stringify(again.body));
+  const legacyId = newId();
+  e.AUDIT.store.set("link:" + legacyId, JSON.stringify({ v: 1, id: legacyId, brand: "x", category: "y", website: "z", result: r.body, created_on: "2026-09-21", expires_on: "2026-10-21" }));
+  const legacy = await unlinkCall({ id: legacyId, token: newId() });
+  check("a link made before tokens existed is kept and the answer says to email", legacy.status === 403 && /hello@broadcastwell\.com/.test(legacy.body.message) && e.AUDIT.store.has("link:" + legacyId), JSON.stringify(legacy.body));
+  check("only POST reaches the delete route", (await audit.fetch(new Request("https://audit.broadcastwell.com/api/unlink"), e, {})).status === 405, "method");
+  check("the delete route has its own entry point", file("functions/api/unlink.js").includes('import audit from "../../lib/audit.js";'), "entry");
 }
 
 // The funnel count
@@ -171,18 +231,31 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the confirm card shows what was read, verbatim", PAGE.includes("What we read on <span id=\"read-host\"></span>, verbatim:"), "read");
   check("every reason a read can fail has its own sentence and ends at typing", ["blocked", "timeout", "empty", "unclassified", "unreachable", "not_html", "private", "unresolved", "network", "global", "unavailable"].every((word) => new RegExp("\\b" + word + ": '").test(PAGE)) && PAGE.includes("Type them below. The check runs the same way."), "fallbacks");
   check("the published limits sentence is on the page as published", PAGE.includes("No email is needed; runs are limited per network and per day, and by the site's daily allowance."), "limits sentence");
-  check("the wait is stated honestly, with no per question progress", PAGE.includes("usually after about 25 seconds, so there is no per question progress to show") && !/Step ' \+|progressLabel|stages\.forEach/.test(PAGE), "honest progress");
+  check("the wait is stated honestly, with no per question progress", PAGE.includes("The answers come back together in one response, so there is no per question progress to show. A run that takes longer than 55 seconds is stopped, and your daily check is not used.") && !/Step ' \+|progressLabel|stages\.forEach/.test(PAGE), "honest progress");
+  check("no unmeasured duration is promised", !/about 25 seconds|25 seconds|In about/i.test(PAGE), "no 25 seconds");
+  check("the stated 55 seconds is the handler's own stop", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 55000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
   check("the only prices on the page are $490 and $990", dollars.every((d) => d === "$490" || d === "$990"), dollars.join(","));
   check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bscore\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
   check("no engine is called Gemini and nothing says four engines", !/Gemini|four engines/i.test(PAGE), "engines");
-  check("the $490 block is worded from the pricing page", ["Why you are not on the shortlist: who is named instead of you, how often, and the sources visible in those answers", "Three prioritised fixes: which page to update or which publisher to get in front of", "Written findings within 48 hours of the category being confirmed by email"].every((line) => PAGE.includes("<li>" + line + "</li>")), "pricing lines");
+  check("the $490 block is worded from the pricing page", ["Why you are not on the shortlist: who is named instead of you, how often, and the sources visible in those answers", "Three prioritized fixes: which page to update or which publisher to get in front of", "Written findings within 48 hours of category confirmation"].every((line) => PAGE.includes("<li>" + line + "</li>")), "pricing lines");
   const result = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf("</section>", PAGE.indexOf('class="buy-path"')));
-  const order = ['id="wheel"', 'id="position"', 'id="question-block"', 'id="keep"', "What the $490 Category Audit adds", 'class="cta cta-filled"', 'class="cta cta-outline"', 'app.broadcastwell.com/sample">See a sample account'].map((mark) => result.indexOf(mark));
-  check("the result reads wheel, position, questions, export and link, what the $490 adds, then the buttons", order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), order.join(","));
-  check("export and link controls are outlined, never filled", !/data-export[^>]*cta-filled|link-create[^>]*cta-filled/.test(PAGE) && (result.match(/cta-filled/g) || []).length === 1, "one filled");
-  check("the Stripe links gain the reference only from a result link id", /url\.searchParams\.set\('client_reference_id', 'fc_' \+ id\)/.test(PAGE) && !/client_reference_id=/.test(main), "reference");
+  const whole = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf('<section id="email-card"'));
+  const order = ['id="meta"', 'id="lead-line"', 'id="wheel"', 'id="position"', 'id="question-block"', 'One engine, one run. Your buyers use five.', 'class="cta cta-filled"', 'app.broadcastwell.com/sample">See a sample account', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));
+  check("the result reads scope, verdict, wheel, position, questions, one engine against five, the one button, then keep and share", order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), order.join(","));
+  check("export and link controls are outlined, never filled", !/data-export[^>]*cta-filled|link-create[^>]*cta-filled|link-delete[^>]*cta-filled/.test(PAGE) && (whole.match(/cta-filled/g) || []).length === 1 && !/cta-outline/.test(whole), "one filled");
+  check("the buy links gain the reference only from a result link id", /url\.searchParams\.set\('client_reference_id', 'fc_' \+ id\)/.test(PAGE) && !/client_reference_id=/.test(main) && /querySelectorAll\('a\[data-buy\]'\)/.test(PAGE), "reference");
+  check("the buy links carry the visitor's own address only when one was typed", /url\.searchParams\.set\('prefilled_email', address\)/.test(PAGE) && !/prefilled_email=/.test(main) && /emailInput\.addEventListener\('input'/.test(PAGE), "prefill");
+  check("a buy from a fresh result makes its link first, and never waits more than four seconds", /createLink\(\)\.then\(function \(\) \{ window\.clearTimeout\(late\); leave\(\); \}/.test(PAGE) && /window\.setTimeout\(leave, 4000\)/.test(PAGE) && /id="buy-link-note"/.test(PAGE), "link first");
+  check("the verdict is the published sentence", PAGE.includes("' questions buyers ask about ' + ctx.category + '.' + (top ? ' It named ' + top.name + ' in ' + top.count + '.' : '')"), "verdict");
+  check("the scope line names the engine, the ten questions, one run and the date", PAGE.includes("' questions · 1 run · Measured ' + when"), "scope");
+  check("each row shows its receipt when the run returned one, and the page says when it did not", /Answer excerpt: "/.test(PAGE) && /'Named instead: '/.test(PAGE) && /'Also named: '/.test(PAGE) && /'Cited: '/.test(PAGE) && /id="receipt-note" class="small hidden">This run returned the marks, not the answer text or the sources it cited\.</.test(PAGE), "receipts");
+  check("a cited link is only ever http or https, and opens without a referrer", /url\.protocol === 'https:' \|\| url\.protocol === 'http:'/.test(PAGE) && /a\.rel = 'nofollow noopener noreferrer'/.test(PAGE), "cited links");
+  check("the link wording says private, not indexed and deletable", /It is private and not indexed by search engines\./.test(PAGE) && /Delete this link/.test(PAGE) && /fetch\('\/api\/unlink'/.test(PAGE), "revocable");
+  check("the delete token lives only in this browser's storage, read and written inside try", /try \{ var all = JSON\.parse\(window\.localStorage\.getItem\(TOKENS_KEY\)/.test(PAGE) && (PAGE.match(/window\.localStorage\.setItem/g) || []).length === 2, "storage");
+  check("?domain= fills the website and reads it, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; readSite\(\); \}/.test(PAGE), "domain");
+  check("no Stripe address and no retired $990 button remain", !/buy\.stripe\.com|Get the Diagnostic, \$990|4gM7sMgDOdmYbi93grds401|dRm7sM3R23Mo0Dv6sDds400/.test(PAGE), "stripe");
   check("exports wait for fonts before drawing", /document\.fonts\.ready/.test(PAGE), "fonts");
   check("the wheel respects reduced motion and hides its labels at phone width", /prefers-reduced-motion: reduce/.test(PAGE) && /@media \(max-width: 560px\) \{ \.wheel \.wheel-arc-label, \.wheel \.wheel-ring-label \{ display: none; \}/.test(PAGE), "responsive");
   check("the question list stays under the wheel as its text alternative, with each type", PAGE.indexOf('id="question-block"') > PAGE.indexOf('id="wheel"') && /type\.className = 'q-type'/.test(PAGE), "list");
@@ -192,6 +265,155 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the FAQ on the page matches the FAQ in the structured data", faq.mainEntity.every((q) => main.includes("<summary>" + q.name.replace(/&/g, "&amp;") + "</summary>")), "faq match");
   check("the page title says what a searcher wants and never audit", /<title>Free AI visibility check[^<]*<\/title>/.test(PAGE) && !/<title>[^<]*[Aa]udit/.test(PAGE), (/<title>[^<]*<\/title>/.exec(PAGE) || [""])[0]);
   check("Kalvenor is labelled SAMPLE DATA wherever it is shown", (main.match(/Kalvenor/g) || []).length > 0 && main.split("Kalvenor").slice(1).every((after) => /SAMPLE DATA/.test(after.slice(0, 260))), "sample label");
+}
+
+// Ask the engine yourself: the page's own script, run in Node against a small fake DOM, so
+// what is checked is what a browser builds. Elements named in the markup are made on first
+// lookup; an element the script creates is found by id only once it is in the tree.
+function fakePage(options) {
+  const opts = options || {};
+  const markupIds = new Set([...PAGE.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+  const byId = new Map();
+  const requests = [];
+  class Text { constructor(text) { this.nodeType = 3; this.parentNode = null; this.data = String(text); } get textContent() { return this.data; } }
+  class El {
+    constructor(tag) {
+      this.nodeType = 1; this.tagName = String(tag).toUpperCase(); this.childNodes = []; this.parentNode = null; this.attrs = new Map(); this.listeners = {}; this.value = ""; this.clientWidth = 600; this.html = "";
+      const names = () => new Set(this.className.split(/\s+/).filter(Boolean));
+      const store = (set) => { this.className = [...set].join(" "); };
+      this.classList = {
+        add: (...c) => { const s = names(); c.forEach((x) => s.add(x)); store(s); },
+        remove: (...c) => { const s = names(); c.forEach((x) => s.delete(x)); store(s); },
+        toggle: (c, force) => { const s = names(); const on = force === undefined ? !s.has(c) : !!force; if (on) s.add(c); else s.delete(c); store(s); return on; },
+        contains: (c) => names().has(c),
+      };
+    }
+    get className() { return this.attrs.get("class") || ""; }
+    set className(v) { this.attrs.set("class", String(v)); }
+    setAttribute(name, value) { this.attrs.set(name, String(value)); if (name === "id") byId.set(String(value), this); }
+    getAttribute(name) { return this.attrs.has(name) ? this.attrs.get(name) : null; }
+    removeAttribute(name) { this.attrs.delete(name); }
+    appendChild(child) { if (child.parentNode) child.parentNode.removeChild(child); child.parentNode = this; this.childNodes.push(child); return child; }
+    insertBefore(child, ref) {
+      if (!ref) return this.appendChild(child);
+      if (this.childNodes.indexOf(ref) < 0) throw new Error("insertBefore: the reference is not a child");
+      if (child.parentNode) child.parentNode.removeChild(child);
+      child.parentNode = this; this.childNodes.splice(this.childNodes.indexOf(ref), 0, child); return child;
+    }
+    removeChild(child) { const at = this.childNodes.indexOf(child); if (at >= 0) this.childNodes.splice(at, 1); child.parentNode = null; return child; }
+    remove() { if (this.parentNode) this.parentNode.removeChild(this); }
+    get children() { return this.childNodes.filter((n) => n.nodeType === 1); }
+    get textContent() { return this.childNodes.map((n) => n.textContent).join(""); }
+    set textContent(v) { this.childNodes.forEach((n) => { n.parentNode = null; }); this.childNodes = []; if (String(v)) this.appendChild(new Text(v)); }
+    get innerHTML() { return this.html; }
+    set innerHTML(v) { this.childNodes.forEach((n) => { n.parentNode = null; }); this.childNodes = []; this.html = String(v); }
+    addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
+    focus() {} scrollIntoView() {} select() {} click() {}
+    querySelector() { return null; }
+    querySelectorAll() { return []; }
+    closest() { return null; }
+    all() { const out = []; const walk = (n) => n.childNodes.forEach((c) => { if (c.nodeType === 1) { out.push(c); walk(c); } }); walk(this); return out; }
+  }
+  const body = new El("body");
+  const connected = (el) => { let n = el; while (n.parentNode) n = n.parentNode; return n === body; };
+  const make = (id, tag) => { const el = new El(tag || "div"); el.setAttribute("id", id); body.appendChild(el); return el; };
+  // The result block as the markup nests it, so the label can be placed above the list.
+  const questionBlock = make("question-block"); const questionList = new El("ul"); questionList.setAttribute("id", "question-results"); questionBlock.appendChild(questionList);
+  const document = {
+    body,
+    createElement: (tag) => new El(tag),
+    createTextNode: (text) => new Text(text),
+    getElementById(id) {
+      const known = byId.get(id);
+      if (known && connected(known)) return known;
+      if (id === "shared-result") { if (!opts.shared) return null; const el = make(id, "script"); el.textContent = JSON.stringify(opts.shared); return el; }
+      return markupIds.has(id) ? make(id) : null;
+    },
+    querySelector: () => new El("div"),
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  const timers = { next: 1 };
+  const storage = new Map();
+  const context = {
+    document,
+    location: { search: opts.search || "", origin: "https://audit.broadcastwell.com", href: "https://audit.broadcastwell.com/" },
+    navigator: { sendBeacon: (url) => { requests.push("beacon " + url); return true; } },
+    fetch: async (url, init) => { requests.push("fetch " + url); return opts.respond(String(url), init); },
+    URL, URLSearchParams, Response, Blob, console,
+    setTimeout: () => timers.next++, clearTimeout() {}, setInterval: () => timers.next++, clearInterval() {},
+    matchMedia: () => ({ matches: false }),
+    addEventListener() {},
+    localStorage: { getItem: (k) => (storage.has(k) ? storage.get(k) : null), setItem: (k, v) => storage.set(k, String(v)) },
+  };
+  context.window = context;
+  vm.createContext(context);
+  const script = PAGE.slice(PAGE.indexOf("<script>") + 8, PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  vm.runInContext(script, context);
+  const submit = () => (document.getElementById("form").listeners.submit || []).forEach((fn) => fn({ preventDefault() {} }));
+  const settle = async () => { for (let i = 0; i < 20; i++) await new Promise((resolve) => setImmediate(resolve)); };
+  const askGroups = () => body.all().filter((el) => el.className === "q-ask" && connected(el));
+  const askAnchors = () => body.all().filter((el) => el.tagName === "A" && /^https:\/\/(chatgpt\.com|www\.perplexity\.ai|claude\.ai)\//.test(el.getAttribute("href") || ""));
+  return { document, body, requests, submit, settle, askGroups, askAnchors, questionList, questionBlock };
+}
+
+{
+  const TRICKY = "Which is better for a 40-person team, Acme or Beta? Pricing & support, compared";
+  const QUESTIONS = [TRICKY, "What is the best field service management software?", "C++ & C# tools: which, and why? 100% sure #1", "Qu'est-ce que le meilleur logiciel, s'il vous plaît?"].concat(Array.from({ length: 6 }, (_, i) => "Buyer question " + (i + 5) + " for field service management software?"));
+  const RESULT = { named: 3, asked: 10, tier: "named 1 to 3", chapter: "/category-door/", engine: "Perplexity", measured_on: "2026-09-26", questions: QUESTIONS.map((question, i) => ({ question, status: i < 3 ? "named" : "not named" })) };
+  const FOUND = { found: true, website: "acmefield.com", brand: "Acme Field", category: "field service management software", alternatives: [] };
+  const respond = (url) => {
+    if (url === "/api/analyze") return new Response(JSON.stringify(FOUND), { status: 200, headers: { "content-type": "application/json" } });
+    if (url === "/api/run") return new Response(JSON.stringify(RESULT), { status: 200, headers: { "content-type": "application/json", "x-result-seal": "test-seal" } });
+    return new Response("{}", { status: 404 });
+  };
+  const ENGINE_BASES = ["https://chatgpt.com/", "https://www.perplexity.ai/search", "https://claude.ai/new"];
+  const LABEL = "Ask the engine yourself; answers vary by run.";
+
+  // Before a result: nothing built, nothing requested.
+  const idle = fakePage({ respond });
+  await idle.settle();
+  check("no ask link and no ask label exist before a result", idle.askAnchors().length === 0 && idle.askGroups().length === 0 && idle.document.getElementById("ask-label") === null && !idle.body.all().some((el) => el.textContent === LABEL), String(idle.askAnchors().length));
+  check("loading the page makes no request at all", idle.requests.length === 0, idle.requests.join(","));
+  const markup = PAGE.slice(0, PAGE.indexOf("<script>")) + PAGE.slice(PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  check("the markup carries no engine link and no ask label; only the script can build them", !/chatgpt\.com|perplexity\.ai\/search|claude\.ai\/new/.test(markup) && !markup.includes(LABEL), "markup");
+
+  // A result from the run path, with the fetch stubbed: website read, confirm, run.
+  const page = fakePage({ respond });
+  page.document.getElementById("company").value = "acmefield.com";
+  page.submit(); await page.settle();
+  const beforeRun = page.askAnchors().length;
+  page.submit(); await page.settle();
+  const rows = page.questionList.children;
+  const groups = rows.map((li) => li.children.filter((el) => el.className === "q-ask"));
+  check("confirming the category alone builds no ask link", beforeRun === 0, String(beforeRun));
+  check("a result renders ten rows, each with one group of three ask links", rows.length === 10 && groups.every((g) => g.length === 1 && g[0].children.length === 3 && g[0].children.every((a) => a.tagName === "A")), rows.length + " rows");
+  check("the three links read ChatGPT, Perplexity and Claude, in that order", groups.every((g) => g[0].children.map((a) => a.textContent).join(",") === "ChatGPT,Perplexity,Claude"), groups[0] && groups[0][0].children.map((a) => a.textContent).join(","));
+  const label = page.document.getElementById("ask-label");
+  check("one label, above the first row", label && label.textContent === LABEL && label.parentNode === page.questionBlock && label.parentNode.childNodes.indexOf(label) === label.parentNode.childNodes.indexOf(page.questionList) - 1 && page.body.all().filter((el) => el.textContent === LABEL).length === 1, label ? label.textContent : "missing");
+  const roundTrip = rows.every((li, i) => li.children.find((el) => el.className === "q-ask").children.every((a, n) => {
+    const url = new URL(a.getAttribute("href"));
+    return (url.origin + url.pathname) === ENGINE_BASES[n] && [...url.searchParams.keys()].join(",") === "q" && url.searchParams.get("q") === QUESTIONS[i];
+  }));
+  check("every href carries the exact question text through URLSearchParams, including ?, & and ,", roundTrip, rows[0] && rows[0].children.find((el) => el.className === "q-ask").children[0].getAttribute("href"));
+  check("the question with ?, & and , is encoded, not split", rows[0].children.find((el) => el.className === "q-ask").children.every((a) => a.getAttribute("href").endsWith("=" + encodeURIComponent(TRICKY)) && !/[?&,]/.test(a.getAttribute("href").split("?q=")[1])), "encoding");
+  check("every ask link opens in a new tab with rel noopener noreferrer", page.askAnchors().length === 30 && page.askAnchors().every((a) => a.getAttribute("target") === "_blank" && a.getAttribute("rel") === "noopener noreferrer"), String(page.askAnchors().length));
+  check("every ask link names its engine and question for screen readers", page.askAnchors().every((a) => /^Ask (ChatGPT|Perplexity|Claude) question (10|[1-9]), opens in a new tab$/.test(a.getAttribute("aria-label")) && a.getAttribute("aria-label").includes(a.textContent)), "aria-label");
+  check("the ask links add no request: the run path made exactly its two", page.requests.filter((r) => r.startsWith("fetch")).join(",") === "fetch /api/analyze,fetch /api/run", page.requests.join(","));
+  page.submit(); await page.settle();
+  check("a second run replaces the links and keeps one label", page.askAnchors().length === 30 && page.body.all().filter((el) => el.textContent === LABEL).length === 1, String(page.askAnchors().length));
+
+  // A result link renders the same links, and still requests nothing on its own.
+  const shared = fakePage({ respond, shared: { id: "a".repeat(32), brand: "Acme Field", category: "field service management software", website: "acmefield.com", result: RESULT, created_on: "2026-09-26", expires_on: "2026-10-26" } });
+  await shared.settle();
+  check("a shared result link renders the ask links too, with no request", shared.askAnchors().length === 30 && shared.document.getElementById("ask-label") !== null && shared.requests.length === 0, shared.askAnchors().length + " / " + shared.requests.join(","));
+
+  // The builder: DOM calls only, no request, nothing on load.
+  const script = PAGE.slice(PAGE.indexOf("<script>"), PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
+  const builder = script.slice(script.indexOf("function askLinks("), script.indexOf("function renderQuestions("));
+  check("the ask links are built with DOM calls, never innerHTML, and request nothing", builder.length > 200 && /setAttribute\('href', engine\[1\] \+ encodeURIComponent\(question\)\)/.test(builder) && /a\.textContent = engine\[0\]/.test(builder) && !/innerHTML|insertAdjacentHTML|fetch\(|sendBeacon|window\.open/.test(builder), "builder");
+  check("askLinks is called only from the row renderer", (script.match(/askLinks\(/g) || []).length === 2 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script), "calls");
+  check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:2px solid var\(--blue\);outline-offset:2px\}/.test(PAGE), "css");
 }
 
 let failed = 0;

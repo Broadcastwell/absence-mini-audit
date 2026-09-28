@@ -35,6 +35,9 @@ const end = page.indexOf(END);
 if (at < 0 || end < at) throw new Error("the wheel markers are missing from public/index.html");
 page = page.slice(0, at + BEGIN.length) + "\n" + wheel + "\n" + page.slice(end);
 writeFileSync(path("public/index.html"), page);
+// /embed serves the same bytes, so the same two hashes cover it; its script switches to the
+// compact embed mode by path. Only its frame-ancestors differ (public/_headers, /embed block).
+writeFileSync(path("public/embed.html"), page);
 
 function inline(tag) {
   const open = page.indexOf("<" + tag + ">");
@@ -47,8 +50,9 @@ const face = "@font-face{font-family:Inter;font-style:normal;font-weight:400 800
 writeFileSync(path("public/assets/fonts/inter-embed.css"), face);
 
 let headers = textFile("public/_headers");
-headers = headers.replace(/script-src '[^']+'/, "script-src " + hash(inline("script")));
-headers = headers.replace(/style-src 'self' '[^']+'( '[^']+')?/, "style-src 'self' " + hash(inline("style")) + " " + hash(face));
+// Every policy that governs the page (the site-wide one and the /embed one) gets the hashes.
+headers = headers.replace(/script-src '[^']+'/g, "script-src " + hash(inline("script")));
+headers = headers.replace(/style-src 'self' '[^']+'( '[^']+')?/g, "style-src 'self' " + hash(inline("style")) + " " + hash(face));
 headers = headers.replace(/default-src 'none'; style-src '[^']+'; font-src data:/, "default-src 'none'; style-src " + hash(face) + "; font-src data:");
 writeFileSync(path("public/_headers"), headers);
 

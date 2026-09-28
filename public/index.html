@@ -22,13 +22,18 @@
 <meta name="twitter:description" content="Type your website and see whether Perplexity names your company in ten buyer questions, drawn as one shortlist wheel.">
 <meta name="twitter:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-09.png">
 <link rel="icon" href="https://framerusercontent.com/images/j6xX2NJoWncy5Askq1FGOGo0Vo.png" type="image/png">
+<link rel="preload" href="/assets/fonts/geist-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="canonical" href="https://audit.broadcastwell.com/">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Free 10-question check","alternateName":"Free 10-question check (one engine)","url":"https://audit.broadcastwell.com/","applicationCategory":"BusinessApplication","operatingSystem":"Any","description":"A free AI visibility check for B2B software companies. Type your website; ten buyer questions in your category are asked on one AI answer engine, Perplexity, and the result is drawn as a shortlist wheel with your position on the absence ladder. No email needed.","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"provider":{"@type":"Organization","name":"Broadcastwell","url":"https://broadcastwell.com"}},{"@type":"Service","name":"Category Audit","description":"Ten buyer questions on five AI answer engines, three measured runs each, with the sources behind every answer and three prioritized fixes within 48 hours.","provider":{"@type":"Organization","name":"Broadcastwell","url":"https://broadcastwell.com"},"offers":{"@type":"Offer","price":"490","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://broadcastwell.com/buy/audit"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does the Free 10-question check (one engine) measure?","acceptedAnswer":{"@type":"Answer","text":"Whether Perplexity names your company when a buyer asks ten shortlist questions in your category: three best of, three alternatives, two comparison, one evaluation and one use case. Each answer is marked named or not named, and the count places you on the published absence ladder."}},{"@type":"Question","name":"Is it free, and do I need an email?","acceptedAnswer":{"@type":"Answer","text":"It is free. No email is needed; runs are limited per network and per day, and by the site's daily allowance."}},{"@type":"Question","name":"Why do you read my website?","acceptedAnswer":{"@type":"Answer","text":"To propose your company name and your category in a buyer's words, so the only thing you type is your address. We read your homepage and at most two more public pages, with a user agent that names Broadcastwell, and keep nothing we read. Nothing runs until you confirm."}},{"@type":"Question","name":"How is it different from the $490 Category Audit?","acceptedAnswer":{"@type":"Answer","text":"The Category Audit is ten questions, five engines, three runs: 150 scheduled observed answers and three prioritized fixes. Findings within 48 hours of category confirmation. It also shows who is named instead of you and the sources visible in those answers."}},{"@type":"Question","name":"Does one run tell me where I stand?","acceptedAnswer":{"@type":"Answer","text":"It is one run on one engine, and answers vary between runs. That is why the paid measurements ask every question three times on every engine and report the disagreement."}},{"@type":"Question","name":"What does a result link keep, and for how long?","acceptedAnswer":{"@type":"Answer","text":"Only what the result shows: your company name, website, category, the ten questions, their marks and any answer text and sources the run returned. No email and nothing about you. The link is private and not indexed by search engines. It is kept for 30 days and then deleted, and the browser that made it can delete it sooner."}}]}]}</script>
 <style>
-  /* Inter, self hosted. The page used to pull it from a font CDN with two preconnects and
-     a stylesheet link, which put a third party request in front of this page and
-     needed two more hosts in the Content Security Policy. These are the same two subsets
-     the portal serves, byte identical to its copies, SIL Open Font License 1.1. */
+  /* Geist, then Inter, self hosted. Geist is the face of broadcastwell.com and the portal
+     (the variable face from the geist package, byte identical to the portal's copy, SIL Open
+     Font License 1.1), preloaded so a first visit shows it. Inter stays as the fallback and as
+     the wheel's face, which exported images embed. The page used to pull Inter from a font CDN
+     with two preconnects and a stylesheet link, which put a third party request in front of
+     this page and needed two more hosts in the Content Security Policy. The two Inter subsets
+     are the portal's, byte identical, SIL Open Font License 1.1. */
+  @font-face{font-family:Geist;font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/geist-var.woff2) format('woff2')}
   @font-face{font-family:Inter;font-style:normal;font-weight:400 800;font-display:swap;src:url(/assets/fonts/inter-latin-ext-var.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
   @font-face{font-family:Inter;font-style:normal;font-weight:400 800;font-display:swap;src:url(/assets/fonts/inter-latin-var.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* Broadcastwell design system 2.0.0, 23 September 2026. */
@@ -50,7 +55,7 @@
   }
   * { box-sizing: border-box; }
   html { background: var(--ground); }
-  body { margin: 0; background: var(--ground); color: var(--body); font: 17px/1.6 Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: var(--ground); color: var(--body); font: 17px/1.6 Geist, Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: var(--body); text-underline-offset: .16em; }
   a:hover { color: var(--ink); text-decoration-thickness: 2px; }
   a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible, .wheel-node:focus-visible, [tabindex="-1"]:focus-visible { outline: 3px solid var(--rule); outline-offset: 2px; }
@@ -97,7 +102,7 @@
   input[readonly] { color: var(--body); }
   .hint, .small { color: var(--muted); font-size: 14px; }
   .field-error { margin: 8px 0 0; color: var(--ink); font-size: 14px; font-weight: 600; }
-  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
+  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Geist, Inter, ui-sans-serif, system-ui, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
   .primary:hover { border-color: var(--blue-hover); background: var(--blue-hover); }
   /* Once a result is on the page the purchase button is the one filled button, so the
      submit steps down to an outline. It is filled again as soon as a new run starts. */
@@ -111,7 +116,7 @@
   .read .read-title { color: var(--ink); font-weight: 600; }
   .read .read-desc { margin-top: 4px; font-size: 15px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
-  .chip { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--body); cursor: pointer; font: 600 14px/1.3 Inter, ui-sans-serif, system-ui, sans-serif; text-align: left; }
+  .chip { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--body); cursor: pointer; font: 600 14px/1.3 Geist, Inter, ui-sans-serif, system-ui, sans-serif; text-align: left; }
   .chip:hover { border-color: var(--rule); color: var(--ink); }
   .chip[aria-pressed="true"] { border-color: var(--rule); background: var(--tint); color: var(--ink); }
   .chip[aria-pressed="true"]::before { content: "\2713  "; }
@@ -168,7 +173,7 @@
   .keep { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
   .keep h3 { font-size: 18px; }
   .export-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
-  .small-button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 600 14px/1.3 Inter, ui-sans-serif, system-ui, sans-serif; }
+  .small-button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 600 14px/1.3 Geist, Inter, ui-sans-serif, system-ui, sans-serif; }
   .small-button:hover { border-color: var(--rule); background: var(--tint); }
   .small-button[disabled] { cursor: wait; opacity: .72; }
   .link-row { display: flex; gap: 8px; margin-top: 12px; }
@@ -184,7 +189,7 @@
   .cta-filled:hover { border-color: var(--blue-hover); background: var(--blue-hover); color: #FFFFFF; }
   .cta-outline { border-color: var(--line-strong); background: transparent; color: var(--ink); }
   .cta-outline:hover { border-color: var(--rule); background: var(--tint); color: var(--ink); }
-  .outline-button { min-height: 48px; margin-top: 16px; padding: 12px 18px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 700 16px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; }
+  .outline-button { min-height: 48px; margin-top: 16px; padding: 12px 18px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 700 16px/1.4 Geist, Inter, ui-sans-serif, system-ui, sans-serif; }
   .outline-button:hover { border-color: var(--rule); background: var(--tint); }
   .email-card { margin-top: 28px; }
   .email-card h2 { font-size: 22px; }
@@ -286,7 +291,8 @@
   @media(max-width:374px){.pill{padding-inline:8px;font-size:12px}.wordmark{font-size:15px}}
   /* Embed mode (/embed): the check alone, full width, inside the frame on broadcastwell.com. */
   html.embed,html.embed body{background:transparent}
-  html.embed .site-header,html.embed .site-footer,html.embed .intro,html.embed .detail{display:none}
+  html.embed .site-header,html.embed .site-footer,html.embed .detail{display:none}
+  html.embed .intro{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   html.embed .page{padding:0}
   html.embed .container{width:100%;max-width:none;margin:0;padding-inline:0}
   html.embed .audit-grid,html.embed .audit-grid.has-result{display:block;max-width:none}
@@ -700,6 +706,10 @@
   function setChips(options) { chips.innerHTML = ''; var list = (options || []).filter(function (value, index, all) { return value && all.indexOf(value) === index; }); if (!list.length) { hide(chips); return; } list.forEach(function (value) { var chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = value; chip.setAttribute('aria-pressed', value === categoryInput.value ? 'true' : 'false'); chip.addEventListener('click', function () { categoryInput.value = value; syncChips(); fillPreview(); }); chips.appendChild(chip); }); show(chips); }
   function syncChips() { Array.prototype.forEach.call(chips.querySelectorAll('.chip'), function (chip) { chip.setAttribute('aria-pressed', chip.textContent === categoryInput.value ? 'true' : 'false'); }); }
   function toStage(next) { stage = next; if (next === 'site') { hide(confirmBox); go.classList.remove('settled'); go.disabled = false; go.textContent = 'Read my website'; } else { show(confirmBox); go.disabled = false; go.textContent = 'Run the free 10-question check'; } }
+  // A read the visitor asked for moves focus to what was found. A read that started on arrival
+  // (?site=) moves no focus, and inside the frame it does not scroll either, so the page around
+  // the frame stays where the visitor is reading.
+  var readAuto = false;
   function openConfirm(found) {
     var why = document.getElementById('read-why'), readBlock = document.getElementById('read-block');
     templates = Array.isArray(found.questions_template) && found.questions_template.length === 10 ? found.questions_template : null;
@@ -709,9 +719,12 @@
     if (found.found) { document.getElementById('confirm-title').textContent = 'Check what we found'; hide(why); setChips([found.category].concat(found.alternatives || [])); }
     else { document.getElementById('confirm-title').textContent = 'Type your company name and category'; why.textContent = (READ_WHY[found.reason] || READ_WHY.unavailable) + ' Type them below. The check runs the same way.'; show(why); setChips(found.alternatives || []); }
     fillPreview(); hide(readingNote); toStage('confirm');
-    var title = document.getElementById('confirm-title'); title.focus({ preventScroll: true }); title.scrollIntoView({ behavior: smooth(), block: 'start' });
+    var title = document.getElementById('confirm-title');
+    if (!readAuto) title.focus({ preventScroll: true });
+    if (!readAuto || !document.documentElement.classList.contains('embed')) title.scrollIntoView({ behavior: smooth(), block: 'start' });
   }
-  function readSite() {
+  function readSite(auto) {
+    readAuto = auto === true;
     var website = siteValue(); hide(siteError);
     if (!website) { siteError.textContent = 'Enter your website address, for example example.com.'; show(siteError); siteInput.focus(); return; }
     go.disabled = true; go.textContent = 'Reading your website'; readingNote.textContent = 'Reading your homepage, and at most two more pages. This takes a few seconds.'; show(readingNote);
@@ -934,7 +947,7 @@
     // ?domain=example.com fills the website and reads it. Reading is free; nothing runs until
     // the visitor confirms and presses Run.
     var arriving = ''; try { var query = new URLSearchParams(location.search); arriving = (query.get('site') || query.get('domain') || '').trim().slice(0, 120); } catch (_) { arriving = ''; }
-    if (arriving) { siteInput.value = arriving; readSite(); }
+    if (arriving) { siteInput.value = arriving; readSite(true); }
   }
 })();
 // Embed mode (/embed): the check alone inside a frame on broadcastwell.com. The frame's height

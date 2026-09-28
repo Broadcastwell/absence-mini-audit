@@ -474,7 +474,8 @@ let failed = 0;
   check("every host the page loads from is named in the policy", policy.includes("https://framerusercontent.com"), "csp hosts");
   // Inter is served from this origin now, so no font CDN should be reachable or named.
   check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
-  check("both Inter subsets are declared and shipped", (page.match(/@font-face/g) || []).length === 2 && ["inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
+  check("Geist and both Inter subsets are declared and shipped, from this origin", (page.match(/@font-face/g) || []).length === 3 && ["geist-var.woff2", "inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
+  check("Geist is the page's face, preloaded, with Inter as its fallback", page.includes('<link rel="preload" href="/assets/fonts/geist-var.woff2" as="font" type="font/woff2" crossorigin>') && (page.match(/font: [^;]*Geist, Inter, ui-sans-serif, system-ui, sans-serif/g) || []).length === 5 && !/font: [^;]*[^,] Inter, ui-sans-serif/.test(page.replaceAll("Geist, Inter, ui-sans-serif", "")), "type stack");
 
   check("the started state is named and brought into view", page.includes("Your check has started") && page.includes("working.scrollIntoView"), "started state");
   check("the refusal names itself and its reason in one sentence",

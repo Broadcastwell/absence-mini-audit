@@ -26,14 +26,22 @@ check("apart from framing, the /embed policy is the page's policy exactly", cspO
 // The page's one inline script, found the way scripts/build-page.mjs finds it for the hash.
 const scriptAt = page.indexOf("<script>") + 8;
 const script = page.slice(scriptAt, page.indexOf("</script>", scriptAt));
-const arriving = /var arriving[\s\S]{0,400}?if \(arriving\) \{ siteInput\.value = arriving; readSite\(\); \}/.exec(script);
+const arriving = /var arriving[\s\S]{0,400}?if \(arriving\) \{ siteInput\.value = arriving; readSite\(true\); \}/.exec(script);
 check("?site= (then ?domain=) fills the website and starts only the free read", Boolean(arriving) && /query\.get\('site'\) \|\| query\.get\('domain'\)/.test(arriving[0]) && !/runCheck|\/api\/run/.test(arriving[0]));
 
 const embedAt = script.indexOf("// Embed mode (/embed)");
 const embedCode = script.slice(embedAt);
 check("embed mode is its own block at the end of the page script", embedAt > 0 && /^\/\/ Embed mode[\s\S]*\}\)\(\);\s*$/.test(embedCode));
 check("embed mode measures the root element, never a viewport-floored measure", /root\.getBoundingClientRect\(\)\.height/.test(embedCode) && !/scrollHeight|innerHeight|clientHeight/.test(embedCode));
-check("embed mode hides the site chrome and long sections in CSS", /html\.embed \.site-header,html\.embed \.site-footer,html\.embed \.intro,html\.embed \.detail\{display:none\}/.test(page));
+check("embed mode hides the site chrome and long sections in CSS", /html\.embed \.site-header,html\.embed \.site-footer,html\.embed \.detail\{display:none\}/.test(page));
+check("embed mode keeps the intro and its h1 for screen readers, visually hidden, with nothing focusable in it",
+  /html\.embed \.intro\{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect\(0 0 0 0\);white-space:nowrap;border:0\}/.test(page)
+  && (() => { const intro = page.slice(page.indexOf('<section class="intro"'), page.indexOf("</section>", page.indexOf('<section class="intro"'))); return /<h1[ >]/.test(intro) && !/<a |<button|<input|tabindex="0"/.test(intro); })());
+check("a read that starts on arrival moves no focus, and scrolls nothing inside the frame",
+  /readSite\(true\)/.test(script) && /function readSite\(auto\) \{\s*readAuto = auto === true;/.test(script)
+  && /if \(!readAuto\) title\.focus\(\{ preventScroll: true \}\);/.test(script)
+  && /if \(!readAuto \|\| !document\.documentElement\.classList\.contains\('embed'\)\) title\.scrollIntoView/.test(script)
+  && (script.match(/readSite\(\)/g) || []).length === 1, "the visitor's own read calls readSite() once, without the flag");
 
 // Run the block in a small simulated window.
 function simulate(pathname, parentIsSelf = false) {

@@ -940,7 +940,8 @@
 // Embed mode (/embed): the check alone inside a frame on broadcastwell.com. The frame's height
 // follows the document's own height, measured on the root element so it is never floored at
 // the frame's current viewport (the lesson from Run 4F), and every link that leaves the check
-// opens in the top window, so a checkout never loads inside the frame.
+// opens in the top window, so a checkout never loads inside the frame. Links that already open a
+// new tab (receipts, "ask the engine yourself") keep doing so.
 (function () {
   if (!/^\/embed\/?$/.test(location.pathname)) return;
   var root = document.documentElement;
@@ -954,7 +955,7 @@
   }
   function outward() {
     var links = document.querySelectorAll('a[href]');
-    for (var i = 0; i < links.length; i++) if (links[i].host && links[i].host !== location.host) links[i].target = '_top';
+    for (var i = 0; i < links.length; i++) if (links[i].host && links[i].host !== location.host && !links[i].target) links[i].target = '_top';
   }
   outward();
   if (window.MutationObserver) new MutationObserver(function () { outward(); report(); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });

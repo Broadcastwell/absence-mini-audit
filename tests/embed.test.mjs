@@ -40,7 +40,7 @@ function simulate(pathname, parentIsSelf = false) {
   const messages = [], observers = [];
   const classes = new Set();
   let height = 812;
-  const links = [{ host: "broadcastwell.com", target: "" }, { host: "audit.broadcastwell.com", target: "" }, { host: "docs.broadcastwell.com", target: "" }];
+  const links = [{ host: "broadcastwell.com", target: "" }, { host: "audit.broadcastwell.com", target: "" }, { host: "docs.broadcastwell.com", target: "" }, { host: "www.perplexity.ai", target: "_blank" }];
   const root = { classList: { add: c => classes.add(c) }, getBoundingClientRect: () => ({ height }) };
   const win = { postMessage() {}, addEventListener() {} };
   const parent = parentIsSelf ? null : { postMessage: (data, origin) => messages.push({ data, origin }) };
@@ -61,8 +61,9 @@ check("in /embed the page marks itself and reports its height to the parent", fr
 framed.grow(1490); framed.grow(1490); framed.grow(640);
 check("the height follows the page as it grows and shrinks, once per change", framed.messages.map(m => m.data.height).join(",") === "812,1490,640");
 check("links that leave the check open in the top window; links on the check stay", framed.links[0].target === "_top" && framed.links[2].target === "_top" && framed.links[1].target === "");
+check("links that already open a new tab keep their new tab", framed.links[3].target === "_blank");
 const plain = simulate("/");
-check("the ordinary page never enters embed mode or posts anything", !plain.classes.has("embed") && plain.messages.length === 0 && plain.links.every(l => l.target === ""));
+check("the ordinary page never enters embed mode or posts anything", !plain.classes.has("embed") && plain.messages.length === 0 && plain.links.slice(0, 3).every(l => l.target === "") && plain.links[3].target === "_blank");
 check("an /embed page opened on its own posts nothing", simulate("/embed", true).messages.length === 0);
 
 console.log("\n" + passed + " passed, " + failed + " failed");

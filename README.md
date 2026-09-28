@@ -99,7 +99,8 @@ The frame reports its height to the parent page whenever it changes:
 
 The height is `document.documentElement.getBoundingClientRect().height`, rounded up, so it is
 never floored at the frame's current height. Every link that leaves the check opens in the top
-window, so a checkout never loads inside the frame. `tests/embed.test.mjs` holds all of this.
+window, so a checkout never loads inside the frame; links that already open a new tab (the
+receipts and "ask the engine yourself") keep doing so. `tests/embed.test.mjs` holds all of this.
 
 ## Run time
 

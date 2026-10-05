@@ -22,7 +22,7 @@ wheel, with the visitor's position on the absence ladder and the chapter of
 | `scripts/build-page.mjs` | Inlines the wheel into the page and recomputes the CSP hashes. Run after editing the page. |
 | `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints. |
 | `scripts/funnel.mjs` | Prints the daily funnel counts with the owner's own Cloudflare sign in. |
-| `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite, the front door suite and the frame suite. `npm test`. |
+| `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite, the front door suite, the frame suite and the served copy suite (`tests/copy.test.mjs`: no word that reads as a closure, pause, cap or order count, and no retired offer, in anything served). `npm test`. |
 
 ## The response contract
 
@@ -75,8 +75,12 @@ site's own switch, never to a checkout address directly. The result's one priced
 reads "Run it on all five engines, $490". The switch passes two query parameters on:
 `client_reference_id=fc_<result link id>` (a buy from a fresh result makes the private
 link first, so the order can start from it) and `prefilled_email`, only when the visitor
-typed an address into the optional email field. The AI Visibility Diagnostic is shown
-Paused, with no button of its own.
+typed an address into the optional email field. The page offers the $490 Category Audit
+and nothing else for sale: under the owner's ruling of 5 October 2026 the $990 Diagnostic
+is retired and the AI Fact Check is removed, so neither is named, priced or linked. The one
+credit line is "The $490 credits once against the $2,900 Fix Sprint within 30 days of
+delivery, so the Sprint is $2,410." and the one promise is "Findings within 48 hours of your
+category confirmation".
 
 A visitor arriving with `?site=example.com` (the find-your-company box on broadcastwell.com)
 or `?domain=example.com` has the website filled in and read at once. Reading is free; nothing

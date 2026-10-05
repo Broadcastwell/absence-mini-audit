@@ -236,10 +236,10 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the stated 55 seconds is the handler's own stop", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 55000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
-  check("the only prices on the page are $490 and $990", dollars.every((d) => d === "$490" || d === "$990"), dollars.join(","));
+  check("the only prices on the page are the $490 Audit and the Fix Sprint credit line's $2,900 and $2,410", dollars.length > 0 && dollars.every((d) => d === "$490" || d === "$2,900" || d === "$2,410") && dollars.indexOf("$990") === -1, dollars.join(","));
   check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bscore\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
   check("no engine is called Gemini and nothing says four engines", !/Gemini|four engines/i.test(PAGE), "engines");
-  check("the $490 block is worded from the pricing page", ["Why you are not on the shortlist: who is named instead of you, how often, and the sources visible in those answers", "Three prioritized fixes: which page to update or which publisher to get in front of", "Written findings within 48 hours of category confirmation"].every((line) => PAGE.includes("<li>" + line + "</li>")), "pricing lines");
+  check("the $490 block is worded from the pricing page", ["Why you are not on the shortlist: who is named instead of you, how often, and the sources visible in those answers", "Three prioritized fixes: which page to update or which publisher to get in front of", "Written findings within 48 hours of your category confirmation"].every((line) => PAGE.includes("<li>" + line + "</li>")), "pricing lines");
   const result = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf("</section>", PAGE.indexOf('class="buy-path"')));
   const whole = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf('<section id="email-card"'));
   const order = ['id="meta"', 'id="lead-line"', 'id="wheel"', 'id="position"', 'id="question-block"', 'One engine, one run. Your buyers use five.', 'class="cta cta-filled"', 'app.broadcastwell.com/sample">See a sample account', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));

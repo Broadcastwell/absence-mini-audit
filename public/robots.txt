@@ -1,8 +1,8 @@
-# The free mini-audit, audit.broadcastwell.com
+# The Free 10-question check (one engine), audit.broadcastwell.com
 # Ten buyer questions in your category, one named AI answer engine, and a
-# measured position on the absence ladder in under a minute.
+# measured position on the absence ladder.
 # Free, ungated and open to crawlers, AI crawlers included.
-# There is no paywall and no sign-up. Only the result endpoint is closed.
+# There is no paywall and no sign-up. Only the API paths are kept out of crawls.
 
 User-agent: OAI-SearchBot
 Allow: /

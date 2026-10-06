@@ -7,6 +7,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { inflateSync } from "node:zlib";
 
 let passed = 0, failed = 0;
 function check(name, ok, detail = "") {
@@ -95,6 +96,99 @@ check("every credit the page states is the published credit line", visible.inclu
 const said = [visible, ldStrings.join("\n")].join("\n");
 const promises = (said.match(/within 48 hours/gi) || []).length, published = (said.match(/within 48 hours of your category confirmation/g) || []).length;
 check("every delivery promise reads within 48 hours of your category confirmation", promises >= 4 && promises === published, published + " of " + promises);
+
+// The result view. A check's result is built in the browser by revealing the #result section
+// and filling its slots, /r/<id> serves the same bytes with a stored result, and /embed is the
+// same document. So the credit line a visitor reads under a result is the section's own markup,
+// and no script may write a credit, a Sprint or a Sprint price of its own.
+function element(html, at, tag) {
+  const pattern = new RegExp("<(/?)" + tag + "\\b[^>]*>", "g");
+  pattern.lastIndex = at;
+  let depth = 0, match;
+  while ((match = pattern.exec(html))) { depth += match[1] ? -1 : 1; if (depth === 0) return html.slice(at, match.index + match[0].length); }
+  return "";
+}
+const words = (html) => html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+for (const name of ["index.html", "embed.html"]) {
+  const doc = file("public/" + name);
+  const result = element(doc, doc.indexOf('<section id="result"'), "section");
+  const said = words(result);
+  check(name + ": the result view states the credit line once, word for word, and no other credit", result.length > 1000 && said.split(CREDIT).length === 2 && !/\bcredit/i.test(said.split(CREDIT).join(" ")), (said.match(/[^.]*\bcredit[^.]*\./gi) || []).join(" | "));
+  check(name + ": the result view's promise reads within 48 hours of your category confirmation", (said.match(/within 48 hours/gi) || []).length === (said.match(/within 48 hours of your category confirmation/g) || []).length && said.includes("Findings within 48 hours of your category confirmation."), "result promise");
+  const scripts = [...doc.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]).join("\n");
+  check(name + ": no script writes a credit, a Sprint or a Sprint price into the result", scripts.length > 10000 && !/\bcredit|\bSprint\b|\$2,900|\$2,410/i.test(scripts), "script scan");
+  check(name + ": the result links the sample report beside its purchase path", /href="\/assets\/sample\/category-audit-sample\.pdf"/.test(result), "sample link");
+}
+
+// The sample report the result links to. Its text is read from the PDF's own page streams
+// (ASCII85 and Flate, as written) through each font's ToUnicode map, page by page.
+function pdfPages(bytes) {
+  const pdf = bytes.toString("latin1");
+  const objects = {};
+  for (const match of pdf.matchAll(/(\d+) 0 obj\n([\s\S]*?)endobj/g)) objects[match[1]] = match[2];
+  const ascii85 = (text) => {
+    text = text.replace(/\s/g, "").replace(/~>$/, "");
+    const out = [];
+    for (let at = 0; at < text.length;) {
+      if (text[at] === "z") { out.push(0, 0, 0, 0); at += 1; continue; }
+      let chunk = text.slice(at, at + 5); at += 5;
+      const pad = 5 - chunk.length; chunk += "u".repeat(pad);
+      let value = 0; for (const c of chunk) value = value * 85 + (c.charCodeAt(0) - 33);
+      out.push(...[Math.floor(value / 16777216) & 255, (value >>> 16) & 255, (value >>> 8) & 255, value & 255].slice(0, 4 - pad));
+    }
+    return Buffer.from(out);
+  };
+  const stream = (id) => {
+    const object = objects[id], at = object.indexOf("stream\n") + 7, dict = object.slice(0, at);
+    let data = Buffer.from(object.slice(at, object.lastIndexOf("endstream")), "latin1");
+    if (/ASCII85Decode/.test(dict)) data = ascii85(data.toString("latin1"));
+    if (/FlateDecode/.test(dict)) data = inflateSync(data);
+    return data.toString("latin1");
+  };
+  const unicode = (hex) => String.fromCharCode(...hex.match(/.{4}/g).map((unit) => parseInt(unit, 16)));
+  const toUnicode = (id) => {
+    const map = {}, cmap = stream(id);
+    for (const block of cmap.matchAll(/beginbfchar([\s\S]*?)endbfchar/g)) for (const pair of block[1].matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g)) map[parseInt(pair[1], 16)] = unicode(pair[2]);
+    for (const block of cmap.matchAll(/beginbfrange([\s\S]*?)endbfrange/g)) for (const range of block[1].matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g)) for (let code = parseInt(range[1], 16); code <= parseInt(range[2], 16); code++) map[code] = String.fromCharCode(parseInt(range[3], 16) + code - parseInt(range[1], 16));
+    return map;
+  };
+  const tree = Object.values(objects).find((object) => /\/Type \/Pages\b/.test(object));
+  const kids = [...tree.match(/\/Kids \[([^\]]*)\]/)[1].matchAll(/(\d+) 0 R/g)].map((match) => match[1]);
+  const escapes = { n: "\n", r: "\r", t: "\t", b: "\b", f: "\f", "(": "(", ")": ")", "\\": "\\" };
+  const literal = (text) => text.replace(/\\([nrtbf()\\]|[0-7]{1,3})/g, (all, c) => (c in escapes ? escapes[c] : String.fromCharCode(parseInt(c, 8))));
+  const pages = kids.map((id) => {
+    const page = objects[id];
+    const fontsAt = (/\/Font (\d+) 0 R/.exec(page) || [])[1];
+    const fonts = {};
+    for (const entry of objects[fontsAt].matchAll(/\/([\w+]+) (\d+) 0 R/g)) { const tu = /\/ToUnicode (\d+) 0 R/.exec(objects[entry[2]]); fonts[entry[1]] = tu ? toUnicode(tu[1]) : null; }
+    let font = null, text = "";
+    const ops = /\/([\w+]+) [\d.]+ Tf|\[((?:\((?:\\.|[^\\)])*\)|[^\]])*)\]\s*TJ|\(((?:\\.|[^\\)])*)\)\s*Tj|\bT\*|\bET\b/g;
+    for (const op of stream(/\/Contents (\d+) 0 R/.exec(page)[1]).matchAll(ops)) {
+      if (op[1]) { font = fonts[op[1]]; continue; }
+      if (op[0] === "T*" || op[0] === "ET") { text += "\n"; continue; }
+      const strings = op[3] !== undefined ? [op[3]] : [...op[2].matchAll(/\(((?:\\.|[^\\)])*)\)/g)].map((match) => match[1]);
+      for (const raw of strings) for (const c of literal(raw)) text += font ? (font[c.charCodeAt(0)] !== undefined ? font[c.charCodeAt(0)] : "\uFFFD") : c;
+    }
+    return text.replace(/[ \t]*\n+/g, "\n");
+  });
+  const links = [...pdf.matchAll(/\/URI \(([^)]*)\)/g)].map((match) => match[1]);
+  return { count: Number((/\/Count (\d+)/.exec(tree) || [])[1]), pages, links };
+}
+{
+  const sample = pdfPages(readFileSync(root("public/assets/sample/category-audit-sample.pdf")));
+  const text = sample.pages.join("\n");
+  const flat = text.replace(/\s+/g, " ");
+  check("the sample report keeps its four pages", sample.count === 4 && sample.pages.length === 4 && sample.pages.every((page) => page.length > 200), sample.count + " pages");
+  check("the sample report's text decodes cleanly through its fonts", !text.includes("\uFFFD") && /Kalvenor Systems on the AI shortlist/.test(flat), "decode");
+  check("the sample report's promise reads Findings within 48 hours of your category confirmation.", flat.includes("Ten buyer questions, five engines, three measured runs. Findings within 48 hours of your category confirmation.") && !/48 hours of category confirmation/.test(flat), (flat.match(/.{0,40}48 hours.{0,40}/g) || []).join(" | "));
+  check("every delivery promise in the sample report uses the published words", (flat.match(/within 48 hours/gi) || []).length >= 1 && (flat.match(/within 48 hours/gi) || []).length === (flat.match(/within 48 hours of your category confirmation/g) || []).length, "sample promise");
+  check("the sample report carries none of the banned words", hits(flat).length === 0, hits(flat).join(" | "));
+  check("the sample report has no em dash, en dash or double hyphen", !/[\u2013\u2014]|--/.test(text), "dashes");
+  check("every credit the sample report states is the published credit line", !/\bcredit/i.test(flat.split(CREDIT).join(" ")), "sample credit");
+  check("the only price in the sample report is the $490 Category Audit", (flat.match(/\$[\d,]+/g) || []).length > 0 && (flat.match(/\$[\d,]+/g) || []).every((price) => price === "$490"), (flat.match(/\$[\d,]+/g) || []).join(","));
+  check("the sample report's button goes to the $490 Audit through https://broadcastwell.com/buy/audit", sample.links.length === 1 && sample.links[0] === "https://broadcastwell.com/buy/audit", sample.links.join(","));
+  check("every page of the sample report says it is fictional", sample.pages.every((page) => page.replace(/\s+/g, " ").includes("Sample. All companies, pages, quotes and figures are fictional.")), "fictional mark");
+}
 
 // Every sentence the handlers can send back: the run refusals, the website read and result link
 // messages, and the result link page's title.

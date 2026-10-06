@@ -24,7 +24,7 @@ These rules come from the owner's standing brief (ZENITH, 28 Sep 2026). They ove
 
 ## Copy rules (every string a visitor can see)
 
-- "Free 10-question check (one engine)", never "free audit". Prices: $490 Category Audit; $190 Index Brief; the Diagnostic ($990) shows Paused. Never "starting at", "from", or a percentage in sales copy.
+- "Free 10-question check (one engine)", never "free audit". Prices: $490 Category Audit; $190 Index Brief. The AI Visibility Diagnostic is retired and never shown (Sairam's ruling of 5 Oct 2026, section 0). The one credit line is "The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410." and the promise is "Findings within 48 hours of your category confirmation". Never "starting at", "from", or a percentage in sales copy.
 - Five engines by name when all are meant: ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.
 - Never: em dashes, double hyphens, "founder-led", "early-stage", "startup", "studio", "boutique", "solo", "$1,500", "four engines", "120 observed answers", "free audit", "against the first month", "three month minimum", any model string, workflow ids, credential names, any guaranteed placement, any traffic or revenue result.
 - One filled primary button per screen.

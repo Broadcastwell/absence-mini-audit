@@ -399,8 +399,8 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     && head.includes('class="pill" href="https://broadcastwell.com/buy/audit" data-buy aria-label="Get the Category Audit, $490"><span class="pill-long">Get the Category Audit, $490</span><span class="pill-short">Get the Audit, $490</span></a>'), "header shell");
   check("the phone menu is an icon button with a name, as on the main site",
     /<summary aria-label="Open menu"><svg class="menu-icon"[^>]*aria-hidden="true"/.test(head) && !/<summary>Menu<\/summary>/.test(head) && /setAttribute\('aria-label', siteMenu\.open \? 'Close menu' : 'Open menu'\)/.test(page), "icon menu");
-  check("the header repeats the filled $490 purchase control",
-    /\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "primary offer");
+  check("the header keeps an outlined $490 purchase control",
+    /\.pill\s*\{[^}]*background:\s*transparent/.test(page) && !/\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "secondary offer");
   check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
@@ -579,7 +579,7 @@ let failed = 0;
     /<div class="buy-actions"><a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Run it on all five engines, \$490<\/a><\/div><p class="small flush">Findings within 48 hours of your category confirmation\. Refundable in full within 30 days of delivery\. The \$490 credits once against the \$2,900 Fix Sprint within 30 days of delivery, so the Sprint is \$2,410\.<\/p>/.test(buy)
     && (buy.match(/class="cta /g) || []).length === 1 && /app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
   const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
-  check("every filled purchase button is the $490 Category Audit", filledOffers.length === 2 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one primary kind");
+  check("the one filled purchase button is the $490 Category Audit", filledOffers.length === 1 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled purchase action");
   check("the submit is filled before a result and steps down once one is shown",
     /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
     && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");

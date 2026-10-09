@@ -579,7 +579,7 @@ let failed = 0;
     /<div class="buy-actions"><a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Run it on all five engines, \$490<\/a><\/div><p class="small flush">Findings within 48 hours of your category confirmation\. Refundable in full within 30 days of delivery\. The \$490 credits once against the \$2,900 Fix Sprint within 30 days of delivery, so the Sprint is \$2,410\.<\/p>/.test(buy)
     && (buy.match(/class="cta /g) || []).length === 1 && /app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
   const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
-  check("every filled purchase button is the $490 Category Audit", filledOffers.length === 2 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one primary kind");
+  check("the one filled purchase button is the $490 Category Audit", filledOffers.length === 1 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled purchase action");
   check("the submit is filled before a result and steps down once one is shown",
     /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
     && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");

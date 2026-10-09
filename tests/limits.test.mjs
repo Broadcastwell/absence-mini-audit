@@ -399,8 +399,8 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     && head.includes('class="pill" href="https://broadcastwell.com/buy/audit" data-buy aria-label="Get the Category Audit, $490"><span class="pill-long">Get the Category Audit, $490</span><span class="pill-short">Get the Audit, $490</span></a>'), "header shell");
   check("the phone menu is an icon button with a name, as on the main site",
     /<summary aria-label="Open menu"><svg class="menu-icon"[^>]*aria-hidden="true"/.test(head) && !/<summary>Menu<\/summary>/.test(head) && /setAttribute\('aria-label', siteMenu\.open \? 'Close menu' : 'Open menu'\)/.test(page), "icon menu");
-  check("the header repeats the filled $490 purchase control",
-    /\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "primary offer");
+  check("the header keeps an outlined $490 purchase control",
+    /\.pill\s*\{[^}]*background:\s*transparent/.test(page) && !/\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "secondary offer");
   check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");

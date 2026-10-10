@@ -288,7 +288,7 @@
     out.push('<rect x="0" y="' + fy + '" width="' + W + '" height="' + foot + '" fill="' + C.raised + '"/><rect x="0" y="' + fy + '" width="' + W + '" height="1" fill="' + C.rule + '"/>');
     var parts = data.sample
       ? ["broadcastwell.com", "SAMPLE DATA, fictional company", "$490 Category Audit sample", "Five engines", "Measured " + date(data.measured_on)]
-      : ["broadcastwell.com", "Free 10-question check (one engine)", engine, "Measured " + date(data.measured_on)];
+      : ["broadcastwell.com", "Free 10 question check (one engine)", engine, "Measured " + date(data.measured_on)];
     var fsz = Math.max(15, Math.round(16 * Math.min(W / 1200, H / 630)));
     var lines = [], current = "";
     parts.forEach(function (part) {

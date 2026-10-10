@@ -401,7 +401,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     /<summary aria-label="Open menu"><svg class="menu-icon"[^>]*aria-hidden="true"/.test(head) && !/<summary>Menu<\/summary>/.test(head) && /setAttribute\('aria-label', siteMenu\.open \? 'Close menu' : 'Open menu'\)/.test(page), "icon menu");
   check("the header keeps an outlined $490 purchase control",
     /\.pill\s*\{[^}]*background:\s*transparent/.test(page) && !/\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "secondary offer");
-  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10-question check (one engine)<'), "footer label");
+  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10 question check (one engine)<'), "footer label");
   check("the pill and every phone menu target clear 44 px",
     /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
   check("the text links collapse behind one disclosure at phone widths and the pill stays",
@@ -567,8 +567,8 @@ let failed = 0;
   check("the five engines are named once on the page", ["ChatGPT", "Claude", "Google AI Overviews", "Google AI Mode"].every((name) => visible.split(name).length === 2), "engine names");
   // A sentence may set the free result beside the five engine products, but no sentence may
   // put five engines on the free check without naming the paid product that runs them.
-  const claims = visible.split(/\.\s/).filter((sentence) => /(10-question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
-  check("no sentence gives the free 10-question check more than one engine", claims.length === 0, claims.join(" | "));
+  const claims = visible.split(/\.\s/).filter((sentence) => /(10 question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
+  check("no sentence gives the free 10 question check more than one engine", claims.length === 0, claims.join(" | "));
 
   const fullResult = page.slice(page.indexOf('<section id="result"'), page.indexOf('<section id="email-card"'));
   const buyAt = fullResult.indexOf('class="buy-path"');
@@ -589,7 +589,7 @@ let failed = 0;
   try { graph = JSON.parse(ld)["@graph"]; } catch (_) { graph = []; }
   const app = graph.find((node) => node["@type"] === "WebApplication");
   const audit = graph.find((node) => node["@type"] === "Service");
-  check("the structured data names the Free 10-question check as a free web application", app && app.name === "Free 10-question check" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
+  check("the structured data names the Free 10 question check as a free web application", app && app.name === "Free 10 question check" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
   check("the structured data carries the $490 offer at the site's /buy switch", audit && audit.offers.price === "490" && audit.offers.url === "https://broadcastwell.com/buy/audit" && audit.offers.availability === "https://schema.org/InStock", JSON.stringify(audit || {}).slice(0, 80));
 }
 

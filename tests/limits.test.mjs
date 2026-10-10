@@ -567,7 +567,7 @@ let failed = 0;
   check("the five engines are named once on the page", ["ChatGPT", "Claude", "Google AI Overviews", "Google AI Mode"].every((name) => visible.split(name).length === 2), "engine names");
   // A sentence may set the free result beside the five engine products, but no sentence may
   // put five engines on the free check without naming the paid product that runs them.
-  const claims = visible.split(/\.\s/).filter((sentence) => /(10 question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
+  const claims = visible.split(/\.\s/).filter((sentence) => /(10[- ]question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
   check("no sentence gives the free 10 question check more than one engine", claims.length === 0, claims.join(" | "));
 
   const fullResult = page.slice(page.indexOf('<section id="result"'), page.indexOf('<section id="email-card"'));

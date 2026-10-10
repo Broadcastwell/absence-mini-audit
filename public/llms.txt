@@ -6,6 +6,8 @@ The free check at audit.broadcastwell.com asks ten buyer questions on one answer
 
 This is one run on one engine. Answers vary between runs. The result includes answer excerpts and sources when the engine returns them. The Category Audit is the paid baseline described on the main site.
 
+[Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)
+
 ## Product and method
 
 - [Free 10-question check](https://audit.broadcastwell.com/): Start the free check.

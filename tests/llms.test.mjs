@@ -9,6 +9,7 @@ assert.match(text, /Free 10-question check \(one engine\)/);
 assert.match(text, /visitor confirms them before the check runs/i);
 assert.match(text, /one run on one engine.*Answers vary between runs/s);
 assert.match(text, /when the engine returns them/);
+assert.ok(text.includes("[Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)"));
 for (const url of [
   "https://broadcastwell.com/category-audit",
   "https://broadcastwell.com/methodology",

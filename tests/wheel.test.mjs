@@ -37,10 +37,10 @@ const W = globalThis.BwWheel;
   check("a question the run did not itemise is drawn dashed, not guessed", (unknown.match(/stroke-dasharray="2.5 2.5"/g) || []).length === 10, "dashed");
   for (const [w, h] of [[1200, 630], [1080, 1080], [1600, 900]]) {
     const card = W.card(free, { width: w, height: h });
-    check("the " + w + " by " + h + " export is that size and carries the footer strip", card.includes('width="' + w + '" height="' + h + '"') && card.includes("broadcastwell.com") && card.includes("Free 10-question check (one engine)") && card.includes("Perplexity") && card.includes("Measured 21 September 2026") && card.includes("One run on one engine. Answers vary between runs."), w + "x" + h);
+    check("the " + w + " by " + h + " export is that size and carries the footer strip", card.includes('width="' + w + '" height="' + h + '"') && card.includes("broadcastwell.com") && card.includes("Free 10 question check (one engine)") && card.includes("Perplexity") && card.includes("Measured 21 September 2026") && card.includes("One run on one engine. Answers vary between runs."), w + "x" + h);
   }
   const sampleCard = W.card(sample, { width: 1200, height: 630 });
-  check("a sample export is labelled SAMPLE DATA and never claims to be the free check", sampleCard.includes("SAMPLE DATA") && !sampleCard.includes("Free 10-question check (one engine)"), "sample card");
+  check("a sample export is labelled SAMPLE DATA and never claims to be the free check", sampleCard.includes("SAMPLE DATA") && !sampleCard.includes("Free 10 question check (one engine)"), "sample card");
   const every = [wheel, W.card(free, {}), sampleCard, svg].join("\n");
   check("the wheel never carries a style attribute, a script or an event handler", !/\sstyle="|<script|\son[a-z]+="/i.test(every), "csp safe");
   check("the wheel draws no dash the site does not print, no percentage, no score and no red", !/[\u2013\u2014]|--|%|\bscore\b|\bgrade\b/i.test(every.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ")) && !/#(?:ef4444|dc2626|ff0000|b91c1c|f87171)/i.test(every), "copy law");

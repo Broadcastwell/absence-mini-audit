@@ -308,7 +308,7 @@ function fakePage(options) {
     get innerHTML() { return this.html; }
     set innerHTML(v) { this.childNodes.forEach((n) => { n.parentNode = null; }); this.childNodes = []; this.html = String(v); }
     addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
-    focus() {} scrollIntoView() {} select() {} click() {}
+    focus() { this.focused = true; } scrollIntoView() {} select() { this.selected = true; } click() {}
     querySelector() { return null; }
     querySelectorAll() { return []; }
     closest() { return null; }
@@ -332,13 +332,14 @@ function fakePage(options) {
     querySelector: () => new El("div"),
     querySelectorAll: () => [],
     addEventListener() {},
+    execCommand: (...args) => opts.execCommand(...args),
   };
   const timers = { next: 1 };
   const storage = new Map();
   const context = {
     document,
     location: { search: opts.search || "", origin: "https://audit.broadcastwell.com", href: "https://audit.broadcastwell.com/" },
-    navigator: { sendBeacon: (url) => { requests.push("beacon " + url); return true; } },
+    navigator: { clipboard: opts.clipboard, sendBeacon: (url) => { requests.push("beacon " + url); return true; } },
     fetch: async (url, init) => { requests.push("fetch " + url); return opts.respond(String(url), init); },
     URL, URLSearchParams, Response, Blob, console,
     setTimeout: () => timers.next++, clearTimeout() {}, setInterval: () => timers.next++, clearInterval() {},
@@ -414,6 +415,45 @@ function fakePage(options) {
   check("the ask links are built with DOM calls, never innerHTML, and request nothing", builder.length > 200 && /setAttribute\('href', engine\[1\] \+ encodeURIComponent\(question\)\)/.test(builder) && /a\.textContent = engine\[0\]/.test(builder) && !/innerHTML|insertAdjacentHTML|fetch\(|sendBeacon|window\.open/.test(builder), "builder");
   check("askLinks is called only from the row renderer", (script.match(/askLinks\(/g) || []).length === 2 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script), "calls");
   check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:2px solid var\(--blue\);outline-offset:2px\}/.test(PAGE), "css");
+}
+
+// Exercise the real registered Copy link handler with controlled browser API outcomes.
+// These tests never read or write the host clipboard and cannot prove browser delivery.
+{
+  const link = "https://audit.broadcastwell.com/r/" + "a".repeat(32);
+  const cases = [
+    { name: "modern clipboard success", modern: "resolve", fallback: false, success: true, fallbackCalls: 0 },
+    { name: "legacy fallback success", modern: "absent", fallback: true, success: true, fallbackCalls: 1 },
+    { name: "modern rejection with successful fallback", modern: "reject", fallback: true, success: true, fallbackCalls: 1 },
+    { name: "legacy fallback refused", modern: "absent", fallback: false, success: false, fallbackCalls: 1 },
+    { name: "modern rejection with refused fallback", modern: "reject", fallback: false, success: false, fallbackCalls: 1 },
+    { name: "legacy fallback throws", modern: "absent", fallback: "throw", success: false, fallbackCalls: 1 },
+    { name: "modern rejection with throwing fallback", modern: "reject", fallback: "throw", success: false, fallbackCalls: 1 },
+  ];
+  for (const scenario of cases) {
+    const writes = [], commands = [];
+    let resolveModern, rejectModern;
+    const pending = scenario.modern === "absent" ? null : new Promise((resolve, reject) => { resolveModern = resolve; rejectModern = reject; });
+    const page = fakePage({
+      respond: () => { throw new Error("Copy must not request a measurement or any endpoint"); },
+      clipboard: pending ? { writeText: (value) => { writes.push(value); return pending; } } : undefined,
+      execCommand: (command) => { commands.push(command); if (scenario.fallback === "throw") throw new Error("Copy refused"); return scenario.fallback; },
+    });
+    const input = page.document.getElementById("link-url"), button = page.document.getElementById("link-copy"), status = page.document.getElementById("link-status");
+    input.value = link; button.textContent = "Copy link"; status.classList.add("hidden");
+    for (const listener of button.listeners.click) listener.call(button);
+    if (pending) {
+      check(scenario.name + ": pending clipboard promise does not announce success", button.textContent === "Copy link" && commands.length === 0);
+      if (scenario.modern === "resolve") resolveModern(); else rejectModern(new Error("NotAllowedError"));
+    }
+    await page.settle();
+    check(scenario.name + ": copies only the existing link without a request", input.value === link && input.selected && writes.join("") === (pending ? link : "") && commands.length === scenario.fallbackCalls && commands.every((command) => command === "copy") && page.requests.length === 0);
+    if (scenario.success) {
+      check(scenario.name + ": success feedback is retained", button.textContent === "Copied" && status.classList.contains("hidden"));
+    } else {
+      check(scenario.name + ": failure gives manual-copy guidance without claiming success", button.textContent === "Copy link" && !status.classList.contains("hidden") && /could not copy/i.test(status.textContent) && /selected Result link manually/.test(status.textContent) && input.focused);
+    }
+  }
 }
 
 let failed = 0;

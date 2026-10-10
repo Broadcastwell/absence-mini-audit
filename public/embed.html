@@ -907,7 +907,22 @@
       if (last && last.seal) { show(document.getElementById('link-create')); show(document.getElementById('link-hint')); show(document.getElementById('buy-link-note')); }
     }).catch(function () { button.disabled = false; status.textContent = 'The link could not be deleted. Try again in a few minutes.'; });
   });
-  document.getElementById('link-copy').addEventListener('click', function () { var input = document.getElementById('link-url'), button = this; input.select(); var done = function () { button.textContent = 'Copied'; window.setTimeout(function () { button.textContent = 'Copy link'; }, 2000); }; if (navigator.clipboard) navigator.clipboard.writeText(input.value).then(done, function () { document.execCommand('copy'); done(); }); else { document.execCommand('copy'); done(); } });
+  document.getElementById('link-copy').addEventListener('click', function () {
+    var input = document.getElementById('link-url'), button = this, status = document.getElementById('link-status');
+    input.select(); button.textContent = 'Copy link'; hide(status);
+    var done = function () { button.textContent = 'Copied'; hide(status); window.setTimeout(function () { button.textContent = 'Copy link'; }, 2000); };
+    var fallback = function () {
+      var copied = false;
+      try { copied = document.execCommand('copy') === true; } catch (error) {}
+      if (copied) { done(); return; }
+      button.textContent = 'Copy link';
+      status.textContent = 'Could not copy the link. Copy the selected Result link manually.'; show(status);
+      input.focus(); input.select();
+    };
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try { navigator.clipboard.writeText(input.value).then(done, fallback); } catch (error) { fallback(); }
+    } else { fallback(); }
+  });
   // A buy click from a fresh result with no link yet makes the link first, so the order
   // carries fc_ plus its id. If that fails or takes more than four seconds, checkout opens anyway.
   document.addEventListener('click', function (event) {

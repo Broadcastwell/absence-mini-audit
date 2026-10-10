@@ -1,0 +1,23 @@
+# Broadcastwell free check
+
+> Free ten question check (one engine) for B2B software companies.
+
+The free check at audit.broadcastwell.com asks ten buyer questions on one answer engine and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
+
+This is one run on one engine. Answers vary between runs. The result includes answer excerpts and sources when the engine returns them. The Category Audit is the paid baseline described on the main site.
+
+[Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)
+
+## Product and method
+
+- [Free ten question check](https://audit.broadcastwell.com/): Start the free check.
+- [Category Audit](https://broadcastwell.com/category-audit): Scope, deliverables and current terms for the paid baseline.
+- [Methodology](https://broadcastwell.com/methodology): Measurement definitions, repeated observations and limits.
+
+## Authoritative company information
+
+- [Company facts](https://broadcastwell.com/company-facts): Published facts about Broadcastwell.
+- [The Absence Manual](https://docs.broadcastwell.com/): Full documentation and research.
+- [Full documentation text](https://docs.broadcastwell.com/llms.txt): The documentation's text source.
+- [Privacy](https://broadcastwell.com/privacy): Data handling and privacy information.
+- [Contact](https://broadcastwell.com/contact): Questions and corrections.

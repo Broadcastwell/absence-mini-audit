@@ -1,6 +1,6 @@
 # Broadcastwell free check
 
-> Free 10-question check (one engine) for B2B software companies.
+> Free ten question check (one engine) for B2B software companies.
 
 The free check at audit.broadcastwell.com asks ten buyer questions on one answer engine and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
 
@@ -10,7 +10,7 @@ This is one run on one engine. Answers vary between runs. The result includes an
 
 ## Product and method
 
-- [Free 10-question check](https://audit.broadcastwell.com/): Start the free check.
+- [Free ten question check](https://audit.broadcastwell.com/): Start the free check.
 - [Category Audit](https://broadcastwell.com/category-audit): Scope, deliverables and current terms for the paid baseline.
 - [Methodology](https://broadcastwell.com/methodology): Measurement definitions, repeated observations and limits.
 

@@ -37,6 +37,8 @@ test('footer has exactly five groups of six and preserves contact and legal deta
  assert.match(html,/517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States/);
  assert.match(html,/href="tel:\+18123457272">\(812\) 345 7272/);
  assert.match(html,/<time datetime="\d{4}-\d{2}-\d{2}">/);
+ assert.match(html,/<p class="bw-shared-allowance"><strong>Free 10-question check \(one engine\):<\/strong> No email is needed; runs are limited per network and per day, and by the site's daily allowance\.<\/p>/);
+ assert.match(css,/\.bw-shared-allowance\s*\{[^}]*font-size:15px/);
  for(const slug of ['terms','privacy','cookies'])assert.ok(html.includes(`href="https://broadcastwell.com/${slug}"`));
  assert.match(css,/@media\(max-width:809px\)/);
  assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);

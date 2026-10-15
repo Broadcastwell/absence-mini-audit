@@ -71,6 +71,7 @@ ${provenance ? `  <div class="bw-shared-provenance">${provenance}</div>` : ''}
   <div class="bw-shared-footer">
     <div class="bw-shared-brand"><a class="bw-shared-wordmark" href="https://broadcastwell.com/">Broadcastwell</a><p>AI search visibility for B2B software companies.</p><address>517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States</address><a href="tel:+18123457272">(812) 345 7272</a></div>
     <nav class="bw-shared-columns" aria-label="Broadcastwell footer">${FOOTER.map(([title, links], i) => `<details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-${i}">${title}</h2></summary><ul aria-labelledby="bw-footer-${i}">${links.map(item => `<li>${link(item)}</li>`).join('')}</ul></details>`).join('')}</nav>
+    <p class="bw-shared-allowance"><strong>Free 10-question check (one engine):</strong> No email is needed; runs are limited per network and per day, and by the site's daily allowance.</p>
     <div class="bw-shared-bottom"><p>Copyright ${date.slice(0,4)} Broadcastwell LLC.</p><nav aria-label="Legal"><a href="https://broadcastwell.com/privacy">Privacy</a><a href="https://broadcastwell.com/terms">Terms</a><a href="https://broadcastwell.com/cookies">Cookies</a></nav><p>Last updated <time datetime="${date}">${dateLabel}</time></p></div>
   </div>
 </footer>`;

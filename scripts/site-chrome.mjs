@@ -51,7 +51,7 @@ export const FOOTER = [
   ]]
 ];
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
-const link = ([label, href]) => `<a href="${escape(href)}">${escape(label)}</a>`;
+const link = ([label, href]) => `<a href="${escape(href)}">${href === "mailto:hello@broadcastwell.com" && label === "hello@broadcastwell.com" ? "hello@<wbr>broadcastwell.com" : escape(label)}</a>`;
 export function siteHeader({className = 'site-header', localLinks = ''} = {}) {
   return `<header class="${className}" data-bw-site-header>
   <div class="bw-shared-bar">

@@ -32,8 +32,9 @@ test('footer has exactly five groups of six and preserves contact and legal deta
  assert.equal(groups.length,5);
  groups.forEach((group,i)=>{
    assert.equal(group[1].match(/<h2[^>]*>([^<]+)<\/h2>/)[1],footerLabels[i][0]);
-   assert.deepEqual([...group[1].matchAll(/<a[^>]*>([^<]+)<\/a>/g)].map(x=>x[1]),footerLabels[i][1]);
+   assert.deepEqual([...group[1].matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(x=>x[1].replace(/<wbr\s*\/?>/g,'')),footerLabels[i][1]);
  });
+ assert.match(html,/<a href="mailto:hello@broadcastwell.com">hello@<wbr>broadcastwell.com<\/a>/);
  assert.match(html,/517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States/);
  assert.match(html,/href="tel:\+18123457272">\(812\) 345 7272/);
  assert.match(html,/<time datetime="\d{4}-\d{2}-\d{2}">/);

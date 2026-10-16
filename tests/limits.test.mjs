@@ -407,7 +407,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     (foot.match(/data-bw-footer-group/g)||[]).length===5 && [...foot.matchAll(/<details class="bw-shared-group"[^>]*>([\s\S]*?)<\/details>/g)].every(group=>(group[1].match(/<li>/g)||[]).length===6), "footer groups");
   check("footer contact, legal links and dated publication line are present",
     foot.includes('href="tel:+18123457272">(812) 345 7272') && foot.includes('517 E Kirkwood Ave<br>Bloomington, IN 47408')
-    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-15">')
+    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-16">')
     && ['privacy','terms','cookies'].every(slug=>foot.includes('href="https://broadcastwell.com/'+slug+'">')), "footer details");
   check("the footer preserves the free check's research disclosure above the shared groups",
     foot.indexOf('Broadcastwell is excluded from its own sample')>=0 && foot.indexOf('Broadcastwell is excluded from its own sample')<foot.indexOf('bw-shared-columns'), "disclosure");

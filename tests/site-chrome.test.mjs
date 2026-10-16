@@ -57,11 +57,11 @@ function simulate(width){
  const menus=[menu],header=element(),desktopLink=element(),wordmark=element(),documentListeners={},listenerCounts={};
  menu.closest=()=>header;header.querySelector=()=>wordmark;header.querySelectorAll=()=>[desktopLink,wordmark,menu.link];header.contains=target=>menu.contains(target)||target===desktopLink||target===wordmark;
  menu.link.setAttribute('href','https://broadcastwell.com/free-tools');desktopLink.setAttribute('href','https://broadcastwell.com/free-tools');desktopLink.closest=()=>desktopLink;
- const document={activeElement:null,querySelectorAll:s=>s==='[data-bw-footer-group]'?groups:s==='[data-bw-site-menu]'?menus:[header],addEventListener:(name,fn)=>{documentListeners[name]=fn;listenerCounts[name]=(listenerCounts[name]||0)+1}};
- for(const node of [menu.summary,menu.link,desktopLink,wordmark,...groups.flatMap(group=>[group.summary,group.link])])node.focus=function(){this.focused=true;document.activeElement=this};
+ const document={body:{},documentElement:{},activeElement:null,querySelectorAll:s=>s==='[data-bw-footer-group]'?groups:s==='[data-bw-site-menu]'?menus:[header],addEventListener:(name,fn)=>{documentListeners[name]=fn;listenerCounts[name]=(listenerCounts[name]||0)+1}};
+ for(const node of [menu.summary,menu.link,desktopLink,wordmark,...groups.flatMap(group=>[group.summary,group.link])])node.focus=function(){this.focused=true;document.activeElement=this;documentListeners.focusin?.({target:this})};
  const window={scrollY:0,matchMedia:s=>s.includes('809')?footerQuery:headerQuery,addEventListener(){}};
  vm.runInNewContext(script,{document,window});
- return {groups,menu,menus,header,desktopLink,document,listenerCounts,footerQuery,headerQuery,init:window.BroadcastwellSiteChrome.init,clickSummary(group){let prevented=false;group.summary.listeners.click({preventDefault(){prevented=true}});if(!prevented)group.open=!group.open;return prevented},resize(w){footerQuery.matches=w<=809;headerQuery.matches=w<=1099;footerQuery.listeners.forEach(fn=>fn());headerQuery.listeners.forEach(fn=>fn())},documentListeners};
+ return {groups,menu,menus,header,desktopLink,wordmark,document,listenerCounts,footerQuery,headerQuery,init:window.BroadcastwellSiteChrome.init,clickSummary(group){let prevented=false;group.summary.listeners.click({preventDefault(){prevented=true}});if(!prevented)group.open=!group.open;return prevented},resize(w){footerQuery.matches=w<=809;headerQuery.matches=w<=1099;footerQuery.listeners.forEach(fn=>fn());headerQuery.listeners.forEach(fn=>fn())},documentListeners};
 }
 test('phone footer begins collapsed, desktop is expanded and resizing preserves the phone choice',()=>{
  const ui=simulate(390);
@@ -96,12 +96,36 @@ test('resizing retains the focused footer group and moves header focus to a visi
  assert.equal(ui.groups[1].open,true);assert.equal(ui.document.activeElement,ui.groups[1].link);
  assert.ok(ui.groups.filter((_,i)=>i!==1).every(group=>!group.open));
  ui.menu.open=true;ui.menu.link.focus();ui.resize(1440);
- assert.equal(ui.menu.open,false);assert.equal(ui.document.activeElement,ui.desktopLink);
- ui.resize(390);assert.equal(ui.document.activeElement,ui.menu.summary);
+ assert.equal(ui.menu.open,false);assert.equal(ui.document.activeElement,ui.wordmark);
+ ui.desktopLink.focus();ui.resize(390);assert.equal(ui.document.activeElement,ui.menu.summary);
 });
 test('dynamic replacement keeps only one set of global listeners and leaves detached nodes untouched',()=>{
  const ui=simulate(1440),detachedGroup=ui.groups.shift(),detachedMenu=ui.menus.pop();
  detachedMenu.open=true;ui.init();ui.init();ui.resize(390);ui.documentListeners.click({target:{}});
  assert.equal(detachedGroup.open,true);assert.equal(detachedMenu.open,true);
  assert.equal(ui.footerQuery.listeners.length,1);assert.equal(ui.headerQuery.listeners.length,1);assert.equal(ui.listenerCounts.click,1);
+});
+
+test('CSS-first breakpoint hiding restores mobile menu focus to the visible wordmark',()=>{
+ const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();
+ ui.document.activeElement=ui.document.body;
+ ui.resize(1440);
+ assert.equal(ui.menu.open,false);assert.equal(ui.document.activeElement,ui.wordmark);
+});
+test('CSS-first hiding of a desktop navigation link restores focus to the phone menu',()=>{
+ const ui=simulate(1440);ui.desktopLink.focus();ui.document.activeElement=ui.document.body;
+ ui.resize(390);assert.equal(ui.document.activeElement,ui.menu.summary);
+});
+test('resize does not resurrect stale header focus after another control or outside click',()=>{
+ for(const leave of ['focus','click']){
+  const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();const outside={};
+  if(leave==='focus'){ui.document.activeElement=outside;ui.documentListeners.focusin({target:outside});}
+  else{ui.document.activeElement=ui.document.body;ui.documentListeners.click({target:ui.document.body});}
+  const expected=ui.document.activeElement;ui.resize(1440);assert.equal(ui.document.activeElement,expected);
+ }
+});
+test('detached previously focused menu is not consulted after a dynamic view replacement',()=>{
+ const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();ui.menus.pop();ui.document.activeElement=ui.document.body;
+ ui.init();ui.resize(1440);assert.equal(ui.document.activeElement,ui.document.body);
+ assert.equal(ui.listenerCounts.focusin,1);
 });

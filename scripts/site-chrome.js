@@ -6,6 +6,7 @@
   var mobileHeader = window.matchMedia('(max-width: 1099px)');
   var groupState = new WeakMap();
   var boundMenus = new WeakSet();
+  var headerFocus = new WeakMap();
   function matching(root, selector) {
     var nodes = Array.prototype.slice.call(root.querySelectorAll(selector));
     if (root.matches && root.matches(selector)) nodes.unshift(root);
@@ -24,15 +25,22 @@
   }
   function menuLabel(menu) { menu.querySelector('summary').setAttribute('aria-label', (menu.open ? 'Close' : 'Open') + ' Broadcastwell navigation'); }
   function dismiss(menu, focus) { menu.open = false; menuLabel(menu); if (focus) menu.querySelector('summary').focus(); }
+  function rememberHeaderFocus(target) {
+    matching(document, '[data-bw-site-header]').forEach(function (header) {
+      headerFocus.set(header, contains(header, target) ? target : null);
+    });
+  }
   function syncMenu(menu) {
     var active = document.activeElement;
     var header = menu.closest && menu.closest('[data-bw-site-header]');
+    // CSS can hide the old breakpoint before matchMedia dispatches its change.
+    // Only recover focus lost to the document; never override another control.
+    if (header && (active === document.body || active === document.documentElement)) {
+      var previous = headerFocus.get(header);
+      if (contains(header, previous)) active = previous;
+    }
     if (!mobileHeader.matches) {
-      var destination = null;
-      if (header && contains(menu, active)) {
-        var href = active.getAttribute && active.getAttribute('href');
-        destination = matching(header, 'a[href]').find(function (link) { return !contains(menu, link) && href && link.getAttribute('href') === href; }) || header.querySelector('.bw-shared-wordmark');
-      }
+      var destination = header && contains(menu, active) ? header.querySelector('.bw-shared-wordmark') : null;
       dismiss(menu, false);
       if (destination) destination.focus();
     } else if (header && contains(header, active) && active.closest && active.closest('.bw-shared-nav, .bw-shared-signin')) {
@@ -78,7 +86,9 @@
   else if (mobileFooter.addListener) mobileFooter.addListener(footerResize);
   if (mobileHeader.addEventListener) mobileHeader.addEventListener('change', headerResize);
   else if (mobileHeader.addListener) mobileHeader.addListener(headerResize);
+  document.addEventListener('focusin', function (event) { rememberHeaderFocus(event.target); });
   document.addEventListener('click', function (event) {
+    rememberHeaderFocus(event.target);
     matching(document, '[data-bw-site-menu]').forEach(function (menu) { if (menu.open && !contains(menu, event.target)) dismiss(menu, contains(menu, document.activeElement)); });
   });
   window.BroadcastwellSiteChrome = {init:init};

@@ -397,7 +397,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     head.includes('class="bw-shared-wordmark" href="https://broadcastwell.com/"')
     && ['Product','Research','Free tools','Pricing','Exchange','Company'].every(label=>head.includes('>'+label+'</a>'))
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
-    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>'), "header shell");
+    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/audit">$490 Audit</a>'), "header shell");
   check("the phone menu is a named native disclosure with Escape handling",
     head.includes('data-bw-site-menu><summary aria-label="Open Broadcastwell navigation">') && page.includes("event.key === 'Escape'"), "menu semantics");
   check("the Audit header action remains outlined",

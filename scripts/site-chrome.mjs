@@ -58,7 +58,7 @@ export function siteHeader({className = 'site-header', localLinks = ''} = {}) {
     <a class="bw-shared-wordmark" href="https://broadcastwell.com/" aria-label="Broadcastwell home">Broadcastwell</a>
     <nav class="bw-shared-nav" aria-label="Broadcastwell">${NAV.map(link).join('')}</nav>
     <a class="bw-shared-signin" href="https://app.broadcastwell.com/signin">Sign in</a>
-    <a class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>
+    <a class="bw-shared-audit" href="https://broadcastwell.com/buy/audit">$490 Audit</a>
     <details class="bw-shared-menu" data-bw-site-menu><summary aria-label="Open Broadcastwell navigation"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="bw-shared-sr">Menu</span></summary><nav aria-label="Broadcastwell mobile">${NAV.map(link).join('')}<a href="https://app.broadcastwell.com/signin">Sign in</a>${localLinks}</nav></details>
   </div>
 </header>`;

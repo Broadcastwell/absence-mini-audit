@@ -21,7 +21,7 @@ test('six site navigation destinations and separate sign in and outlined Audit a
  if(mode==='audit')assert.equal(html.match(/\/\* site chrome: begin \*\/\n([\s\S]*?)\n\/\* site chrome: end \*\//)[1],script.replace(/\r\n?/g,'\n').trim(),'the single inline controller matches its authored source');
  const nav=html.match(/<nav class="bw-shared-nav"[^>]*>([\s\S]*?)<\/nav>/)[1];
  assert.deepEqual([...nav.matchAll(/<a[^>]*>([^<]+)<\/a>/g)].map(x=>x[1]),navLabels);
- assert.match(html,/class="bw-shared-audit" href="https:\/\/broadcastwell.com\/buy\/audit" aria-label="Get the Category Audit, \$490">\$490 Audit<\/a>/);
+ assert.match(html,/class="bw-shared-audit" href="https:\/\/broadcastwell.com\/buy\/audit">\$490 Audit<\/a>/);
  assert.match(css,/\.bw-shared-audit\s*\{[^}]*min-height:44px;[^}]*border-radius:9px;[^}]*background:transparent/);
  assert.match(html,/href="https:\/\/app.broadcastwell.com\/signin">Sign in<\/a>/);
  assert.match(css,/height:64px/);

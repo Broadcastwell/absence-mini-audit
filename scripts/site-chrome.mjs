@@ -1,5 +1,5 @@
 // SITE shared chrome source. Fixed public destinations, no network or account behavior.
-export const SITE_UPDATED = '2026-10-15';
+export const SITE_UPDATED = '2026-10-16';
 export const NAV = [
   ['Product', 'https://broadcastwell.com/platform'],
   ['Research', 'https://broadcastwell.com/research'],

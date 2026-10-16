@@ -22,14 +22,13 @@
 <meta name="twitter:description" content="Type your website and see whether Perplexity names your company in ten buyer questions, drawn as one shortlist wheel.">
 <meta name="twitter:image" content="https://audit.broadcastwell.com/assets/absence-mini-audit-2026-09.png">
 <link rel="icon" href="https://framerusercontent.com/images/j6xX2NJoWncy5Askq1FGOGo0Vo.png" type="image/png">
-<link rel="preload" href="/assets/fonts/geist-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="canonical" href="https://audit.broadcastwell.com/">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Free 10 question check","alternateName":"Free 10 question check (one engine)","url":"https://audit.broadcastwell.com/","applicationCategory":"BusinessApplication","operatingSystem":"Any","description":"A free AI visibility check for B2B software companies. Type your website; ten buyer questions in your category are asked on one AI answer engine, Perplexity, and the result is drawn as a shortlist wheel with your position on the absence ladder. No email needed.","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"provider":{"@type":"Organization","name":"Broadcastwell","url":"https://broadcastwell.com"}},{"@type":"Service","name":"Category Audit","description":"Ten buyer questions on five AI answer engines, three measured runs each, with the sources behind every answer and three prioritized fixes. Findings within 48 hours of your category confirmation.","provider":{"@type":"Organization","name":"Broadcastwell","url":"https://broadcastwell.com"},"offers":{"@type":"Offer","price":"490","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://broadcastwell.com/buy/audit"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does the Free 10 question check (one engine) measure?","acceptedAnswer":{"@type":"Answer","text":"Whether Perplexity names your company when a buyer asks ten shortlist questions in your category: three best of, three alternatives, two comparison, one evaluation and one use case. Each answer is marked named or not named, and the count places you on the published absence ladder."}},{"@type":"Question","name":"Is it free, and do I need an email?","acceptedAnswer":{"@type":"Answer","text":"It is free. No email is needed; runs are limited per network and per day, and by the site's daily allowance."}},{"@type":"Question","name":"Why do you read my website?","acceptedAnswer":{"@type":"Answer","text":"To propose your company name and your category in a buyer's words, so the only thing you type is your address. We read your homepage and at most two more public pages, with a user agent that names Broadcastwell, and keep nothing we read. Nothing runs until you confirm."}},{"@type":"Question","name":"How is it different from the $490 Category Audit?","acceptedAnswer":{"@type":"Answer","text":"The Category Audit is ten questions, five engines, three runs: 150 scheduled observed answers and three prioritized fixes. Findings within 48 hours of your category confirmation. It also shows who is named instead of you and the sources visible in those answers. Every figure comes from the published method, v1.1."}},{"@type":"Question","name":"Does one run tell me where I stand?","acceptedAnswer":{"@type":"Answer","text":"It is one run on one engine, and answers vary between runs. That is why the paid measurements ask every question three times on every engine and report the disagreement."}},{"@type":"Question","name":"What does a result link keep, and for how long?","acceptedAnswer":{"@type":"Answer","text":"Only what the result shows: your company name, website, category, the ten questions, their marks and any answer text and sources the run returned. No email and nothing about you. The link is private and not indexed by search engines. It is kept for 30 days and then deleted, and the browser that made it can delete it sooner."}}]}]}</script>
 <style>
-  /* Geist, then Inter, self hosted. Geist is the face of broadcastwell.com and the portal
-     (the variable face from the geist package, byte identical to the portal's copy, SIL Open
-     Font License 1.1), preloaded so a first visit shows it. Inter stays as the fallback and as
-     the wheel's face, which exported images embed. The page used to pull Inter from a font CDN
+  /* Inter is self hosted and preloaded for the shared website system and the wheel,
+     whose exported images embed it. The existing Geist asset remains available to older
+     cached pages. The page used to pull Inter from a font CDN
      with two preconnects and a stylesheet link, which put a third party request in front of
      this page and needed two more hosts in the Content Security Policy. The two Inter subsets
      are the portal's, byte identical, SIL Open Font License 1.1. */
@@ -55,7 +54,7 @@
   }
   * { box-sizing: border-box; }
   html { background: var(--ground); }
-  body { margin: 0; background: var(--ground); color: var(--body); font: 17px/1.6 Geist, Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: var(--ground); color: var(--body); font: 17px/1.6 Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   a { color: var(--body); text-underline-offset: .16em; }
   a:hover { color: var(--ink); text-decoration-thickness: 2px; }
   a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible, .wheel-node:focus-visible, [tabindex="-1"]:focus-visible { outline: 3px solid var(--rule); outline-offset: 2px; }
@@ -102,7 +101,7 @@
   input[readonly] { color: var(--body); }
   .hint, .small { color: var(--muted); font-size: 14px; }
   .field-error { margin: 8px 0 0; color: var(--ink); font-size: 14px; font-weight: 600; }
-  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Geist, Inter, ui-sans-serif, system-ui, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
+  .primary { width: 100%; min-height: 52px; margin-top: 24px; padding: 12px 18px; border: 1px solid var(--blue); border-radius: 8px; background: var(--blue); color: #FFFFFF; cursor: pointer; font: 700 16px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; transition: background 150ms ease, border-color 150ms ease; }
   .primary:hover { border-color: var(--blue-hover); background: var(--blue-hover); }
   /* Once a result is on the page the purchase button is the one filled button, so the
      submit steps down to an outline. It is filled again as soon as a new run starts. */
@@ -116,7 +115,7 @@
   .read .read-title { color: var(--ink); font-weight: 600; }
   .read .read-desc { margin-top: 4px; font-size: 15px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
-  .chip { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--body); cursor: pointer; font: 600 14px/1.3 Geist, Inter, ui-sans-serif, system-ui, sans-serif; text-align: left; }
+  .chip { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--body); cursor: pointer; font: 600 14px/1.3 Inter, ui-sans-serif, system-ui, sans-serif; text-align: left; }
   .chip:hover { border-color: var(--rule); color: var(--ink); }
   .chip[aria-pressed="true"] { border-color: var(--rule); background: var(--tint); color: var(--ink); }
   .chip[aria-pressed="true"]::before { content: "\2713  "; }
@@ -172,7 +171,7 @@
   .keep { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
   .keep h3 { font-size: 18px; }
   .export-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
-  .small-button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 600 14px/1.3 Geist, Inter, ui-sans-serif, system-ui, sans-serif; }
+  .small-button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 600 14px/1.3 Inter, ui-sans-serif, system-ui, sans-serif; }
   .small-button:hover { border-color: var(--rule); background: var(--tint); }
   .small-button[disabled] { cursor: wait; opacity: .72; }
   .link-row { display: flex; gap: 8px; margin-top: 12px; }
@@ -188,7 +187,7 @@
   .cta-filled:hover { border-color: var(--blue-hover); background: var(--blue-hover); color: #FFFFFF; }
   .cta-outline { border-color: var(--line-strong); background: transparent; color: var(--ink); }
   .cta-outline:hover { border-color: var(--rule); background: var(--tint); color: var(--ink); }
-  .outline-button { min-height: 48px; margin-top: 16px; padding: 12px 18px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 700 16px/1.4 Geist, Inter, ui-sans-serif, system-ui, sans-serif; }
+  .outline-button { min-height: 48px; margin-top: 16px; padding: 12px 18px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; font: 700 16px/1.4 Inter, ui-sans-serif, system-ui, sans-serif; }
   .outline-button:hover { border-color: var(--rule); background: var(--tint); }
   .email-card { margin-top: 28px; }
   .email-card h2 { font-size: 22px; }
@@ -295,10 +294,113 @@
   html.embed .audit-grid,html.embed .audit-grid.has-result{display:block;max-width:none}
   html.embed .form-column,html.embed .audit-grid.has-result .form-column{margin:0}
 
+/* SITE shared chrome. Inter is served by each host's existing font declarations. */
+:root {
+  --bw-ground:#0A0A0B; --bw-primary:#1D4ED8; --bw-accent:#3B82F6;
+  --bw-panel:#F8FAFC; --bw-panel-blue:#EFF6FF; --bw-border:#E3E8EF;
+  --bw-text-dark:#FFFFFF; --bw-body-dark:#CBD5E1;
+  --bw-text-light:#0A0E1A; --bw-muted-light:#475569;
+  --bw-font:"Inter",system-ui,sans-serif; --bw-header-height:64px;
+  --bw-container:1200px; --bw-content:1152px; --bw-gutter:24px;
+  --bw-control-radius:9px; --bw-card-radius:16px;
+  --bw-e2:0 8px 24px rgba(10,14,26,.08); --bw-motion:160ms ease;
+}
+[data-bw-site-header],.site-footer,.bw-footer {
+  box-sizing:border-box; color:var(--bw-text-dark); background:var(--bw-ground);
+  font-family:var(--bw-font); font-size:15px; line-height:1.5;
+}
+[data-bw-site-header] *, .bw-shared-footer *, .bw-shared-provenance * { box-sizing:border-box; }
+[data-bw-site-header] {
+  position:sticky; top:0; z-index:100; display:block; height:64px; min-height:64px;
+  padding:0; margin:0; border:0; border-bottom:1px solid transparent; box-shadow:none;
+}
+[data-bw-site-header][data-scrolled="true"] { border-bottom-color:#2C3036; }
+.bw-shared-bar {
+  display:flex; align-items:center; gap:24px; width:100%; max-width:1200px;
+  height:63px; padding:0 24px; margin:0 auto; min-width:0;
+}
+.bw-shared-wordmark { font-size:20px; font-weight:700; letter-spacing:-.025em; text-decoration:none; white-space:nowrap; }
+[data-bw-site-header] a, .bw-shared-footer a, .bw-shared-provenance a { color:#FFFFFF; text-decoration:none; }
+[data-bw-site-header] a:hover, .bw-shared-footer a:hover, .bw-shared-provenance a:hover { color:#FFFFFF; text-decoration:underline; text-underline-offset:4px; }
+.bw-shared-nav { display:flex; align-items:center; gap:24px; margin-left:auto; }
+.bw-shared-nav a,.bw-shared-signin { display:flex; align-items:center; min-height:44px; font-size:15px; font-weight:500; white-space:nowrap; }
+.bw-shared-audit { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; min-height:44px; padding:0 16px; border:1px solid #3B82F6; border-radius:9px; background:transparent; color:#FFFFFF; font-size:15px; font-weight:600; white-space:nowrap; transition:background var(--bw-motion),border-color var(--bw-motion); }
+.bw-shared-audit:hover { background:rgba(59,130,246,.04); border-color:#FFFFFF; }
+.bw-shared-menu { display:none; flex-shrink:0; }
+.bw-shared-menu>summary { display:flex; align-items:center; justify-content:center; width:44px; min-height:44px; margin:0; padding:10px; border:1px solid #667085; border-radius:9px; color:#FFFFFF; background:transparent; list-style:none; cursor:pointer; }
+.bw-shared-menu>summary::-webkit-details-marker,.bw-shared-group>summary::-webkit-details-marker { display:none; }
+.bw-shared-menu>nav { position:absolute; top:63px; left:0; right:0; display:grid; padding:16px 24px 24px; margin:0; max-height:calc(100dvh - 64px); overflow-y:auto; border-bottom:1px solid #434A55; background:#0A0A0B; box-shadow:var(--bw-e2); }
+.bw-shared-menu:not([open])>nav { display:none; }
+.bw-shared-menu>nav>a { display:flex; align-items:center; min-height:44px; font-size:15px; padding:8px 0; }
+.bw-shared-local-links { display:grid; border-top:1px solid #434A55; margin-top:16px; padding-top:16px; }
+.bw-shared-local-links a { min-height:44px; display:flex; align-items:center; }
+[data-bw-site-header] :focus-visible,.bw-shared-footer :focus-visible,.bw-shared-provenance :focus-visible { outline:3px solid #3B82F6; outline-offset:3px; }
+.bw-shared-sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.site-footer,.bw-footer { margin:0; padding:56px 0 32px; border:0; border-top:1px solid #2C3036; }
+.bw-shared-footer { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,5fr); gap:40px 24px; max-width:1200px; padding:0 24px; margin:0 auto; }
+.bw-shared-brand { min-width:0; }
+.bw-shared-brand p,.bw-shared-brand address { margin:16px 0; font-size:15px; font-style:normal; line-height:1.6; color:#CBD5E1; }
+.bw-shared-brand>a:last-child { min-height:44px; display:inline-flex; align-items:center; font-size:15px; }
+.bw-shared-columns { min-width:0; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:24px; }
+.bw-shared-group { min-width:0; padding:0; margin:0; border:0; background:transparent; box-shadow:none; }
+.bw-shared-group>summary { display:flex; align-items:center; min-height:44px; margin:0 0 8px; padding:0; list-style:none; color:#FFFFFF; }
+.bw-shared-group>summary h2 { margin:0; padding:0; font:600 15px/1.5 var(--bw-font); color:#FFFFFF; letter-spacing:0; }
+.bw-shared-group>ul { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.bw-shared-group li { margin:0; padding:0; min-width:0; }
+.bw-shared-group li a { display:block; font-size:15px; line-height:1.5; color:#CBD5E1; overflow-wrap:anywhere; }
+.bw-shared-bottom { grid-column:1/-1; display:flex; align-items:center; flex-wrap:wrap; gap:16px 24px; padding-top:24px; border-top:1px solid #2C3036; color:#CBD5E1; }
+.bw-shared-bottom p { margin:0; color:inherit; font-size:15px; }
+.bw-shared-bottom>nav { display:flex; flex-wrap:wrap; gap:16px; }
+.bw-shared-bottom>nav>a { display:flex; align-items:center; min-height:44px; font-size:15px; }
+.bw-shared-bottom>p:last-child { margin-left:auto; }
+.bw-shared-allowance { grid-column:1/-1; margin:0; color:#CBD5E1; font-size:15px; line-height:1.5; }
+.bw-shared-provenance { max-width:1200px; padding:0 24px 32px; margin:0 auto 32px; border-bottom:1px solid #2C3036; color:#CBD5E1; }
+.bw-shared-provenance p { margin:0 0 16px; color:inherit; font-size:15px; }
+@media(max-width:1099px) {
+  .bw-shared-bar { gap:16px; }
+  .bw-shared-nav,.bw-shared-signin { display:none; }
+  .bw-shared-audit { margin-left:auto; }
+  .bw-shared-menu { display:block; }
+  .bw-shared-footer { grid-template-columns:minmax(0,1fr); }
+  .bw-shared-brand { max-width:42ch; }
+}
+@media(min-width:810px) and (max-width:1099px) {
+  .bw-shared-columns { column-gap:16px; }
+}
+@media(max-width:809px) {
+  .bw-shared-columns { display:block; }
+  .bw-shared-group { border-bottom:1px solid #434A55; }
+  .bw-shared-group>summary { min-height:56px; margin:0; cursor:pointer; justify-content:space-between; }
+  .bw-shared-group>summary::after { content:"+"; font-size:20px; padding-left:16px; }
+  .bw-shared-group[open]>summary::after { content:"\2212"; }
+  .bw-shared-group>ul { gap:0; padding-bottom:16px; }
+  .bw-shared-group li a { display:flex; align-items:center; min-height:44px; padding:8px 0; }
+  .bw-shared-bottom { align-items:flex-start; display:grid; gap:8px; }
+  .bw-shared-bottom>p:last-child { margin-left:0; }
+}
+@media(max-width:374px) {
+  .bw-shared-bar { gap:8px; }
+  .bw-shared-wordmark { font-size:16px; }
+  .bw-shared-audit { padding-inline:8px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  [data-bw-site-header] *, .bw-shared-footer * { transition:none!important; scroll-behavior:auto!important; }
+}
+
+/* The compact free-check frame keeps its existing chrome exclusion. */
+html.embed .site-header,html.embed .site-footer,html.embed .detail{display:none}
 </style>
 </head>
 <body>
-<header class="site-header"><div class="container"><a class="wordmark" href="https://broadcastwell.com">Broadcastwell</a><nav class="site-nav" aria-label="Broadcastwell"><a href="https://broadcastwell.com/pricing">Pricing</a><a href="https://app.broadcastwell.com/signin">Sign in</a></nav><a class="pill" href="https://broadcastwell.com/buy/audit" data-buy aria-label="Get the Category Audit, $490"><span class="pill-long">Get the Category Audit, $490</span><span class="pill-short">Get the Audit, $490</span></a><details class="menu" id="site-menu"><summary aria-label="Open menu"><svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path class="menu-open" d="M4 7h16M4 12h16M4 17h16"/><path class="menu-close" d="m6 6 12 12M6 18 18 6"/></svg></summary><div class="menu-panel"><a href="https://broadcastwell.com/pricing">Pricing</a><a href="https://app.broadcastwell.com/signin">Sign in</a></div></details></div></header>
+<header class="site-header" data-bw-site-header>
+  <div class="bw-shared-bar">
+    <a class="bw-shared-wordmark" href="https://broadcastwell.com/" aria-label="Broadcastwell home">Broadcastwell</a>
+    <nav class="bw-shared-nav" aria-label="Broadcastwell"><a href="https://broadcastwell.com/platform">Product</a><a href="https://broadcastwell.com/research">Research</a><a href="https://broadcastwell.com/free-tools">Free tools</a><a href="https://broadcastwell.com/pricing">Pricing</a><a href="https://exchange.broadcastwell.com/">Exchange</a><a href="https://broadcastwell.com/about">Company</a></nav>
+    <a class="bw-shared-signin" href="https://app.broadcastwell.com/signin">Sign in</a>
+    <a data-buy class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>
+    <details class="bw-shared-menu" data-bw-site-menu><summary aria-label="Open Broadcastwell navigation"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="bw-shared-sr">Menu</span></summary><nav aria-label="Broadcastwell mobile"><a href="https://broadcastwell.com/platform">Product</a><a href="https://broadcastwell.com/research">Research</a><a href="https://broadcastwell.com/free-tools">Free tools</a><a href="https://broadcastwell.com/pricing">Pricing</a><a href="https://exchange.broadcastwell.com/">Exchange</a><a href="https://broadcastwell.com/about">Company</a><a href="https://app.broadcastwell.com/signin">Sign in</a></nav></details>
+  </div>
+</header>
 <main class="container page"><div class="audit-grid">
   <section class="intro" aria-labelledby="audit-title">
     <p class="eyebrow">Free 10 question check (one engine)</p><h1 id="audit-title">Find out whether Perplexity names your company in ten buyer questions.</h1><p class="lede">Type your website and confirm your category. You see each question named or not named, drawn as your shortlist wheel. No email needed.</p>
@@ -318,8 +420,106 @@
     <section class="left-section" aria-labelledby="full-title"><h2 id="full-title">Need a full measurement?</h2><p class="offer-state">The $490 Category Audit is available now. Findings within 48 hours of your category confirmation.</p><p>The Category Audit asks the same ten buyer questions on all five engines, three measured runs each: 150 scheduled observed answers, who is named instead of you, the sources visible in those answers, and three prioritized fixes. $490 once.</p><p class="small"><a href="https://broadcastwell.com/methodology">Every figure comes from the published method, v1.1.</a></p><div class="buy-actions"><a class="cta cta-outline" href="https://broadcastwell.com/buy/audit" data-buy>Get the Category Audit, $490</a></div><p class="small">Refundable in full within 30 days of delivery. The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410. <a href="https://broadcastwell.com/pricing">The published price ladder</a>.</p></section>
   </section>
   </div></main>
-<footer class="site-footer"><div class="container"><p>Broadcastwell ran the measurement behind The Absence Manual and sells services in the category it measures. Broadcastwell is excluded from its own sample and from every ranking. The raw data and the analysis code are public.</p><nav class="footer-columns" aria-label="Broadcastwell footer"><div><h2 class="footer-heading" id="footer-col-0">Product</h2><ul class="footer-list" aria-labelledby="footer-col-0"><li><a href="https://broadcastwell.com/pricing">Category Audit</a></li><li><a href="https://broadcastwell.com/pricing#monthly">The program</a></li><li><a href="https://broadcastwell.com/for-agencies">For agencies</a></li><li><a href="https://broadcastwell.com/partners">Partner Network</a></li><li><a href="https://audit.broadcastwell.com">Free 10 question check (one engine)</a></li><li><a href="https://app.broadcastwell.com/sample">Sample account</a></li><li><a href="https://app.broadcastwell.com/signin">Sign in or create a free account</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-1">Research</h2><ul class="footer-list" aria-labelledby="footer-col-1"><li><a href="https://broadcastwell.com/state-of-geo">The 2026 State of GEO</a></li><li><a href="https://index.broadcastwell.com/">The Absence Index</a></li><li><a href="https://docs.broadcastwell.com/">The Absence Manual</a></li><li><a href="https://docs.broadcastwell.com/absence-manual.pdf">The Absence Manual (PDF)</a></li><li><a href="https://broadcastwell.com/engine-divergence">Engine divergence</a></li><li><a href="https://broadcastwell.com/absence-ladder">The Absence Ladder</a></li><li><a href="https://broadcastwell.com/methodology">Methodology</a></li><li><a href="https://broadcastwell.com/insights">Insights</a></li><li><a href="https://broadcastwell.com/best-geo-agencies">Agency comparisons</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-2">Company</h2><ul class="footer-list" aria-labelledby="footer-col-2"><li><a href="https://broadcastwell.com/about">About</a></li><li><a href="https://broadcastwell.com/company-facts">Company facts</a></li><li><a href="https://broadcastwell.com/careers">Careers</a></li><li><a href="https://broadcastwell.com/security">Security and data handling</a></li><li><a href="https://broadcastwell.com/faq">Questions and answers</a></li></ul></div><div><h2 class="footer-heading" id="footer-col-3">Contact</h2><ul class="footer-list" aria-labelledby="footer-col-3"><li><a href="tel:+18123457272">(812) 345 7272</a></li><li><a href="mailto:hello@broadcastwell.com?subject=Broadcastwell%20enquiry">hello@broadcastwell.com</a></li><li><a href="https://broadcastwell.com/contact">Contact page</a></li><li><a href="https://www.linkedin.com/company/broadcastwell">LinkedIn</a></li><li><a href="https://broadcastwell.substack.com">Writing</a></li></ul></div></nav><div class="footer-bottom"><p class="flush">Broadcastwell LLC. Indiana, USA. Copyright 2026.</p><ul class="footer-links"><li><a href="https://broadcastwell.com/privacy">Privacy</a></li><li><a href="https://broadcastwell.com/terms">Terms</a></li><li><a href="https://broadcastwell.com/cookies">Cookies</a></li></ul></div></div></footer>
+<footer class="site-footer">
+  <div class="bw-shared-provenance"><p>Broadcastwell ran the measurement behind The Absence Manual and sells services in the category it measures. Broadcastwell is excluded from its own sample and from every ranking. The raw data and the analysis code are public.</p></div>
+  <div class="bw-shared-footer">
+    <div class="bw-shared-brand"><a class="bw-shared-wordmark" href="https://broadcastwell.com/">Broadcastwell</a><p>AI search visibility for B2B software companies.</p><address>517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States</address><a href="tel:+18123457272">(812) 345 7272</a></div>
+    <nav class="bw-shared-columns" aria-label="Broadcastwell footer"><details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-0">Product</h2></summary><ul aria-labelledby="bw-footer-0"><li><a href="https://broadcastwell.com/category-audit">Category Audit, $490</a></li><li><a href="https://broadcastwell.com/fix-sprint">Fix Sprint</a></li><li><a href="https://broadcastwell.com/pricing#monthly">The program</a></li><li><a href="https://broadcastwell.com/for-agencies">For agencies</a></li><li><a href="https://broadcastwell.com/pricing">Pricing</a></li><li><a href="https://app.broadcastwell.com/connect">Connect an assistant</a></li></ul></details><details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-1">Research</h2></summary><ul aria-labelledby="bw-footer-1"><li><a href="https://broadcastwell.com/absence-index">Absence Index</a></li><li><a href="https://broadcastwell.com/public-fix">Public Fix</a></li><li><a href="https://broadcastwell.com/state-of-geo">The 2026 State of GEO</a></li><li><a href="https://broadcastwell.com/research">Studies</a></li><li><a href="https://broadcastwell.com/methodology">Methodology</a></li><li><a href="https://broadcastwell.com/data">Data and citations</a></li></ul></details><details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-2">Free tools</h2></summary><ul aria-labelledby="bw-footer-2"><li><a href="https://audit.broadcastwell.com/">Free 10-question check (one engine)</a></li><li><a href="https://app.broadcastwell.com/tools/llms-txt">llms.txt generator</a></li><li><a href="https://app.broadcastwell.com/tools/record-check">Record check (free)</a></li><li><a href="https://broadcastwell.com/best-geo-agencies">Agency comparisons</a></li><li><a href="https://app.broadcastwell.com/sample">Sample account</a></li><li><a href="https://broadcastwell.com/developers">Developers</a></li></ul></details><details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-3">Company</h2></summary><ul aria-labelledby="bw-footer-3"><li><a href="https://broadcastwell.com/about">About</a></li><li><a href="https://broadcastwell.com/company-facts">Company facts</a></li><li><a href="https://broadcastwell.com/careers">Careers</a></li><li><a href="https://exchange.broadcastwell.com/">Exchange</a></li><li><a href="https://broadcastwell.com/partners">Partner Network</a></li><li><a href="https://broadcastwell.com/security">Security</a></li></ul></details><details class="bw-shared-group" data-bw-footer-group open><summary><h2 id="bw-footer-4">Contact</h2></summary><ul aria-labelledby="bw-footer-4"><li><a href="mailto:hello@broadcastwell.com">hello@<wbr>broadcastwell.com</a></li><li><a href="https://broadcastwell.com/contact">Contact page</a></li><li><a href="https://www.linkedin.com/company/broadcastwell">LinkedIn</a></li><li><a href="https://broadcastwell.substack.com/">Writing</a></li><li><a href="https://broadcastwell.com/sitemap">Sitemap</a></li><li><a href="https://broadcastwell.com/faq">Questions and answers</a></li></ul></details></nav>
+    <p class="bw-shared-allowance"><strong>Free 10-question check (one engine):</strong> No email is needed; runs are limited per network and per day, and by the site's daily allowance.</p>
+    <div class="bw-shared-bottom"><p>Copyright 2026 Broadcastwell LLC.</p><nav aria-label="Legal"><a href="https://broadcastwell.com/privacy">Privacy</a><a href="https://broadcastwell.com/terms">Terms</a><a href="https://broadcastwell.com/cookies">Cookies</a></nav><p>Last updated <time datetime="2026-10-15">15 October 2026</time></p></div>
+  </div>
+</footer>
 <script>
+/* site chrome: begin */
+/* Shared disclosure behavior. No requests, storage, tracking or account access. */
+(function () {
+  if (!document.querySelectorAll || !window.matchMedia) return;
+  if (window.BroadcastwellSiteChrome) { window.BroadcastwellSiteChrome.init(); return; }
+  var mobileFooter = window.matchMedia('(max-width: 809px)');
+  var mobileHeader = window.matchMedia('(max-width: 1099px)');
+  var groupState = new WeakMap();
+  var boundMenus = new WeakSet();
+  function matching(root, selector) {
+    var nodes = Array.prototype.slice.call(root.querySelectorAll(selector));
+    if (root.matches && root.matches(selector)) nodes.unshift(root);
+    return nodes;
+  }
+  function contains(node, target) { return !!(target && node.contains && node.contains(target)); }
+  function syncGroup(group) {
+    var state = groupState.get(group);
+    if (!state) return;
+    var summary = group.querySelector('summary');
+    // Resizing must never hide the link a keyboard user is currently reading.
+    if (mobileFooter.matches && document.activeElement !== summary && contains(group, document.activeElement)) state.mobileOpen = true;
+    group.open = mobileFooter.matches ? state.mobileOpen : true;
+    if (mobileFooter.matches) { summary.removeAttribute('tabindex'); summary.removeAttribute('aria-disabled'); }
+    else { summary.setAttribute('tabindex', '-1'); summary.setAttribute('aria-disabled', 'true'); }
+  }
+  function menuLabel(menu) { menu.querySelector('summary').setAttribute('aria-label', (menu.open ? 'Close' : 'Open') + ' Broadcastwell navigation'); }
+  function dismiss(menu, focus) { menu.open = false; menuLabel(menu); if (focus) menu.querySelector('summary').focus(); }
+  function syncMenu(menu) {
+    var active = document.activeElement;
+    var header = menu.closest && menu.closest('[data-bw-site-header]');
+    if (!mobileHeader.matches) {
+      var destination = null;
+      if (header && contains(menu, active)) {
+        var href = active.getAttribute && active.getAttribute('href');
+        destination = matching(header, 'a[href]').find(function (link) { return !contains(menu, link) && href && link.getAttribute('href') === href; }) || header.querySelector('.bw-shared-wordmark');
+      }
+      dismiss(menu, false);
+      if (destination) destination.focus();
+    } else if (header && contains(header, active) && active.closest && active.closest('.bw-shared-nav, .bw-shared-signin')) {
+      menu.querySelector('summary').focus();
+    }
+  }
+  function init(root) {
+    root = root || document;
+    matching(root, '[data-bw-footer-group]').forEach(function (group) {
+      if (!groupState.has(group)) {
+        var state = {mobileOpen:false};
+        groupState.set(group, state);
+        group.querySelector('summary').addEventListener('click', function (event) {
+          if (!mobileFooter.matches) { event.preventDefault(); return; }
+          state.mobileOpen = !group.open;
+        });
+        group.addEventListener('toggle', function () { if (!mobileFooter.matches && !group.open) group.open = true; });
+      }
+      syncGroup(group);
+    });
+    matching(root, '[data-bw-site-menu]').forEach(function (menu) {
+      if (!boundMenus.has(menu)) {
+        boundMenus.add(menu);
+        menu.addEventListener('toggle', function () { menuLabel(menu); });
+        menu.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape' && menu.open) { event.preventDefault(); dismiss(menu, true); }
+        });
+        menu.addEventListener('click', function (event) {
+          if (event.target.closest && event.target.closest('a[href]')) dismiss(menu, false);
+        });
+      }
+      menuLabel(menu); syncMenu(menu);
+    });
+    rule();
+  }
+  function rule() {
+    matching(document, '[data-bw-site-header]').forEach(function (header) { header.setAttribute('data-scrolled', window.scrollY > 0 ? 'true' : 'false'); });
+  }
+  // Global listeners query current nodes. Replaced app views are not retained.
+  function footerResize() { matching(document, '[data-bw-footer-group]').forEach(syncGroup); }
+  function headerResize() { matching(document, '[data-bw-site-menu]').forEach(syncMenu); }
+  if (mobileFooter.addEventListener) mobileFooter.addEventListener('change', footerResize);
+  else if (mobileFooter.addListener) mobileFooter.addListener(footerResize);
+  if (mobileHeader.addEventListener) mobileHeader.addEventListener('change', headerResize);
+  else if (mobileHeader.addListener) mobileHeader.addListener(headerResize);
+  document.addEventListener('click', function (event) {
+    matching(document, '[data-bw-site-menu]').forEach(function (menu) { if (menu.open && !contains(menu, event.target)) dismiss(menu, contains(menu, document.activeElement)); });
+  });
+  window.BroadcastwellSiteChrome = {init:init};
+  init();
+  window.addEventListener('scroll', rule, {passive:true});
+})();
+/* site chrome: end */
+
 /* wheel module: begin */
 /*
  * The shortlist wheel. One dependency free module that turns the data contract in

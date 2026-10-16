@@ -1,3 +1,4 @@
+import {siteHeader,siteFooter} from './site-chrome.mjs';
 /**
  * Keeps the page, its headers and the wheel module in step. Run after any edit to
  * public/index.html, public/assets/wheel.js or public/_headers:
@@ -29,6 +30,16 @@ const END = "/* wheel module: end */";
 // Editors can write CRLF even with .gitattributes. Hash the LF bytes browsers parse.
 const textFile = (p) => readFileSync(path(p), "utf8").replace(/\r\n?/g, "\n");
 let page = textFile("public/index.html");
+const disclosure=page.match(/<div class="bw-shared-provenance">([\s\S]*?)<\/div>/)?.[1];
+if(!disclosure)throw new Error('The free check disclosure is missing');
+// The audit's existing result-reference, prefill and click handler selects data-buy.
+// Keep that host-specific hook on the shared header's purchase action.
+const auditHeader=siteHeader().replace('<a class="bw-shared-audit"','<a data-buy class="bw-shared-audit"');
+page=page.replace(/<header class="site-header"[^>]*>[\s\S]*?<\/header>/,auditHeader);
+page=page.replace(/<footer class="site-footer">[\s\S]*?<\/footer>/,siteFooter({provenance:disclosure}));
+const chrome = textFile("scripts/site-chrome.js").trim();
+if(!page.includes('/* site chrome: begin */') || !page.includes('/* site chrome: end */')) throw new Error('The shared chrome script markers are missing');
+page=page.replace(/\/\* site chrome: begin \*\/[\s\S]*?\/\* site chrome: end \*\//,'/* site chrome: begin */\n'+chrome+'\n/* site chrome: end */');
 const wheel = textFile("public/assets/wheel.js").trim();
 const at = page.indexOf(BEGIN);
 const end = page.indexOf(END);

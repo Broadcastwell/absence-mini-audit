@@ -356,6 +356,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("public copy keeps the user-visible engine free of model strings", !/sonar-pro/i.test(copy), "model scan");
   // The dark theme values are the ones the marketing site serves: ground, raised panel, heading, body and muted text.
   const allowedColours = new Set([
+    "#E3E8EF", "#2C3036", "#434A55", "#667085",
     "#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF",
     "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1",
     "#F7F9FC", "#EFF4FB", "#101828", "#475467", "#D5DDE8", "#98A2B3",
@@ -392,27 +393,25 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   // The shell the three subdomains share with the site.
   const head = page.slice(page.indexOf("<header"), page.indexOf("</header>"));
   const foot = page.slice(page.indexOf("<footer"), page.indexOf("</footer>"));
-  check("the header carries the wordmark, both text links and the pill",
-    head.includes('class="wordmark" href="https://broadcastwell.com"')
-    && head.includes('href="https://broadcastwell.com/pricing">Pricing<')
+  check("the header carries six site destinations, Sign in and the outlined Audit action",
+    head.includes('class="bw-shared-wordmark" href="https://broadcastwell.com/"')
+    && ['Product','Research','Free tools','Pricing','Exchange','Company'].every(label=>head.includes('>'+label+'</a>'))
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
-    && head.includes('class="pill" href="https://broadcastwell.com/buy/audit" data-buy aria-label="Get the Category Audit, $490"><span class="pill-long">Get the Category Audit, $490</span><span class="pill-short">Get the Audit, $490</span></a>'), "header shell");
-  check("the phone menu is an icon button with a name, as on the main site",
-    /<summary aria-label="Open menu"><svg class="menu-icon"[^>]*aria-hidden="true"/.test(head) && !/<summary>Menu<\/summary>/.test(head) && /setAttribute\('aria-label', siteMenu\.open \? 'Close menu' : 'Open menu'\)/.test(page), "icon menu");
-  check("the header keeps an outlined $490 purchase control",
-    /\.pill\s*\{[^}]*background:\s*transparent/.test(page) && !/\.pill\s*\{[^}]*background:\s*var\(--blue\)/.test(page) && head.includes('href="https://broadcastwell.com/buy/audit"'), "secondary offer");
-  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com">Free 10 question check (one engine)<'), "footer label");
-  check("the pill and every phone menu target clear 44 px",
-    /\.pill \{[^}]*min-height: 44px/.test(page) && /\.menu summary \{[^}]*min-height: 44px/.test(page) && /\.menu-panel a \{[^}]*min-height: 44px/.test(page), "touch targets");
-  check("the text links collapse behind one disclosure at phone widths and the pill stays",
-    page.includes("@media (max-width: 640px) { .site-nav { display: none; } .menu { display: block; }") && !/\.pill \{ display: none/.test(page), "phone header");
-  check("the footer carries the site's four columns and the bottom bar",
-    ["Product", "Research", "Company", "Contact"].every((name) => foot.includes(">" + name + "</h2>"))
-    && foot.includes("Broadcastwell LLC. Indiana, USA. Copyright 2026.")
-    && ["privacy", "terms", "cookies"].every((slug) => foot.includes('href="https://broadcastwell.com/' + slug + '">')), "footer shell");
-  check("the footer keeps this surface's own disclosure note above the columns",
-    foot.indexOf("Broadcastwell is excluded from its own sample") < foot.indexOf("footer-columns"), "disclosure note");
-  check("the footer columns stack below 640", page.includes(".footer-columns { grid-template-columns: 1fr;"), "footer stacking");
+    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>'), "header shell");
+  check("the phone menu is a named native disclosure with Escape handling",
+    head.includes('data-bw-site-menu><summary aria-label="Open Broadcastwell navigation">') && page.includes("event.key === 'Escape'"), "menu semantics");
+  check("the Audit header action remains outlined",
+    /\.bw-shared-audit\s*\{[^}]*background:transparent/.test(page), "secondary offer");
+  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com/">Free 10-question check (one engine)<'), "footer label");
+  check("the footer has exactly five groups with six links each",
+    (foot.match(/data-bw-footer-group/g)||[]).length===5 && [...foot.matchAll(/<details class="bw-shared-group"[^>]*>([\s\S]*?)<\/details>/g)].every(group=>(group[1].match(/<li>/g)||[]).length===6), "footer groups");
+  check("footer contact, legal links and dated publication line are present",
+    foot.includes('href="tel:+18123457272">(812) 345 7272') && foot.includes('517 E Kirkwood Ave<br>Bloomington, IN 47408')
+    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-15">')
+    && ['privacy','terms','cookies'].every(slug=>foot.includes('href="https://broadcastwell.com/'+slug+'">')), "footer details");
+  check("the footer preserves the free check's research disclosure above the shared groups",
+    foot.indexOf('Broadcastwell is excluded from its own sample')>=0 && foot.indexOf('Broadcastwell is excluded from its own sample')<foot.indexOf('bw-shared-columns'), "disclosure");
+  check("mobile and desktop footer behavior have explicit breakpoints",page.includes('@media(max-width:809px)') && page.includes("group.open = mobileFooter.matches ? state.mobileOpen : true"),"responsive footer");
   check("no label on the page is set in capitals", !/text-transform:\s*uppercase/i.test(page), "sentence case");
   check("the header and footer add no third party request",
     !/<script[^>]+src=/i.test(page) && !/<link[^>]+rel="stylesheet"/i.test(page), "no third party");
@@ -479,7 +478,7 @@ let failed = 0;
   // Inter is served from this origin now, so no font CDN should be reachable or named.
   check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
   check("Geist and both Inter subsets are declared and shipped, from this origin", (page.match(/@font-face/g) || []).length === 3 && ["geist-var.woff2", "inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
-  check("Geist is the page's face, preloaded, with Inter as its fallback", page.includes('<link rel="preload" href="/assets/fonts/geist-var.woff2" as="font" type="font/woff2" crossorigin>') && (page.match(/font: [^;]*Geist, Inter, ui-sans-serif, system-ui, sans-serif/g) || []).length === 5 && !/font: [^;]*[^,] Inter, ui-sans-serif/.test(page.replaceAll("Geist, Inter, ui-sans-serif", "")), "type stack");
+  check("Inter is the page's face and the preloaded local face", page.includes('<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>') && (page.match(/font: [^;]*Inter, ui-sans-serif, system-ui, sans-serif/g) || []).length === 5 && !page.includes('font: 17px/1.6 Geist'), "type stack");
 
   check("the started state is named and brought into view", page.includes("Your check has started") && page.includes("working.scrollIntoView"), "started state");
   check("the refusal names itself and its reason in one sentence",

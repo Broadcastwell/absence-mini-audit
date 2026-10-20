@@ -2,85 +2,68 @@
 
 The free 10-question check at [audit.broadcastwell.com](https://audit.broadcastwell.com).
 
-Ten buyer questions, one AI answer engine, no call. The visitor types a website; the
-page reads it and proposes the company name and the category in a buyer's words; the
-visitor confirms with one click and the check runs. The result is drawn as the shortlist
-wheel, with the visitor's position on the absence ladder and the chapter of
-[The Absence Manual](https://docs.broadcastwell.com/) that addresses it.
+Ten buyer questions, Claude, one run. The visitor types a website, confirms the proposed
+company and category, and receives a measurement report with its score, the companies
+named instead, cited domains and all ten answers. The page keeps question preview,
+private result links, offline image exports and optional email through the visitor's
+own email app.
 
 ## What is in here
 
 | Path | What it is |
 |-|-|
 | `public/` | The whole front end. One page, no external requests. |
+| `public/assets/report.js` | Responsive company and citation charts, plain answer display and offline report images. |
 | `public/assets/wheel.js` | The shortlist wheel, one dependency free module. Its contract is [WHEEL_CONTRACT.md](WHEEL_CONTRACT.md). |
 | `lib/audit.js` | The request handler: validation, the three limits, the spend cap, and the response contract. It also routes the calls below. |
 | `lib/analyze.js`, `lib/guard.js`, `lib/lexicon.js` | `POST /api/analyze`: reads the visitor's homepage and at most two more pages through the fetch guard, and proposes a name and a category from the lexicon. Free: it never calls the upstream. |
 | `lib/seal.js`, `lib/link.js` | `POST /api/link`, `POST /api/unlink` and `GET /r/<id>`: private, noindex result links, made only on request, kept 30 days, only for a result this handler sealed, and deletable sooner by the browser that made them. |
 | `lib/event.js` | `POST /api/event`: the daily funnel count. No personal data. |
 | `functions/` | Entry points. Each does nothing but hand the request to `lib/audit.js`. |
-| `scripts/build-page.mjs` | Inlines the wheel into the page and recomputes the CSP hashes. Run after editing the page. |
+| `scripts/build-page.mjs` | Inlines the wheel and report modules, embeds the export font and recomputes the CSP hashes. Run after editing the page. |
 | `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints. |
 | `scripts/funnel.mjs` | Prints the daily funnel counts with the owner's own Cloudflare sign in. |
 | `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite, the front door suite, the frame suite and the served copy suite (`tests/copy.test.mjs`: no word that reads as a closure, pause, cap or order count, and no retired offer, in anything served). `npm test`. |
 
 ## The response contract
 
-Seven keys, and no more. Two of them are allow-listed rather than copied, so an
-upstream that returns an unrecognised ladder position or an off-manual link
-produces an error rather than putting either in a browser.
+Nine top-level fields are returned: `named`, `asked`, `tier`, `chapter`, `engine`,
+`measured_on`, `questions`, `named_instead` and `cited_sources`. The first seven retain
+their meanings. `asked` is ten. Tier and chapter are allowlisted, and a partial enriched
+answer set or a count inconsistent with its marks is refused.
 
-```json
-{
-  "named": 0,
-  "asked": 10,
-  "tier": "named 0 of 10",
-  "chapter": "/category-door/",
-  "engine": "Perplexity",
-  "measured_on": "2026-08-18",
-  "questions": [
-    { "question": "What is the best contractor payroll software?", "status": "not named" }
-  ]
-}
-```
+Each of the ten question rows carries its question, named boolean, readable status,
+full plain answer, company names as written, cited domains and name-extraction status.
+The handler drops private fields. The existing optional excerpt and vendor-list fields
+remain readable for older results.
 
-The four tiers are verbatim from
-[the published classification rules](https://docs.broadcastwell.com/absence-rules/).
-The chapter is one of `/category-door/`, `/comparison-gate/` or
-`/absence-ladder/`.
+`named_instead` is an array of `{company, count}`, ordered highest first, excluding the
+visitor's company under the same host-label matching rule as the measurement.
+`cited_sources` is `{domains: [{domain, count}], own_site_cited}`. Each count is a number
+of answers out of ten, and each domain is counted once per answer.
 
-`questions` always carries the ten questions when a result is returned. The upstream
-answers with counts only, so the handler rebuilds the ten questions from the category
-with the same wording the upstream uses. A status is stated only where the count
-settles it: `not named` on all ten at named 0, `named` on all ten at named 10, and
-`not itemised` on every row for any count in between. Rows the upstream supplies itself,
-in the narrow expected shape, take precedence.
+Legacy responses without these details still render their score. When questions are
+absent, the handler rebuilds them from the published Index frame for its fourteen
+covered categories, or the original ten-question frame for other categories, and uses
+`not itemised` wherever a count cannot establish individual marks. Missing citation
+detail remains unknown rather than being presented as zero.
 
-A supplied row may also carry its receipt, and the page shows it with nothing locked:
-
-| Field | What it is | Kept |
-|-|-|-|
-| `excerpt` | The start of the engine's answer, verbatim | One line, at most 320 characters |
-| `sources` (or `citations`) | The URLs the answer cited | Plain http or https only, no credentials, at most 5 |
-| `named_instead` | The vendors the answer named other than the company | At most 8, each at most 80 characters |
-
-Any other row field is dropped. The seal covers the receipt, so a result link cannot hold an
-edited excerpt. When no row carries a receipt, the page says the run returned the marks
-only. The verdict line names the vendor named in the most answers, from `named_instead`.
+The result seal covers full answers, company names and both aggregates as well as the
+original score. Older seals remain verifiable. Saved links preserve the enriched
+contract and remain noindex for their 30-day lifetime.
 
 ## The buy path
 
-Every purchase control on the page goes to `https://broadcastwell.com/buy/audit`, the
-site's own switch, never to a checkout address directly. The result's one priced button
-reads "Run it on all five engines, $490". The switch passes two query parameters on:
-`client_reference_id=fc_<result link id>` (a buy from a fresh result makes the private
-link first, so the order can start from it) and `prefilled_email`, only when the visitor
-typed an address into the optional email field. The page offers the $490 Category Audit
-and nothing else for sale: under the owner's ruling of 5 October 2026 the $990 Diagnostic
-is retired and the AI Fact Check is removed, so neither is named, priced or linked. The one
-credit line is "The $490 credits once against the $2,900 Fix Sprint within 30 days of
-delivery, so the Sprint is $2,410." and the one promise is "Findings within 48 hours of your
-category confirmation".
+Every purchase control uses `https://broadcastwell.com/buy/audit`. The filled result
+button reads "Start with the $490 Category Audit". A result-linked purchase carries
+`fc=<result link id>` and the existing `client_reference_id=fc_<id>`. The visitor's
+optional email is added only when typed. Creating a link is still explicit, except
+that buying from a fresh result creates its link first with a four-second fallback.
+
+The Category Audit is refundable in full within 30 days of delivery. The $490 credits
+once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.
+The Sprint is secondary text. The sample Audit is a text link to
+`https://app.broadcastwell.com/sample`.
 
 A visitor arriving with `?site=example.com` (the find-your-company box on broadcastwell.com)
 or `?domain=example.com` has the website filled in and read at once. Reading is free; nothing
@@ -108,10 +91,14 @@ receipts and "ask the engine yourself") keep doing so. `tests/embed.test.mjs` ho
 
 ## Run time
 
-The page makes no duration promise. A run that takes longer than 55 seconds is stopped by
-the handler and gives the daily check back, which is what the running state says. Every
-completed run logs its time in milliseconds (`mini_audit_upstream_keys`, field `ms`), so a
-measured median can be read from the log stream and published later.
+The page states an approximate measured wait and returns a result only when all ten
+answers are usable. The handler stops at 55 seconds. An incomplete run receives an
+opaque 502, with a readable outcome and no provider details. The browser retries once
+after 20 seconds, then offers a later retry and the Category Audit.
+
+The first three failed attempts per network per UTC day refund their reserved allowance.
+Further failures consume it, which bounds retries during an outage. A workflow credit
+stop has a distinct allowance-used outcome and never becomes a bare error.
 
 ## Result links
 
@@ -126,13 +113,14 @@ are deleted on request by email.
 
 Held in the `config:limits` record in the key-value store, not in this
 repository and not in environment variables, so every one changes without a
-redeploy.
+redeploy. Existing stored values override defaults, so a deployment must also update
+the two run limits in the existing record.
 
 | Limit | Key | Value |
 |-|-|-|
 | Runs per address per day | `per_address_per_day` | 1 |
-| Runs per network per day | `per_ip_per_day` | 3 |
-| Runs for the whole site per day | `global_per_day` | 100 |
+| Runs per network per day | `per_ip_per_day` | 5 |
+| Runs for the whole site per day | `global_per_day` | 60 |
 | Website reads per network per day | `analyze_per_ip_per_day` | 10 |
 | Website reads for the whole site per day | `analyze_global_per_day` | 150 |
 | Result links per network per day | `link_per_ip_per_day` | 10 |

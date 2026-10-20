@@ -288,7 +288,7 @@
     out.push('<rect x="0" y="' + fy + '" width="' + W + '" height="' + foot + '" fill="' + C.raised + '"/><rect x="0" y="' + fy + '" width="' + W + '" height="1" fill="' + C.rule + '"/>');
     var parts = data.sample
       ? ["broadcastwell.com", "SAMPLE DATA, fictional company", "$490 Category Audit sample", "Five engines", "Measured " + date(data.measured_on)]
-      : ["broadcastwell.com", "Free 10 question check (one engine)", engine, "Measured " + date(data.measured_on)];
+      : ["broadcastwell.com", "Free 10-question check (one engine)", engine, "Measured " + date(data.measured_on)];
     var fsz = Math.max(15, Math.round(16 * Math.min(W / 1200, H / 630)));
     var lines = [], current = "";
     parts.forEach(function (part) {
@@ -329,6 +329,7 @@
   /** Contract data from a Free 10-question check result and the brand and category the visitor confirmed. */
   function fromFreeCheck(result, ctx) {
     var rows = Array.isArray(result.questions) ? result.questions : [];
+    var measuredId = String(result.engine).toLowerCase() === "claude" ? "claude" : "perplexity";
     return {
       version: 1,
       brand: ctx.brand || ctx.website || "Your company",
@@ -337,10 +338,11 @@
       measured_on: String(result.measured_on || "").slice(0, 10),
       sample: false,
       summary: { named: result.named, asked: result.asked },
-      engines: ENGINES.map(function (e) { return { id: e.id, label: e.label, measured: e.id === "perplexity" }; }),
+      engines: ENGINES.map(function (e) { return { id: e.id, label: e.label, measured: e.id === measuredId }; }),
       spokes: rows.map(function (row, i) {
         var status = String(row.status || "");
-        return { question: row.question, type: (TYPES[i] || TYPES[9])[0], type_label: (TYPES[i] || TYPES[9])[1], named: { perplexity: status === "named" ? true : status === "not named" ? false : null } };
+        var named = {}; named[measuredId] = status === "named" ? true : status === "not named" ? false : null;
+        return { question: row.question, type: (TYPES[i] || TYPES[9])[0], type_label: (TYPES[i] || TYPES[9])[1], named: named };
       })
     };
   }

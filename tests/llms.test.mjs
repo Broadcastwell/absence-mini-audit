@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 
 // The exact static route must ship a text asset rather than the site's HTML fallback.
 const text = readFileSync(new URL("../public/llms.txt", import.meta.url), "utf8");
-assert.match(text, /^# Broadcastwell free check\n/);
+assert.match(text, /^# Broadcastwell Free 10-question check \(one engine\)\n/);
 assert.doesNotMatch(text, /<!doctype|<html|<script|<body/i);
-assert.match(text, /Free ten question check \(one engine\)/);
-assert.doesNotMatch(text.replace(/\]\([^)]+\)/g, "]"), /[\u2013\u2014]|\w-\w/);
+assert.match(text, /Free 10-question check \(one engine\)/);
+assert.doesNotMatch(text.replace(/\]\([^)]+\)/g, "]").replaceAll('10-question','ten question'), /[\u2013\u2014]|\w-\w/);
 assert.match(text, /visitor confirms them before the check runs/i);
 assert.match(text, /one run on one engine.*Answers vary between runs/s);
-assert.match(text, /when the engine returns them/);
+assert.match(text, /result includes full answers, the companies named instead and cited domains/);
 assert.ok(text.includes("[Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)"));
 for (const url of [
   "https://broadcastwell.com/category-audit",

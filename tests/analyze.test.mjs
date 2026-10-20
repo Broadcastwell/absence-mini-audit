@@ -183,7 +183,7 @@ async function run(website, env, ip) {
   check("a readable site proposes brand and category", ok.status === 200 && ok.body.found === true && ok.body.brand === "Acme Field" && ok.body.category === "field service management software", JSON.stringify(ok.body).slice(0, 200));
   check("it offers up to three alternatives", Array.isArray(ok.body.alternatives) && ok.body.alternatives.length <= 3, JSON.stringify(ok.body.alternatives));
   check("it shows what it read, verbatim", ok.body.read.title.startsWith("Acme Field | Field service") && ok.body.read.description.startsWith("Schedule, dispatch"), JSON.stringify(ok.body.read));
-  check("it hands back the ten question sentences", ok.body.questions_template.length === 10 && ok.body.questions_template.every((q) => q.includes("{category}")), JSON.stringify(ok.body.questions_template));
+  check("it hands back the category's ten published Index questions", ok.body.questions_template.length === 10 && ok.body.questions_template[0] === "what is the best field service software for a small HVAC company" && ok.body.questions_template[9] === "which field service software is best for a one person HVAC business", JSON.stringify(ok.body.questions_template));
   check("the analyze step never calls the upstream", !requests.some((r) => r.url.includes("upstream.invalid") || (r.init.headers && r.init.headers.authorization)), requests.map((r) => r.url).join(" "));
   check("a confident homepage reads no further pages", ok.body.pages.length === 1, JSON.stringify(ok.body.pages));
 

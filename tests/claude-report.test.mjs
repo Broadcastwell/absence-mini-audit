@@ -129,9 +129,17 @@ test('Claude results select the Claude wheel ring while legacy results keep thei
 function retryHarness(statuses){
   let calls=0,rendered=0;const timers=[],elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,{textContent:'',scrollIntoView(){}});return elements.get(id);};
   const sandbox={WAIT_MS:75000,document:{getElementById:element},working:{},errorBox:{},errorMsg:{textContent:''},go:{disabled:false},result:{scrollIntoView(){}},emailCard:{},emailError:{},smooth:()=> 'auto',hide(){},show(){},stopProgress(){},startProgress(){},settle(){},setReference(){},drawWheel(){},drawReportCharts(){},renderResult(){rendered+=1;},refuse(){sandbox.go.disabled=false;},window:{setTimeout(fn,ms){const timer={fn,ms,cleared:false};timers.push(timer);return timer;},clearTimeout(timer){timer.cleared=true;}},fetch:async()=>{const status=statuses[Math.min(calls,statuses.length-1)];calls+=1;return new Response(JSON.stringify(status===200?rich():{reason:status===503?'allowance':'unavailable',message:status===503?'Allowance used.':'Claude did not answer all ten questions. This check was not counted. Try again in a few minutes.'}),{status});}};
+  sandbox.WAIT_MS=Number(PAGE.match(/var WAIT_MS = (\d+)/)[1]);
   vm.createContext(sandbox);const start=PAGE.indexOf('  function runAttempt('),end=PAGE.indexOf("  form.addEventListener('submit'",start);vm.runInContext(PAGE.slice(start,end),sandbox);
   return {sandbox,timers,stats:()=>({calls,rendered}),flush:async()=>{for(let i=0;i<15;i+=1)await new Promise(resolve=>setImmediate(resolve));}};
 }
+
+test('the real upstream deadline allows ninety seconds and the browser leaves a delivery margin',async()=>{
+  const original=AbortSignal.timeout;let observed;
+  AbortSignal.timeout=milliseconds=>{observed=milliseconds;return original(milliseconds);};
+  try {provider(rich());assert.equal((await run(environment())).response.status,200);assert.equal(observed,90000);} finally {AbortSignal.timeout=original;}
+  const h=retryHarness([200]);h.sandbox.runAttempt(body,0);await h.flush();assert.ok(h.timers.some(timer=>timer.ms===95000));assert.equal(h.stats().rendered,1);
+});
 
 test('the page automatically retries one 502 after twenty seconds and never a third time',async()=>{
   const h=retryHarness([502,502]);h.sandbox.runAttempt(body,0);await h.flush();assert.equal(h.stats().calls,1);assert.equal(h.sandbox.go.disabled,true);const retry=h.timers.filter(t=>t.ms===20000);assert.equal(retry.length,1);retry[0].fn();await h.flush();assert.equal(h.stats().calls,2);assert.equal(h.stats().rendered,0);assert.equal(h.timers.filter(t=>t.ms===20000).length,1);assert.equal(h.sandbox.go.disabled,false);

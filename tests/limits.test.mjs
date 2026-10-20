@@ -531,7 +531,7 @@ let failed = 0;
   globalThis.fetch = async (url, init) => { sent = JSON.parse(init.body); return savedFetch(url, init); };
   await call(makeEnv(null), noEmail(30), "198.51.100.65");
   globalThis.fetch = savedFetch;
-  check("the upstream request keeps its three field shape with an empty address", sent && Object.keys(sent).sort().join(",") === "category,company,email" && sent.email === "", JSON.stringify(sent));
+  check("the upstream request carries confirmed identity and a public lane with an empty address", sent && Object.keys(sent).sort().join(",") === "brand,category,company,email,lane,product_names" && sent.email === "" && sent.brand === "" && sent.lane === "public" && Array.isArray(sent.product_names) && sent.product_names.length === 0, JSON.stringify(sent));
 }
 
 // The page: result first, one engine stated twice, a buy path at the end of the result.
@@ -543,7 +543,7 @@ let failed = 0;
   const script = page.slice(page.indexOf("<script>"), page.indexOf("</script>", page.indexOf("<script>")));
 
   check("the check form asks for the category and the website and no email", /id="category"/.test(formBlock) && /id="company"/.test(formBlock) && !/type="email"/.test(formBlock), "form fields");
-  check("the run the page sends carries no email", /var payload = \{ category: [^}]+, company: [^}]+\};/.test(script) && !/payload\.email|email: document/.test(script), "payload");
+  check("the run the page sends carries confirmed products and no email", /var payload = \{ category: [\s\S]*?product_names: [\s\S]*?runAttempt\(payload,0\)/.test(script) && !/payload\.email|email: document/.test(script), "payload");
   check("the optional email sits below the result and is offered for one thing",
     page.indexOf('id="email-card"') > page.indexOf('id="result"') && /id="email-card" class="card email-card hidden"/.test(page)
     && />Email me this result with its sources</.test(page) && !/id="email"[^>]*required/.test(page), "email placement");

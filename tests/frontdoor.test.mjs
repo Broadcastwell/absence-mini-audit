@@ -233,7 +233,7 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the published limits sentence is on the page as published", PAGE.includes("No email is needed; runs are limited per network and per day. The allowance resets at 00:00 UTC."), "limits sentence");
   check("the wait is stated honestly, with no per question progress", PAGE.includes("We return a result only when all ten questions have answers.") && PAGE.includes("retry once in 20 seconds") && !/Step ' \+|progressLabel|stages\.forEach/.test(PAGE), "honest progress");
   check("no unmeasured duration is promised", !/about 25 seconds|25 seconds|In about/i.test(PAGE), "no 25 seconds");
-  check("the stated 55 seconds is the handler's own stop", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 55000;"), "timeout");
+  check("the handler allows the health check's ninety second completion window", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 90000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
   check("the only prices on the page are the $490 Audit and the Fix Sprint credit line's $2,900 and $2,410", dollars.length > 0 && dollars.every((d) => d === "$490" || d === "$2,900" || d === "$2,410") && dollars.indexOf("$990") === -1, dollars.join(","));

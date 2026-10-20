@@ -1283,9 +1283,9 @@ var REPORT_FONT_CSS = "@font-face{font-family:Inter;font-style:normal;font-weigh
   // Why a website could not be read, one sentence each. Every one of them ends in the same
   // place: the visitor types the name and category, and the check runs the same way.
   var READ_WHY = { blocked: 'Your site asked automated visitors not to read it, which many sites do.', timeout: 'Your site took longer than five seconds to answer.', empty: 'Your homepage shows its words only after scripts run, and we read pages without running them.', unclassified: 'We read your site but could not match it to a category with confidence.', unreachable: 'We could not reach your site at that address.', not_html: 'That address did not return a web page.', private: 'That address is not a public website, so we do not read it.', unresolved: 'We could not find a website at that address.', network: 'This network has read enough websites for today.', global: 'Website reads for today have all been used.', unavailable: 'We could not read your site just now.' };
-  // The page promises a result in under a minute. If nothing has come back well
-  // after that, the page says so rather than leaving the panel running.
-  var WAIT_MS = 75000, READ_WAIT_MS = 20000;
+  // Leave five seconds after the server's completion window before declaring
+  // a timeout, so a slower complete result can reach the browser.
+  var WAIT_MS = 95000, READ_WAIT_MS = 20000;
   var READING = { 'named 0 of 10': 'The engine does not treat you as a member of the category. The category door is the constraint to clear first.', 'named 1 to 3': 'You appear occasionally, but most of what you lose is still questions about who belongs in the set. You are at the category door.', 'named 4 to 6': 'Both jobs are live at once: membership is not finished and preference has begun to matter. The published reading is to sequence them.', 'named 7 to 10': 'You have cleared the category door. What you lose now is direct comparison against a specific named rival.' };
   var CHAPTERS = { '/category-door/': 'Getting named at the category door', '/comparison-gate/': 'Getting quoted at the comparison gate', '/absence-ladder/': 'The Absence Ladder' };
   var TYPE_LABELS = ['Best of', 'Best of', 'Best of', 'Alternatives', 'Alternatives', 'Alternatives', 'Comparison', 'Comparison', 'Evaluation', 'Use case'];

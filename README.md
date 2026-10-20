@@ -92,7 +92,8 @@ receipts and "ask the engine yourself") keep doing so. `tests/embed.test.mjs` ho
 ## Run time
 
 The page states an approximate measured wait and returns a result only when all ten
-answers are usable. The handler stops at 55 seconds. An incomplete run receives an
+answers are usable. The handler waits up to 90 seconds, with a 95 second browser
+window so a slower complete run can finish. An incomplete run receives an
 opaque 502, with a readable outcome and no provider details. The browser retries once
 after 20 seconds, then offers a later retry and the Category Audit.
 

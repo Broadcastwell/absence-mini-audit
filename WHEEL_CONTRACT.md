@@ -90,7 +90,7 @@ data:` and nothing else.
 
 A Free 10-question check result has ten questions in the upstream's fixed order: three best
 of, three alternatives, two comparison, one evaluation, one use case. `fromFreeCheck` marks
-only the Perplexity ring as measured, maps `named` to true, `not named` to false and any other
+the Claude ring as measured for current results, retains the measured ring for legacy results, maps `named` to true, `not named` to false and any other
 status to null, and carries the result's own counts in `summary`.
 
 ## Sample wheel

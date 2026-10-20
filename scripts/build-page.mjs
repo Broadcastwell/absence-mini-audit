@@ -45,6 +45,12 @@ const at = page.indexOf(BEGIN);
 const end = page.indexOf(END);
 if (at < 0 || end < at) throw new Error("the wheel markers are missing from public/index.html");
 page = page.slice(0, at + BEGIN.length) + "\n" + wheel + "\n" + page.slice(end);
+const report = textFile("public/assets/report.js").trim();
+page = page.replace(/\/\* report module: begin \*\/[\s\S]*?\/\* report module: end \*\//, "/* report module: begin */\n" + report + "\n/* report module: end */");
+const questionBank = textFile("public/assets/question-bank.js").trim();
+page = page.replace(/\/\* question bank: begin \*\/[\s\S]*?\/\* question bank: end \*\//, "/* question bank: begin */\n" + questionBank + "\n/* question bank: end */");
+const face = "@font-face{font-family:Inter;font-style:normal;font-weight:400 800;src:url(data:font/woff2;base64," + readFileSync(path("public/assets/fonts/inter-latin-var.woff2")).toString("base64") + ") format('woff2')}";
+page = page.replace(/\/\* report font: begin \*\/[\s\S]*?\/\* report font: end \*\//, "/* report font: begin */\nvar REPORT_FONT_CSS = " + JSON.stringify(face) + ";\n/* report font: end */");
 writeFileSync(path("public/index.html"), page);
 // /embed serves the same bytes, so the same two hashes cover it; its script switches to the
 // compact embed mode by path. Only its frame-ancestors differ (public/_headers, /embed block).
@@ -57,7 +63,6 @@ function inline(tag) {
 }
 const hash = (text) => "'sha256-" + createHash("sha256").update(text, "utf8").digest("base64") + "'";
 
-const face = "@font-face{font-family:Inter;font-style:normal;font-weight:400 800;src:url(data:font/woff2;base64," + readFileSync(path("public/assets/fonts/inter-latin-var.woff2")).toString("base64") + ") format('woff2')}";
 writeFileSync(path("public/assets/fonts/inter-embed.css"), face);
 
 let headers = textFile("public/_headers");

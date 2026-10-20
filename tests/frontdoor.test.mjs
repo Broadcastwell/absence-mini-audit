@@ -64,7 +64,7 @@ const RUN = { category: "field service management software", company: "acmefield
   const e = env();
   const r = await runCheck(e, RUN);
   check("a run result carries a seal header", r.status === 200 && typeof r.seal === "string" && r.seal.length >= 40, String(r.seal));
-  check("the seal leaves the seven key contract as it was", Object.keys(r.body).sort().join(",") === "asked,chapter,engine,measured_on,named,questions,tier", Object.keys(r.body).join(","));
+  check("the seal leaves the nine key contract as it was", Object.keys(r.body).sort().join(",") === "asked,chapter,cited_sources,engine,measured_on,named,named_instead,questions,tier", Object.keys(r.body).join(","));
   const key = await sealKey(e, false);
   check("the seal verifies for the same brand, category, website and result", await verify(key, "Acme Field", RUN.category, RUN.company, r.body, r.seal), "verify");
   check("a changed count breaks the seal", !(await verify(key, "Acme Field", RUN.category, RUN.company, Object.assign({}, r.body, { named: 10, tier: "named 7 to 10" }), r.seal)), "tamper count");
@@ -101,7 +101,7 @@ const RUN = { category: "field service management software", company: "acmefield
   const junk = await makeLink(e, { brand: "x", category: "y", website: "z", result: { named: 3, asked: 10, tier: "doing great", chapter: "/x/", engine: "E", measured_on: "2026-09-21", questions: [] }, seal: "x" });
   check("an off list result is refused before any seal check", junk.status === 400 && junk.body.reason === "input", JSON.stringify(junk.body));
   check("ids are 128 random bits", new Set(Array.from({ length: 200 }, newId)).size === 200 && newId().length === 32, "ids");
-  check("cleanResult keeps the seven public keys only", Object.keys(cleanResult(Object.assign({ extra: 1 }, r.body))).sort().join(",") === "asked,chapter,engine,measured_on,named,questions,tier", "clean");
+  check("cleanResult keeps the nine public keys only", Object.keys(cleanResult(Object.assign({ extra: 1 }, r.body))).sort().join(",") === "asked,chapter,cited_sources,engine,measured_on,named,named_instead,questions,tier", "clean");
 
   // The limits on links
   const limited = env({ "config:limits": JSON.stringify({ link_per_ip_per_day: 1, link_global_per_day: 2 }) });
@@ -150,7 +150,7 @@ const RUN = { category: "field service management software", company: "acmefield
   const r = await runCheck(e, RUN, null, "198.51.100.50");
   globalThis.fetch = saved;
   const rows = r.body.questions || [];
-  check("the seven key contract still holds with receipts", r.status === 200 && Object.keys(r.body).sort().join(",") === "asked,chapter,engine,measured_on,named,questions,tier", Object.keys(r.body).join(","));
+  check("the nine key contract still holds with receipts", r.status === 200 && Object.keys(r.body).sort().join(",") === "asked,chapter,cited_sources,engine,measured_on,named,named_instead,questions,tier", Object.keys(r.body).join(","));
   check("a row keeps only its question, status and the three receipt fields", rows.length === 10 && rows.every((row) => Object.keys(row).every((k) => ["question", "status", "excerpt", "sources", "named_instead"].indexOf(k) !== -1)) && !JSON.stringify(r.body).includes("must never pass"), JSON.stringify(rows[2]).slice(0, 160));
   check("an excerpt is one line and cut to 320 characters", rows[0].excerpt.length <= 320 && rows[0].excerpt.endsWith("...") && rows[2].excerpt === "The leading tools are Acme and Beta.", rows[2].excerpt);
   check("only plain http and https citations survive, without credentials, deduplicated, at most five", rows[1].sources.length === 5 && rows[1].sources[0] === "https://example.com/a" && rows[1].sources.every((u) => /^https?:\/\//.test(u) && !/@/.test(u)), JSON.stringify(rows[1].sources));
@@ -222,35 +222,35 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the one font rule exported images embed is allowed by its hash, and only it", /^@font-face\{font-family:Inter;[^}]*src:url\(data:font\/woff2;base64,[A-Za-z0-9+/=]+\) format\('woff2'\)\}$/.test(face) && (/style-src ([^;]+)/.exec(csp) || [])[1].split(" ").length === 3 && csp.includes(faceHash) && !/unsafe/.test(csp), faceHash);
   const sampleRule = headers.slice(headers.indexOf("/assets/sample/*"));
   check("the sample image has an image's own policy: nothing runs, only the font rule by hash", /! Content-Security-Policy/.test(sampleRule) && sampleRule.includes("Content-Security-Policy: default-src 'none'; style-src " + faceHash + "; font-src data:") && !/script-src|unsafe/.test(sampleRule), sampleRule.slice(0, 80));
-  check("the page and the sample wheel embed that same rule", PAGE.includes("fetch('/assets/fonts/inter-embed.css')") && file("public/assets/sample/kalvenor-wheel.svg").includes('<style type="text/css">' + face + "</style>"), "embed");
+  check("the page and the sample wheel embed that same rule", PAGE.includes("var REPORT_FONT_CSS = ") && PAGE.includes(JSON.stringify(face)) && file("public/assets/sample/kalvenor-wheel.svg").includes('<style type="text/css">' + face + "</style>"), "embed");
   const main = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
   const visible = main.replace(/<[^>]+>/g, " ");
   check("the entry asks for a website and nothing else first", /<label for="company">Your website<\/label><input id="company"/.test(PAGE) && PAGE.indexOf('id="confirm" class="confirm hidden"') > PAGE.indexOf('id="company"'), "entry");
-  check("nothing runs before the visitor confirms", /if \(stage === 'site'\) \{ readSite\(\); return; \}/.test(PAGE) && PAGE.indexOf("fetch('/api/run'") > PAGE.indexOf("if (stage === 'site') { readSite(); return; }"), "confirm first");
-  check("the confirm card shows the ten questions, collapsed", /<details class="preview"><summary>The ten questions Perplexity will be asked<\/summary><ol id="preview-list"><\/ol><\/details>/.test(PAGE), "preview");
+  check("nothing runs before the visitor confirms", /if \(stage === 'site'\) \{ readSite\(\); return; \}/.test(PAGE) && PAGE.includes("runAttempt(payload,0)"), "confirm first");
+  check("the confirm card shows the ten questions, collapsed", /<details class="preview"><summary>The ten questions Claude will be asked<\/summary><ol id="preview-list"><\/ol><\/details>/.test(PAGE), "preview");
   check("the confirm card shows what was read, verbatim", PAGE.includes("What we read on <span id=\"read-host\"></span>, verbatim:"), "read");
   check("every reason a read can fail has its own sentence and ends at typing", ["blocked", "timeout", "empty", "unclassified", "unreachable", "not_html", "private", "unresolved", "network", "global", "unavailable"].every((word) => new RegExp("\\b" + word + ": '").test(PAGE)) && PAGE.includes("Type them below. The check runs the same way."), "fallbacks");
-  check("the published limits sentence is on the page as published", PAGE.includes("No email is needed; runs are limited per network and per day, and by the site's daily allowance."), "limits sentence");
-  check("the wait is stated honestly, with no per question progress", PAGE.includes("The answers come back together in one response, so there is no per question progress to show. A run that takes longer than 55 seconds is stopped, and your daily check is not used.") && !/Step ' \+|progressLabel|stages\.forEach/.test(PAGE), "honest progress");
+  check("the published limits sentence is on the page as published", PAGE.includes("No email is needed; runs are limited per network and per day. The allowance resets at 00:00 UTC."), "limits sentence");
+  check("the wait is stated honestly, with no per question progress", PAGE.includes("We return a result only when all ten questions have answers.") && PAGE.includes("retry once in 20 seconds") && !/Step ' \+|progressLabel|stages\.forEach/.test(PAGE), "honest progress");
   check("no unmeasured duration is promised", !/about 25 seconds|25 seconds|In about/i.test(PAGE), "no 25 seconds");
   check("the stated 55 seconds is the handler's own stop", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 55000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
   check("the only prices on the page are the $490 Audit and the Fix Sprint credit line's $2,900 and $2,410", dollars.length > 0 && dollars.every((d) => d === "$490" || d === "$2,900" || d === "$2,410") && dollars.indexOf("$990") === -1, dollars.join(","));
-  check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bscore\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
+  check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bcomposite score\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
   check("no engine is called Gemini and nothing says four engines", !/Gemini|four engines/i.test(PAGE), "engines");
-  check("the $490 block is worded from the pricing page", ["Why you are not on the shortlist: who is named instead of you, how often, and the sources visible in those answers", "Three prioritized fixes: which page to update or which publisher to get in front of", "Written findings within 48 hours of your category confirmation"].every((line) => PAGE.includes("<li>" + line + "</li>")), "pricing lines");
+  check("the $490 block states the delivery and refund terms", PAGE.includes("Findings within 48 hours of your category confirmation.") && PAGE.includes("Refundable in full within 30 days of delivery.") && PAGE.includes("Start with the $490 Category Audit"), "pricing terms");
   const result = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf("</section>", PAGE.indexOf('class="buy-path"')));
   const whole = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf('<section id="email-card"'));
-  const order = ['id="meta"', 'id="lead-line"', 'id="wheel"', 'id="position"', 'id="question-block"', 'One engine, one run. Your buyers use five.', 'class="cta cta-filled"', 'app.broadcastwell.com/sample">See a sample account', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));
+  const order = ['id="score-title"', 'id="instead-title"', 'id="sources-title"', 'id="questions-title"', 'id="scope-title"', 'id="buy-title"', 'class="cta cta-filled"', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));
   check("the result reads scope, verdict, wheel, position, questions, one engine against five, the one button, then keep and share", order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), order.join(","));
   check("export and link controls are outlined, never filled", !/data-export[^>]*cta-filled|link-create[^>]*cta-filled|link-delete[^>]*cta-filled/.test(PAGE) && (whole.match(/cta-filled/g) || []).length === 1 && !/cta-outline/.test(whole), "one filled");
   check("the buy links gain the reference only from a result link id", /url\.searchParams\.set\('client_reference_id', 'fc_' \+ id\)/.test(PAGE) && !/client_reference_id=/.test(main) && /querySelectorAll\('a\[data-buy\]'\)/.test(PAGE), "reference");
   check("the buy links carry the visitor's own address only when one was typed", /url\.searchParams\.set\('prefilled_email', address\)/.test(PAGE) && !/prefilled_email=/.test(main) && /emailInput\.addEventListener\('input'/.test(PAGE), "prefill");
   check("a buy from a fresh result makes its link first, and never waits more than four seconds", /createLink\(\)\.then\(function \(\) \{ window\.clearTimeout\(late\); leave\(\); \}/.test(PAGE) && /window\.setTimeout\(leave, 4000\)/.test(PAGE) && /id="buy-link-note"/.test(PAGE), "link first");
-  check("the verdict is the published sentence", PAGE.includes("' questions buyers ask about ' + ctx.category + '.' + (top ? ' It named ' + top.name + ' in ' + top.count + '.' : '')"), "verdict");
-  check("the scope line names the engine, the ten questions, one run and the date", PAGE.includes("' questions · 1 run · Measured ' + when"), "scope");
-  check("each row shows its receipt when the run returned one, and the page says when it did not", /Answer excerpt: "/.test(PAGE) && /'Named instead: '/.test(PAGE) && /'Also named: '/.test(PAGE) && /'Cited: '/.test(PAGE) && /id="receipt-note" class="small hidden">This run returned the marks, not the answer text or the sources it cited\.</.test(PAGE), "receipts");
+  check("the verdict is the measured count", PAGE.includes("'Named in '+data.named+' of 10'"), "verdict");
+  check("the scope line names the engine, ten questions, one run and date", PAGE.includes("BwReport.scope(data)") && PAGE.includes("ten questions, one run, measured on "), "scope");
+  check("each row shows its full answer and names when returned, with an honest legacy fallback", PAGE.includes("Read the full answer") && PAGE.includes("Companies named: ") && PAGE.includes("Names not extracted. The answer still counts.") && PAGE.includes("Answer text and sources were not returned for this saved result."), "receipts");
   check("a cited link is only ever http or https, and opens without a referrer", /url\.protocol === 'https:' \|\| url\.protocol === 'http:'/.test(PAGE) && /a\.rel = 'nofollow noopener noreferrer'/.test(PAGE), "cited links");
   check("the link wording says private, not indexed and deletable", /It is private and not indexed by search engines\./.test(PAGE) && /Delete this link/.test(PAGE) && /fetch\('\/api\/unlink'/.test(PAGE), "revocable");
   check("the delete token lives only in this browser's storage, read and written inside try", /try \{ var all = JSON\.parse\(window\.localStorage\.getItem\(TOKENS_KEY\)/.test(PAGE) && (PAGE.match(/window\.localStorage\.setItem/g) || []).length === 2, "storage");
@@ -258,7 +258,7 @@ const RUN = { category: "field service management software", company: "acmefield
   check("no Stripe address and no retired $990 button remain", !/buy\.stripe\.com|Get the Diagnostic, \$990|4gM7sMgDOdmYbi93grds401|dRm7sM3R23Mo0Dv6sDds400/.test(PAGE), "stripe");
   check("exports wait for fonts before drawing", /document\.fonts\.ready/.test(PAGE), "fonts");
   check("the wheel respects reduced motion and hides its labels at phone width", /prefers-reduced-motion: reduce/.test(PAGE) && /@media \(max-width: 560px\) \{ \.wheel \.wheel-arc-label, \.wheel \.wheel-ring-label \{ display: none; \}/.test(PAGE), "responsive");
-  check("the question list stays under the wheel as its text alternative, with each type", PAGE.indexOf('id="question-block"') > PAGE.indexOf('id="wheel"') && /type\.className = 'q-type'/.test(PAGE), "list");
+  check("the question list follows the two charts and retains question types", PAGE.indexOf('id="question-block"') > PAGE.indexOf('id="source-chart"') && /type\.className = 'q-type'/.test(PAGE), "question order");
   const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(PAGE)[1])["@graph"];
   const faq = ld.find((node) => node["@type"] === "FAQPage");
   check("the structured data carries a short FAQ", faq && faq.mainEntity.length >= 4 && faq.mainEntity.every((q) => q.name && q.acceptedAnswer.text), "faq");
@@ -413,7 +413,7 @@ function fakePage(options) {
   const script = PAGE.slice(PAGE.indexOf("<script>"), PAGE.indexOf("</script>", PAGE.indexOf("<script>")));
   const builder = script.slice(script.indexOf("function askLinks("), script.indexOf("function renderQuestions("));
   check("the ask links are built with DOM calls, never innerHTML, and request nothing", builder.length > 200 && /setAttribute\('href', engine\[1\] \+ encodeURIComponent\(question\)\)/.test(builder) && /a\.textContent = engine\[0\]/.test(builder) && !/innerHTML|insertAdjacentHTML|fetch\(|sendBeacon|window\.open/.test(builder), "builder");
-  check("askLinks is called only from the row renderer", (script.match(/askLinks\(/g) || []).length === 2 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script), "calls");
+  check("askLinks is called only from the row and answer disclosure renderers", (script.match(/askLinks\(/g) || []).length === 3 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script) && script.includes("details.appendChild(askLinks(row.question,number))"), "calls");
   check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:2px solid var\(--blue\);outline-offset:2px\}/.test(PAGE), "css");
 }
 

@@ -10,7 +10,7 @@ function harness(){
  const link={href:purchaseTag.match(/href="([^"]+)"/)[1]};
  const eligible=/\bdata-buy\b/.test(purchaseTag);
  const events=[],listeners={};
- const context={URL,linkId:'existing-result',last:null,beacon:name=>events.push(name),document:{querySelectorAll:selector=>selector==='a[data-buy]'&&eligible?[link]:[],addEventListener:(name,handler)=>{listeners[name]=handler}}};
+ const context={URL,linkId:'existing-result',last:null,beacon:name=>events.push(name),document:{querySelectorAll:selector=>selector==='a[data-buy]'&&eligible?[link]:[],getElementById:()=>({addEventListener(){}}),addEventListener:(name,handler)=>{listeners[name]=handler}}};
  vm.createContext(context);
  const references=html.slice(html.indexOf('function eachBuy('),html.indexOf('// A result link can be deleted'));
  const handler=html.slice(html.indexOf("  document.addEventListener('click'",html.indexOf('// A buy click from a fresh result')),html.indexOf("  emailInput.addEventListener('input'"));
@@ -24,6 +24,7 @@ test('header purchase participates in real result reference and optional email p
  const url=new URL(ui.link.href);
  assert.equal(url.origin+url.pathname,'https://broadcastwell.com/buy/audit');
  assert.equal(url.searchParams.get('client_reference_id'),'fc_testresult');
+ assert.equal(url.searchParams.get('fc'),'testresult');
  assert.equal(url.searchParams.get('prefilled_email'),'test@example.invalid');
  ui.context.setReference(null);ui.context.setPrefill('');
  assert.equal(ui.link.href,'https://broadcastwell.com/buy/audit');

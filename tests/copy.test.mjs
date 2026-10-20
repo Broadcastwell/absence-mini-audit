@@ -94,8 +94,8 @@ check("every purchase control goes to the $490 Audit through https://broadcastwe
 const CREDIT = "The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.";
 check("every credit the page states is the published credit line", visible.includes(CREDIT) && !/\bcredit/i.test(visible.split(CREDIT).join(" ")) && !/\bcredit/i.test(ldStrings.join("\n")), "credit");
 const said = [visible, ldStrings.join("\n")].join("\n");
-const promises = (said.match(/within 48 hours/gi) || []).length, published = (said.match(/within 48 hours of your category confirmation/g) || []).length;
-check("every delivery promise reads within 48 hours of your category confirmation", promises >= 4 && promises === published, published + " of " + promises);
+const promises = (said.match(/within 48 hours/gi) || []).length, published = (said.match(/within 48 hours of (?:your category confirmation|confirming your category)/g) || []).length;
+check("every delivery promise uses one of the owner's two exact approved phrasings", promises >= 4 && promises === published, published + " of " + promises);
 
 // The result view. A check's result is built in the browser by revealing the #result section
 // and filling its slots, /r/<id> serves the same bytes with a stored result, and /embed is the
@@ -114,9 +114,10 @@ for (const name of ["index.html", "embed.html"]) {
   const result = element(doc, doc.indexOf('<section id="result"'), "section");
   const said = words(result);
   check(name + ": the result view states the credit line once, word for word, and no other credit", result.length > 1000 && said.split(CREDIT).length === 2 && !/\bcredit/i.test(said.split(CREDIT).join(" ")), (said.match(/[^.]*\bcredit[^.]*\./gi) || []).join(" | "));
-  check(name + ": the result view's promise reads within 48 hours of your category confirmation", (said.match(/within 48 hours/gi) || []).length === (said.match(/within 48 hours of your category confirmation/g) || []).length && said.includes("Findings within 48 hours of your category confirmation."), "result promise");
+  check(name + ": the result view's promises use the approved delivery and method words", (said.match(/within 48 hours/gi) || []).length === (said.match(/within 48 hours of (?:your category confirmation|confirming your category)/g) || []).length && said.includes("Findings within 48 hours of your category confirmation."), "result promise");
   const scripts = [...doc.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]).join("\n");
-  check(name + ": no script writes a credit, a Sprint or a Sprint price into the result", scripts.length > 10000 && !/\bcredit|\bSprint\b|\$2,900|\$2,410/i.test(scripts), "script scan");
+    const interfaceScripts = scripts.replace(/\/\* question bank: begin \*\/[\s\S]*?\/\* question bank: end \*\//, "");
+    check(name + ": no interface script writes a credit, a Sprint or a Sprint price into the result", interfaceScripts.length > 10000 && !/\bcredit|\bSprint\b|\$2,900|\$2,410/i.test(interfaceScripts), "interface script scan, published credit union question retained");
   check(name + ": the result links the sample report beside its purchase path", /href="\/assets\/sample\/category-audit-sample\.pdf"/.test(result), "sample link");
 }
 
@@ -200,7 +201,7 @@ const sentLines = ["lib/analyze.js", "lib/link.js", "lib/event.js", "lib/seal.js
 const sent = runMessages.concat(sentLines.flatMap((line) => [...line.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((match) => match[1])));
 check("the scan reads the website read, result link and result page messages", sent.length >= 16, sent.length + " strings");
 check("no message the handlers can send carries a banned word", hits(sent.join("\n")).length === 0, hits(sent.join("\n")).join(" | "));
-check("a run the engine could not answer says so plainly, with what to do next", /unavailable: 'The check could not answer just now\.'/.test(page) && runMessages.includes("We could not complete this run. Your daily check has not been used. Try again in a few minutes, or email hello@broadcastwell.com."), "unavailable copy");
+check("a run the engine could not answer says so plainly, with what to do next", /unavailable: 'Claude did not answer all ten questions\.'/.test(page) && runMessages.includes("Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Category Audit."), "unavailable copy");
 
 console.log("\n" + passed + " passed, " + failed + " failed");
 if (failed) process.exit(1);

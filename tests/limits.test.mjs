@@ -81,9 +81,9 @@ const PUBLISHED = [
   "Check the category and address and try again.",
   "That does not look like a valid email address.",
   "You have already run today's check for this address. Read the chapter your result pointed to, or start with the $490 Category Audit.",
-  "This network has reached its daily check limit. Try again tomorrow.",
+  "Runs are limited per network and per day. This network's allowance resets at 00:00 UTC.",
   "Today's free checks have all been used. Come back after 00:00 UTC, or start with the $490 Category Audit.",
-  "We could not complete this run. Your daily check has not been used. Try again in a few minutes, or email hello@broadcastwell.com.",
+  "Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Category Audit.",
 ];
 
 const results = [];
@@ -134,9 +134,9 @@ const body = (n) => ({ category: "field service management software", company: "
   const env = makeEnv({ per_address_per_day: 1, per_ip_per_day: 9, global_per_day: 9 });
   const r = await call(env, body(200));
   const keys = Object.keys(r.payload).sort().join(",");
-  check("response carries the public result keys", keys === "asked,chapter,engine,measured_on,named,questions,tier", keys);
+  check("response carries the nine public result keys", keys === "asked,chapter,cited_sources,engine,measured_on,named,named_instead,questions,tier", keys);
   check("upstream extra fields do not leak", !("secret_internal_field" in r.payload), keys);
-  check("without upstream rows the ten questions are rebuilt from the category", Array.isArray(r.payload.questions) && r.payload.questions.length === 10 && r.payload.questions[0].question === "What is the best field service management software?" && r.payload.questions[9].question === "How can field service management software reduce manual work for an operations team?", JSON.stringify(r.payload.questions));
+  check("without upstream rows the ten questions are rebuilt from the category's published Index frame", Array.isArray(r.payload.questions) && r.payload.questions.length === 10 && r.payload.questions[0].question === "what is the best field service software for a small HVAC company" && r.payload.questions[9].question === "which field service software is best for a one person HVAC business", JSON.stringify(r.payload.questions));
   check("a count between none and all marks no question either way", r.payload.questions.every((row) => row.status === "not itemised"), JSON.stringify(r.payload.questions.map((row) => row.status)));
 }
 
@@ -372,13 +372,13 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
   check("the page uses the shared light surface and readable ink", /--bw-canvas:\s*#F7F9FC/i.test(page) && /--bw-ink:\s*#101828/i.test(page) && /--bw-muted:\s*#475467/i.test(page), "token scan");
   check("the page aliases the shared surface tokens", /--ground:\s*var\(--bw-canvas\)/.test(page) && /--body:\s*var\(--bw-muted\)/.test(page), "shared tokens");
-  check("the running state states the wait", page.includes("Running. It can take up to 55 seconds."), "running copy");
+  check("the running state states the measured wait", page.includes("Allow about 40 seconds. We return a result only when all ten questions have answers."), "running copy");
   check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
   check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
   const pageBody = page.slice(page.indexOf("<main"), page.indexOf("</main>"));
-  check("the paid path names the offer in full and goes only through the site's /buy switch", /\$490 Category Audit/.test(page) && !/Diagnostic/.test(page) && (pageBody.match(/href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>/g) || []).length === 2 && !/buy\.stripe\.com/.test(page) && !/\/buy\/diagnostic/.test(page) && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
+  check("the paid path names the offer in full and goes only through the site's /buy switch", /\$490 Category Audit/.test(page) && !/Diagnostic/.test(page) && (pageBody.match(/href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>/g) || []).length === 3 && !/buy\.stripe\.com/.test(page) && !/\/buy\/diagnostic/.test(page) && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
   // The ruling of 5 October 2026: the Diagnostic is retired and the AI Fact Check removed. The page
   // names neither, shows no status pill, and every credit line points at the Fix Sprint.
   check("the retired Diagnostic and the AI Fact Check appear nowhere on the page, with no status pill", !/Diagnostic|\$990|Fact Check|ai-visibility-audit|class="paused"|\.paused\b/i.test(page), "retired");
@@ -387,7 +387,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("every stated delivery promise uses the published words", (page.match(/[Ff]indings within 48 hours of (?:your )?category confirmation/g) || []).every((line) => /of your category confirmation$/.test(line)) && (pageBody.match(/Findings within 48 hours of your category confirmation\./g) || []).length === 3, "promise");
   check("the full measurement section offers the Category Audit as available now", /<h2 id="full-title">Need a full measurement\?<\/h2><p class="offer-state">The \$490 Category Audit is available now\. Findings within 48 hours of your category confirmation\.<\/p>/.test(pageBody), "available now");
   check("no purchase control is a mailto", !/<a [^>]*href="mailto:[^"]*"[^>]*>[^<]*(\$490|\$990|Audit|Diagnostic|availability)/i.test(page), "mailto buy");
-  check("the engine may be named and no model string appears", /Named engine: Perplexity/.test(page), "engine naming");
+  check("the engine may be named and no model string appears", /Named engine: Claude/.test(page) && !/claude-(?:sonnet|haiku)|sonar-pro/i.test(page), "engine naming");
   check("both paid surfaces link to the published price ladder", (pageBody.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
 
   // The shell the three subdomains share with the site.
@@ -419,7 +419,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the social card is a PNG at 1200 by 630", /og:image"\s+content="[^"]+\.png"/.test(page) && /og:image:width"\s+content="1200"/.test(page) && /og:image:height"\s+content="630"/.test(page), "social card");
   check("the result page does not invent per-question rows", !/Buyer question ' \+/.test(page) && !/answer unavailable/.test(page), "placeholder scan");
   check("the page says when a count does not itemise the questions", /id="question-note" class="small hidden"/.test(page) && /row\.status === 'not itemised'/.test(page), "question note");
-  check("the question list is hidden until ten real rows arrive", /id="question-block" class="hidden"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");
+  check("the question list is hidden until ten real rows arrive", /class="report-section hidden" id="question-block"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");
   check("the six published response keys are the ones the page reads", ["tier", "engine", "measured_on", "named", "asked", "chapter"].every((key) => page.includes("data." + key)), "contract keys");
   check("the social card file exists at the declared size", (() => {
     const png = readFileSync(fileURLToPath(new URL("../public/assets/absence-mini-audit-2026-09.png", import.meta.url)));
@@ -477,14 +477,14 @@ let failed = 0;
   check("every host the page loads from is named in the policy", policy.includes("https://framerusercontent.com"), "csp hosts");
   // Inter is served from this origin now, so no font CDN should be reachable or named.
   check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
-  check("Geist and both Inter subsets are declared and shipped, from this origin", (page.match(/@font-face/g) || []).length === 3 && ["geist-var.woff2", "inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))), "self hosted faces");
+  check("Geist and both Inter subsets are declared and shipped, from this origin", (inlineBody('style').match(/@font-face/g) || []).length === 3 && ["geist-var.woff2", "inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))) && page.includes('var REPORT_FONT_CSS = "@font-face'), "self hosted faces and offline export font");
   check("Inter is the page's face and the preloaded local face", page.includes('<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>') && (page.match(/font: [^;]*Inter, ui-sans-serif, system-ui, sans-serif/g) || []).length === 5 && !page.includes('font: 17px/1.6 Geist'), "type stack");
 
   check("the started state is named and brought into view", page.includes("Your check has started") && page.includes("working.scrollIntoView"), "started state");
   check("the refusal names itself and its reason in one sentence",
     page.includes("Your check could not start") && page.includes('id="errorwhy"')
     && ["address", "network", "global", "unavailable"].every((reason) => page.includes(reason + ":")), "refused state");
-  check("a run that never answers still ends in a stated outcome", page.includes("WAIT_MS") && page.includes("refuse('unavailable'); }, WAIT_MS)"), "late run");
+  check("a run that never answers still ends in a stated outcome", page.includes("WAIT_MS") && page.includes("failedAttempt({reason:'unavailable'") && page.includes('attempt===0') && page.includes('runAttempt(payload,1)'), "bounded retry and late outcome");
   check("the page reads the reason word the handler sends", page.includes("outcome.data && outcome.data.reason"), "reason wiring");
 
   check("the content column matches the shared 1200px container", /\.container\s*\{[^}]*max-width:1200px;[^}]*padding-inline:var\(--bw-gutter\)/.test(page), "container width");
@@ -558,12 +558,12 @@ let failed = 0;
     && !/fetch\(|XMLHttpRequest|sendBeacon|new Image|\.submit\(|WebSocket|EventSource/.test(emailHandler)
     && requestTargets.length >= 1 && requestTargets.every((target) => /^'\/(api|assets)\/[a-z0-9/._-]+'$/.test(target)), "no second request: " + requestTargets.join(" "));
 
-  const oneEngine = "This check asks ten buyer questions on one engine, Perplexity, once each.";
+  const oneEngine = "This check asks ten buyer questions on one engine, Claude, once each.";
   // The note sits under the button, so the website field and the button fit the first phone screen.
   check("the one engine is stated in the form, under the button", pageBody.indexOf(oneEngine) > pageBody.indexOf('<button id="go"') && pageBody.indexOf(oneEngine) < pageBody.indexOf("</form>"), "under the button");
-  check("the one engine is stated again in the result", /This result comes from one engine, Perplexity, with one run per question\./.test(resultBlock), "in result");
+  check("the one engine is stated again in the result", /We ask Claude the ten questions a buyer in your category would ask, once/.test(resultBlock) && /BwReport\.scope\(data\)/.test(script), "in result");
   const visible = pageBody.replace(/<[^>]+>/g, " ");
-  check("the five engines are named once on the page", ["ChatGPT", "Claude", "Google AI Overviews", "Google AI Mode"].every((name) => visible.split(name).length === 2), "engine names");
+  check("the five paid engines are named together once on the page", visible.split('The Category Audit measures ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.').length === 2, "engine names");
   // A sentence may set the free result beside the five engine products, but no sentence may
   // put five engines on the free check without naming the paid product that runs them.
   const claims = visible.split(/\.\s/).filter((sentence) => /(10[- ]question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
@@ -573,10 +573,11 @@ let failed = 0;
   const buyAt = fullResult.indexOf('class="buy-path"');
   const buy = fullResult.slice(buyAt, fullResult.indexOf('id="keep"'));
   check("the buy path follows the questions and comes before the keep and share block", buyAt > fullResult.indexOf('id="question-block"') && buyAt < fullResult.indexOf('id="keep"'), "buy path place");
-  check("the buy path leads with one engine against five", /<h3 id="buy-title">One engine, one run\. Your buyers use five\.<\/h3>/.test(buy) && /The \$490 Category Audit asks these ten questions on ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode, three measured runs each\./.test(buy), "buy sentence");
+  check("the buy path leads with the one next step after the stated one-engine method", /<h2 id="buy-title">The one next step<\/h2>/.test(buy) && fullResult.includes('five engines, three runs each, 150 observed answers'), "buy sentence");
   check("the buy path has one priced button, then the terms and the sample link",
-    /<div class="buy-actions"><a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Run it on all five engines, \$490<\/a><\/div><p class="small flush">Findings within 48 hours of your category confirmation\. Refundable in full within 30 days of delivery\. The \$490 credits once against the \$2,900 Fix Sprint within 30 days of delivery, so the Sprint is \$2,410\.<\/p>/.test(buy)
-    && (buy.match(/class="cta /g) || []).length === 1 && /app\.broadcastwell\.com\/sample">See a sample account<\/a>/.test(buy), "buy path order");
+    /<a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Start with the \$490 Category Audit<\/a>/.test(buy)
+    && buy.includes('Refundable in full within 30 days of delivery.') && buy.includes('The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.')
+    && (buy.match(/class="cta /g) || []).length === 1 && fullResult.includes('https://app.broadcastwell.com/sample">See a sample Audit</a>'), "buy path order");
   const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
   check("the one filled purchase button is the $490 Category Audit", filledOffers.length === 1 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled purchase action");
   check("the submit is filled before a result and steps down once one is shown",
@@ -588,7 +589,7 @@ let failed = 0;
   try { graph = JSON.parse(ld)["@graph"]; } catch (_) { graph = []; }
   const app = graph.find((node) => node["@type"] === "WebApplication");
   const audit = graph.find((node) => node["@type"] === "Service");
-  check("the structured data names the Free 10 question check as a free web application", app && app.name === "Free 10 question check" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
+  check("the structured data names the Free 10-question check as a free web application", app && app.name === "Free 10-question check (one engine)" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
   check("the structured data carries the $490 offer at the site's /buy switch", audit && audit.offers.price === "490" && audit.offers.url === "https://broadcastwell.com/buy/audit" && audit.offers.availability === "https://schema.org/InStock", JSON.stringify(audit || {}).slice(0, 80));
 }
 

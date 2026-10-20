@@ -1,16 +1,16 @@
-# Broadcastwell free check
+# Broadcastwell Free 10-question check (one engine)
 
-> Free ten question check (one engine) for B2B software companies.
+> Free 10-question check (one engine) for B2B software companies.
 
-The free check at audit.broadcastwell.com asks ten buyer questions on one answer engine and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
+The Free 10-question check (one engine) at audit.broadcastwell.com asks Claude ten buyer questions in one run and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
 
-This is one run on one engine. Answers vary between runs. The result includes answer excerpts and sources when the engine returns them. The Category Audit is the paid baseline described on the main site.
+This is one run on one engine. Answers vary between runs. The result includes full answers, the companies named instead and cited domains. The Category Audit is the paid baseline described on the main site.
 
 [Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)
 
 ## Product and method
 
-- [Free ten question check](https://audit.broadcastwell.com/): Start the free check.
+- [Free 10-question check (one engine)](https://audit.broadcastwell.com/): Start the Free 10-question check (one engine).
 - [Category Audit](https://broadcastwell.com/category-audit): Scope, deliverables and current terms for the paid baseline.
 - [Methodology](https://broadcastwell.com/methodology): Measurement definitions, repeated observations and limits.
 

@@ -30,6 +30,7 @@ test('legacy host rule stays unchanged and unknown companies stay absent',()=>{
 });
 test('product proposals use known vendors and product links without an engine',()=>{
   assert.deepEqual(proposeProducts([],'appliedsystems.com'),['Applied Epic','TAM','DORIS','EZLynx','IVANS']);
+  assert.deepEqual(proposeProducts([],'www1.appliedsystems.com'),['Applied Epic','TAM','DORIS','EZLynx','IVANS']);
   const page=readPage('<title>Acme</title><h1>Acme</h1><nav><a href="/products/stellar">Stellar Desk</a></nav>','https://acme.example/');
   assert.ok(proposeProducts([page],'acme.example').includes('Stellar Desk'));
 });

@@ -90,7 +90,7 @@ check("no em dash, en dash or double hyphen in anything a visitor reads", dashes
 
 // The offers the ruling allows, in its words.
 const buyLinks = [...page.matchAll(/https:\/\/broadcastwell\.com\/buy\/[a-z0-9-]*/g)].map((match) => match[0]);
-check("every purchase control goes to the $490 Audit through https://broadcastwell.com/buy/audit", buyLinks.length >= 3 && buyLinks.every((url) => url === "https://broadcastwell.com/buy/audit"), [...new Set(buyLinks)].join(","));
+check("purchase controls use only the approved $490 Audit or PHP2Shell Record Check routes", buyLinks.length >= 3 && buyLinks.every((url) => ["https://broadcastwell.com/buy/audit","https://broadcastwell.com/buy/record-check"].includes(url)) && buyLinks.filter(url=>url==='https://broadcastwell.com/buy/record-check').length===1, [...new Set(buyLinks)].join(","));
 const CREDIT = "The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.";
 check("every credit the page states is the published credit line", visible.includes(CREDIT) && !/\bcredit/i.test(visible.split(CREDIT).join(" ")) && !/\bcredit/i.test(ldStrings.join("\n")), "credit");
 const said = [visible, ldStrings.join("\n")].join("\n");
@@ -203,5 +203,10 @@ check("the scan reads the website read, result link and result page messages", s
 check("no message the handlers can send carries a banned word", hits(sent.join("\n")).length === 0, hits(sent.join("\n")).join(" | "));
 check("a run the engine could not answer says so plainly, with what to do next", /unavailable: 'Claude did not answer all ten questions\.'/.test(page) && runMessages.includes("Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Category Audit."), "unavailable copy");
 
+
+check('the PHP2Shell mode states its one-question scope and separates the record from the answer',page.includes('value="php2shell"')&&page.includes('PHP2Shell: one question, one answer')&&page.includes('The answer and the statement record are separate observations'));
+check('PHP2Shell has company/domain inputs and the approved $490 Record Check route',page.includes('id="php-company"')&&page.includes("mode:'php2shell',company:company,domain:domain")&&page.includes('href="https://broadcastwell.com/buy/record-check">PHP2Shell Record Check, $490 once'));
+check('a PHP2Shell timeout cannot trigger an automatic paid retry',page.includes("if(payload.mode!=='php2shell'&&(status===502||!status)"));
+check('PHP2Shell answer text is rendered as text and not inserted as HTML',page.includes("document.getElementById('php-answer').textContent=data.answer")&&!/php-answer[^\n]*innerHTML/.test(page));
 console.log("\n" + passed + " passed, " + failed + " failed");
 if (failed) process.exit(1);

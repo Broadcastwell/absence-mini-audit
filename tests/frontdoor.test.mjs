@@ -254,7 +254,7 @@ const RUN = { category: "field service management software", company: "acmefield
   check("a cited link is only ever http or https, and opens without a referrer", /url\.protocol === 'https:' \|\| url\.protocol === 'http:'/.test(PAGE) && /a\.rel = 'nofollow noopener noreferrer'/.test(PAGE), "cited links");
   check("the link wording says private, not indexed and deletable", /It is private and not indexed by search engines\./.test(PAGE) && /Delete this link/.test(PAGE) && /fetch\('\/api\/unlink'/.test(PAGE), "revocable");
   check("the delete token lives only in this browser's storage, read and written inside try", /try \{ var all = JSON\.parse\(window\.localStorage\.getItem\(TOKENS_KEY\)/.test(PAGE) && (PAGE.match(/window\.localStorage\.setItem/g) || []).length === 2, "storage");
-  check("?domain= fills the website and reads it, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; readSite\(true\); \}/.test(PAGE), "domain");
+  check("?domain= fills the website and reads it in category mode, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; if\(!isPhp\(\)\)readSite\(true\); \}/.test(PAGE), "domain");
   check("no Stripe address and no retired $990 button remain", !/buy\.stripe\.com|Get the Diagnostic, \$990|4gM7sMgDOdmYbi93grds401|dRm7sM3R23Mo0Dv6sDds400/.test(PAGE), "stripe");
   check("exports wait for fonts before drawing", /document\.fonts\.ready/.test(PAGE), "fonts");
   check("the wheel respects reduced motion and hides its labels at phone width", /prefers-reduced-motion: reduce/.test(PAGE) && /@media \(max-width: 560px\) \{ \.wheel \.wheel-arc-label, \.wheel \.wheel-ring-label \{ display: none; \}/.test(PAGE), "responsive");
@@ -454,6 +454,18 @@ function fakePage(options) {
       check(scenario.name + ": failure gives manual-copy guidance without claiming success", button.textContent === "Copy link" && !status.classList.contains("hidden") && /could not copy/i.test(status.textContent) && /selected Result link manually/.test(status.textContent) && input.focused);
     }
   }
+}
+
+// The PHP2Shell entry must not read a site or spend a run before explicit submission.
+{
+ const answer={mode:'php2shell',company:'Preview Company',domain:'example.com',engine:'Claude',measured_on:'2026-10-23',question:'Is Preview Company affected by PHP2Shell?',answer:'First paragraph.\n\nSecond paragraph.',sources:['https://example.com/statement'],index_row:{company:'Preview Company',status:'not affected',statement_url:'https://example.com/statement',statement_date:'23 October 2026',last_checked_utc:'2026-10-23T00:00:00Z'},index_url:'https://index.broadcastwell.com/php2shell/preview-company/'};
+ let sent;
+ const page=fakePage({search:'?mode=php2shell&domain=example.com&company=Preview%20Company',respond:async(url,init)=>{sent=JSON.parse(init.body);return new Response(JSON.stringify(answer),{headers:{'content-type':'application/json'}});}});
+ check('PHP2Shell query selects the mode and fills both fields without a request',page.document.getElementById('check-mode').value==='php2shell'&&page.document.getElementById('php-company').value==='Preview Company'&&page.document.getElementById('company').value==='example.com'&&page.requests.length===0);
+ page.submit();await page.settle();
+ check('PHP2Shell submits only the explicit company/domain request',sent?.mode==='php2shell'&&sent.company==='Preview Company'&&sent.domain==='example.com'&&!Object.hasOwn(sent,'category')&&page.requests.filter(r=>r==='fetch /api/run').length===1&&!page.requests.some(r=>r.includes('/api/analyze')));
+ check('PHP2Shell renders the answer paragraphs and statement status separately',page.document.getElementById('php-answer').textContent===answer.answer&&page.document.getElementById('php-status').textContent.includes('not affected')&&!page.document.getElementById('php-result').classList.contains('hidden')&&page.document.getElementById('result').classList.contains('hidden'));
+ check('the mode selector is available again after the PHP2Shell result',page.document.getElementById('check-mode').disabled===false);
 }
 
 let failed = 0;

@@ -26,7 +26,7 @@ check("apart from framing, the /embed policy is the page's policy exactly", cspO
 // The page's one inline script, found the way scripts/build-page.mjs finds it for the hash.
 const scriptAt = page.indexOf("<script>") + 8;
 const script = page.slice(scriptAt, page.indexOf("</script>", scriptAt));
-const arriving = /var arriving[\s\S]{0,400}?if \(arriving\) \{ siteInput\.value = arriving; readSite\(true\); \}/.exec(script);
+const arriving = /var arriving[\s\S]{0,850}?if \(arriving\) \{ siteInput\.value = arriving; if\(!isPhp\(\)\)readSite\(true\); \}/.exec(script);
 check("?site= (then ?domain=) fills the website and starts only the free read", Boolean(arriving) && /query\.get\('site'\) \|\| query\.get\('domain'\)/.test(arriving[0]) && !/runCheck|\/api\/run/.test(arriving[0]));
 
 const embedAt = script.indexOf("// Embed mode (/embed)");

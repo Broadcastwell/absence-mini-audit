@@ -594,6 +594,31 @@ let failed = 0;
 }
 
 
+
+// PHP2Shell shares the existing daily counters and keeps a separate result contract.
+{
+ const oldPayload=upstreamPayload;upstreamMode='ok';
+ const phpBody={mode:'php2shell',company:'Preview Company',domain:'example.com'};
+ const complete={...phpBody,engine:'Claude',question:'Is Preview Company affected by PHP2Shell (CVE-2026-109618 and CVE-2026-109619), and has it patched? Give the source.',measured_on:'2026-10-23',answer:'A dated answer with paragraph one.\n\nParagraph two.',sources:['https://example.com/statement','javascript:alert(1)',{url:'https://example.com/source'},'https://name:password@example.com/private'],index_row:{slug:'preview-company',company:'Preview Company',canonical_domain:'example.com',status:'patched',statement_found:true,statement_url:'https://example.com/statement',statement_date:'23 October 2026',last_checked_utc:'2026-10-23T00:00:00Z',private_field:'must not leak'},private_field:'must not leak',next_step:{url:'https://untrusted.invalid'}};
+ upstreamPayload=complete;const env=makeEnv();
+ const first=await call(env,phpBody,'203.0.113.245');
+ check('PHP2Shell returns one dated answer without a category',first.status===200&&first.payload.mode==='php2shell'&&first.payload.answer.includes('\n\n')&&!('named' in first.payload));
+ check('PHP2Shell result has safe citations, an Index record and the fixed Record Check route',first.payload.sources.length===2&&first.payload.index_url==='https://index.broadcastwell.com/php2shell/preview-company/'&&first.payload.next_step.url==='https://broadcastwell.com/buy/record-check');
+ check('PHP2Shell result drops all unapproved upstream fields',!JSON.stringify(first.payload).includes('private_field')&&!JSON.stringify(first.payload).includes('must not leak')&&!JSON.stringify(first.payload).includes('untrusted.invalid'));
+ check('PHP2Shell reserves the same network and global counters',Array.from(env.AUDIT.store.keys()).some(k=>k.startsWith('count:ip:'))&&Array.from(env.AUDIT.store.keys()).some(k=>k.startsWith('count:global:')));
+ for(const status of ['no public statement located','not affected']){
+  upstreamPayload={...complete,index_row:{...complete.index_row,status,statement_found:status==='not affected',statement_url:status==='not affected'?'https://example.com/statement':null}};
+  const out=await call(makeEnv(),phpBody,'203.0.113.246');check('PHP2Shell preserves the published status '+status,out.status===200&&out.payload.index_row.status===status&&out.payload.index_row.statement_found===(status==='not affected'));
+ }
+ upstreamPayload={...complete,index_row:null};const missing=await call(makeEnv(),phpBody,'203.0.113.246');check('an unlisted company stays unlisted',missing.status===200&&missing.payload.index_row===null);
+ upstreamPayload={...complete,answer:''};const failed=await call(makeEnv(),phpBody,'203.0.113.246');check('an incomplete PHP2Shell answer is refused and refunded',failed.status===502&&failed.payload.refunded===true&&!failed.payload.message.includes('ten questions'));
+ const invalidCalls=upstreamCalls;for(const body of [{...phpBody,domain:'https://example.com/private'},{...phpBody,domain:'127.0.0.1'},{...phpBody,company:'x'},{...phpBody,mode:'unknown'}])check('PHP2Shell rejects invalid input '+JSON.stringify(body), (await call(makeEnv(),body,'203.0.113.246')).status===400);
+ check('invalid PHP2Shell inputs make no upstream calls',upstreamCalls===invalidCalls);
+ upstreamPayload=complete;const capped=makeEnv({global_per_day:1,per_ip_per_day:1,per_address_per_day:1});await call(capped,phpBody,'203.0.113.246');check('PHP2Shell cannot bypass the shared global limit',(await call(capped,phpBody,'203.0.113.247')).status===503);
+ const preview=await audit.fetch(new Request('https://php2shell-free-check.absence-mini-audit.pages.dev/api/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(phpBody)}),{},{});check('PHP2Shell preview is marked and does not spend',preview.status===200&&preview.headers.get('x-free-check-preview')==='1'&&(await preview.json()).answer.includes('Fictional preview'));
+ upstreamPayload=oldPayload;
+}
+
 for (const r of results) {
   if (!r.pass) failed += 1;
   console.log(`${r.pass ? "PASS" : "FAIL"}  ${r.name}${r.detail ? "  (" + r.detail + ")" : ""}`);

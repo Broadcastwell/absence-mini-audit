@@ -23,7 +23,7 @@
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-/EToOfZng90h9LliTic/ThSuMHaLbjlmWWu4UqPaNzw='; style-src 'self' 'sha256-bZOTRTZtER4NSsst/Bz4bkkwfcQHVzpO/yWptHaTKYo=' 'sha256-7N3Rbo/cV2nIFxwN2KqGWQs18yi890aJoN+COVpucAA='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-N8DflomhKE70T8OQvjn88njvajdfZO+AQyluyTosV6M='; style-src 'self' 'sha256-ZkcX7WNy6XX16Dxh5G/JiEdlTrAZL21Q/Q+f7yM/RzI=' 'sha256-7N3Rbo/cV2nIFxwN2KqGWQs18yi890aJoN+COVpucAA='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -35,7 +35,7 @@
 /embed
   ! Content-Security-Policy
   ! X-Frame-Options
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-/EToOfZng90h9LliTic/ThSuMHaLbjlmWWu4UqPaNzw='; style-src 'self' 'sha256-bZOTRTZtER4NSsst/Bz4bkkwfcQHVzpO/yWptHaTKYo=' 'sha256-7N3Rbo/cV2nIFxwN2KqGWQs18yi890aJoN+COVpucAA='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors https://broadcastwell.com https://*.broadcastwell.com https://*.framer.app https://*.framer.website https://framer.com https://*.framercanvas.com; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-N8DflomhKE70T8OQvjn88njvajdfZO+AQyluyTosV6M='; style-src 'self' 'sha256-ZkcX7WNy6XX16Dxh5G/JiEdlTrAZL21Q/Q+f7yM/RzI=' 'sha256-7N3Rbo/cV2nIFxwN2KqGWQs18yi890aJoN+COVpucAA='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors https://broadcastwell.com https://*.broadcastwell.com https://*.framer.app https://*.framer.website https://framer.com https://*.framercanvas.com; upgrade-insecure-requests
 
 # The sample wheel is a standalone SVG image with Inter embedded. Served as its own
 # document it would carry the page's policy above, which some browsers apply to its

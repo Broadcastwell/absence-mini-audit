@@ -11,7 +11,7 @@ const css=mode==='docs'?read('docs/assets/site-chrome.css'):mode==='index'?read(
 const script=mode==='docs'?read('docs/assets/site-chrome.js'):mode==='index'?read('site-chrome.js'):read('scripts/site-chrome.js');
 const navLabels=['Product','Research','Free tools','Pricing','Exchange','Company'];
 const footerLabels=[
- ['Product',['Category Audit, $490','Fix Sprint','The program','For agencies','Pricing','Connect an assistant']],
+ ['Product',['Answer Repair, $490','Fix Sprint','The program','Agency Deadline Audit, $490','Pricing','Connect an assistant']],
  ['Research',['Absence Index','Public Fix','The 2026 State of GEO','Studies','Methodology','Data and citations']],
  ['Free tools',['Free 10-question check (one engine)','llms.txt generator','Record check (free)','Agency comparisons','Sample account','Developers']],
  ['Company',['About','Company facts','Careers','Exchange','Partner Network','Security']],
@@ -21,7 +21,7 @@ test('six site navigation destinations and separate sign in and outlined Audit a
  if(mode==='audit')assert.equal(html.match(/\/\* site chrome: begin \*\/\n([\s\S]*?)\n\/\* site chrome: end \*\//)[1],script.replace(/\r\n?/g,'\n').trim(),'the single inline controller matches its authored source');
  const nav=html.match(/<nav class="bw-shared-nav"[^>]*>([\s\S]*?)<\/nav>/)[1];
  assert.deepEqual([...nav.matchAll(/<a[^>]*>([^<]+)<\/a>/g)].map(x=>x[1]),navLabels);
- assert.match(html,/class="bw-shared-audit" href="https:\/\/broadcastwell.com\/buy\/audit" aria-label="Get the Category Audit, \$490">\$490 Audit<\/a>/);
+ assert.match(html,/class="bw-shared-audit" href="https:\/\/broadcastwell.com\/buy\/answer-repair">Fix one answer, \$490<\/a>/);
  assert.match(css,/\.bw-shared-audit\s*\{[^}]*min-height:44px;[^}]*border-radius:9px;[^}]*background:transparent/);
  assert.match(html,/href="https:\/\/app.broadcastwell.com\/signin">Sign in<\/a>/);
  assert.match(css,/height:64px/);

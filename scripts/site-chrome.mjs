@@ -1,5 +1,5 @@
 // SITE shared chrome source. Fixed public destinations, no network or account behavior.
-export const SITE_UPDATED = '2026-10-16';
+export const SITE_UPDATED = '2026-10-26';
 export const NAV = [
   ['Product', 'https://broadcastwell.com/platform'],
   ['Research', 'https://broadcastwell.com/research'],
@@ -10,10 +10,10 @@ export const NAV = [
 ];
 export const FOOTER = [
   ['Product', [
-    ['Category Audit, $490', 'https://broadcastwell.com/category-audit'],
+    ['Answer Repair, $490', 'https://broadcastwell.com/answer-repair'],
     ['Fix Sprint', 'https://broadcastwell.com/fix-sprint'],
     ['The program', 'https://broadcastwell.com/pricing#monthly'],
-    ['For agencies', 'https://broadcastwell.com/for-agencies'],
+    ['Agency Deadline Audit, $490', 'https://broadcastwell.com/for-agencies'],
     ['Pricing', 'https://broadcastwell.com/pricing'],
     ['Connect an assistant', 'https://app.broadcastwell.com/connect']
   ]],
@@ -58,7 +58,7 @@ export function siteHeader({className = 'site-header', localLinks = ''} = {}) {
     <a class="bw-shared-wordmark" href="https://broadcastwell.com/" aria-label="Broadcastwell home">Broadcastwell</a>
     <nav class="bw-shared-nav" aria-label="Broadcastwell">${NAV.map(link).join('')}</nav>
     <a class="bw-shared-signin" href="https://app.broadcastwell.com/signin">Sign in</a>
-    <a class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>
+    <a class="bw-shared-audit" href="https://broadcastwell.com/buy/answer-repair">Fix one answer, $490</a>
     <details class="bw-shared-menu" data-bw-site-menu><summary aria-label="Open Broadcastwell navigation"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="bw-shared-sr">Menu</span></summary><nav aria-label="Broadcastwell mobile">${NAV.map(link).join('')}<a href="https://app.broadcastwell.com/signin">Sign in</a>${localLinks}</nav></details>
   </div>
 </header>`;

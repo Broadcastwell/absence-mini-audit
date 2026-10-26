@@ -26,7 +26,7 @@
   ];
   var C = { ground: "#111727", raised: "#0A0E1A", ink: "#F8FAFC", body: "#CBD5E1", muted: "#94A3B8", accent: "#1D4ED8", rule: "#3B82F6", pale: "#BFDBFE", faint: "rgba(255,255,255,0.18)", spoke: "rgba(203,213,225,0.12)" };
   var FONT = "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial, sans-serif";
-  var UNMEASURED = "Measured in the $490 Category Audit";
+  var UNMEASURED = "Not measured in this one engine run";
   var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   function esc(value) {
@@ -256,7 +256,7 @@
     var sum = summary(data), engine = measuredLabel(data);
     var head = data.sample ? "A full shortlist wheel" : "Is " + data.brand + " on the AI shortlist?";
     var sub = data.sample
-      ? "Kalvenor Systems is fictional. SAMPLE DATA from the $490 Category Audit sample."
+      ? "Kalvenor Systems is fictional. SAMPLE DATA from the fictional measurement sample."
       : engine + " named " + data.brand + " in " + sum.named + " of " + sum.asked + " buyer answers about " + data.category + ".";
     var pad = Math.round(W * 0.05);
     if (W / H >= 1.4) {
@@ -287,7 +287,7 @@
     var fy = H - foot;
     out.push('<rect x="0" y="' + fy + '" width="' + W + '" height="' + foot + '" fill="' + C.raised + '"/><rect x="0" y="' + fy + '" width="' + W + '" height="1" fill="' + C.rule + '"/>');
     var parts = data.sample
-      ? ["broadcastwell.com", "SAMPLE DATA, fictional company", "$490 Category Audit sample", "Five engines", "Measured " + date(data.measured_on)]
+      ? ["broadcastwell.com", "SAMPLE DATA, fictional company", "Fictional measurement sample", "Five engines", "Measured " + date(data.measured_on)]
       : ["broadcastwell.com", "Free 10-question check (one engine)", engine, "Measured " + date(data.measured_on)];
     var fsz = Math.max(15, Math.round(16 * Math.min(W / 1200, H / 630)));
     var lines = [], current = "";

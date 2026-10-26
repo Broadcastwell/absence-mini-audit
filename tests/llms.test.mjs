@@ -12,7 +12,8 @@ assert.match(text, /one run on one engine.*Answers vary between runs/s);
 assert.match(text, /result includes full answers, the companies named instead and cited domains/);
 assert.ok(text.includes("[Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)"));
 for (const url of [
-  "https://broadcastwell.com/category-audit",
+  "https://broadcastwell.com/answer-repair",
+  "https://broadcastwell.com/for-agencies",
   "https://broadcastwell.com/methodology",
   "https://broadcastwell.com/company-facts",
   "https://docs.broadcastwell.com/",

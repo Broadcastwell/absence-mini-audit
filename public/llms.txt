@@ -4,14 +4,15 @@
 
 The Free 10-question check (one engine) at audit.broadcastwell.com asks Claude ten buyer questions in one run and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
 
-This is one run on one engine. Answers vary between runs. The result includes full answers, the companies named instead and cited domains. The Category Audit is the paid baseline described on the main site.
+This is one run on one engine. Answers vary between runs. The result includes full answers, the companies named instead and cited domains. The paid entry scopes are described on the main site.
 
 [Every figure comes from the published method, v1.1.](https://broadcastwell.com/methodology)
 
 ## Product and method
 
 - [Free 10-question check (one engine)](https://audit.broadcastwell.com/): Start the Free 10-question check (one engine).
-- [Category Audit](https://broadcastwell.com/category-audit): Scope, deliverables and current terms for the paid baseline.
+- [Answer Repair, $490](https://broadcastwell.com/answer-repair): One agreed buyer question and one page or fix, due 48 elapsed hours after recorded Ready, with full refund terms.
+- [Agency Deadline Audit, $490](https://broadcastwell.com/for-agencies): One white label client report and a paste ready change, within 48 hours of recorded scope confirmation.
 - [Methodology](https://broadcastwell.com/methodology): Measurement definitions, repeated observations and limits.
 
 ## Authoritative company information

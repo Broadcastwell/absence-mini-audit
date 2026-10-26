@@ -80,10 +80,10 @@ globalThis.fetch = async () => {
 const PUBLISHED = [
   "Check the category and address and try again.",
   "That does not look like a valid email address.",
-  "You have already run today's check for this address. Read the chapter your result pointed to, or start with the $490 Category Audit.",
+  "You have already run today's check for this address. Read the chapter your result pointed to, or start with the $490 Answer Repair.",
   "Runs are limited per network and per day. This network's allowance resets at 00:00 UTC.",
-  "Today's free checks have all been used. Come back after 00:00 UTC, or start with the $490 Category Audit.",
-  "Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Category Audit.",
+  "Today's free checks have all been used. Come back after 00:00 UTC, or start with the $490 Answer Repair.",
+  "Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Answer Repair.",
 ];
 
 const results = [];
@@ -378,14 +378,14 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the retention line is on the page twice", (page.match(/keep it for 24 months and then delete it/g) || []).length === 2, "retention line");
   check("the free offer is not named with a retired name", !/Free check|free audit|instant check|four-engine audit/i.test(page), "offer name scan");
   const pageBody = page.slice(page.indexOf("<main"), page.indexOf("</main>"));
-  check("the paid path names the offer in full and goes only through the site's /buy switch", /\$490 Category Audit/.test(page) && !/Diagnostic/.test(page) && (pageBody.match(/href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>/g) || []).length === 3 && !/buy\.stripe\.com/.test(page) && !/\/buy\/diagnostic/.test(page) && !/ai-visibility-audit#request/.test(page) && !/tally\.so/.test(page), "paid path");
+  check("the paid path names Answer Repair and goes only through the site switch", page.includes("Answer Repair is $490 for one agreed buyer question and one source-backed page or fix.") && (pageBody.match(/href="https:\/\/broadcastwell\.com\/buy\/answer-repair" data-buy>/g)||[]).length===3 && !/buy\.stripe\.com|Diagnostic|tally\.so/.test(page), "paid path");
   // The ruling of 5 October 2026: the Diagnostic is retired and the AI Fact Check removed. The page
   // names neither, shows no status pill, and every credit line points at the Fix Sprint.
   check("the retired Diagnostic and the AI Fact Check appear nowhere on the page, with no status pill", !/Diagnostic|\$990|Fact Check|ai-visibility-audit|class="paused"|\.paused\b/i.test(page), "retired");
-  const credit = "The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.";
-  check("the credit line is the published sentence, once in the result and once beside the page's own button", pageBody.split(credit).length === 3 && !/credits (?:in full|against the Diagnostic)/.test(page), "credit line");
-  check("every stated delivery promise uses the published words", (page.match(/[Ff]indings within 48 hours of (?:your )?category confirmation/g) || []).every((line) => /of your category confirmation$/.test(line)) && (pageBody.match(/Findings within 48 hours of your category confirmation\./g) || []).length === 3, "promise");
-  check("the full measurement section offers the Category Audit as available now", /<h2 id="full-title">Need a full measurement\?<\/h2><p class="offer-state">The \$490 Category Audit is available now\. Findings within 48 hours of your category confirmation\.<\/p>/.test(pageBody), "available now");
+  const credit = "The $490 credits once against the $3,900 Fix Sprint within 30 days of delivery, so the Sprint is $3,410.";
+  check("the free check promotes the two approved entries without a credit offer", !/\$3,900|\$3,410|credits once/.test(pageBody) && pageBody.includes("Agency Deadline Audit is $490 for one white-label client report and a paste-ready change."), "current entry scopes");
+  check("every current entry delivery promise has its owner-defined start", pageBody.includes("Due 48 elapsed hours after recorded Ready.") && pageBody.includes("Findings within 48 hours of recorded scope confirmation") && !/48 hours of your category confirmation/.test(pageBody), "promise");
+  check("the next job section offers Answer Repair with its exact Ready promise", pageBody.includes('<h2 id="full-title">Choose one completed job.</h2>') && pageBody.includes("We confirm Ready within 60 minutes during business hours. If anything is missing, a member of our team contacts you directly and finishes it with you. If Ready still cannot be reached, you can cancel for a full refund."), "current Ready promise");
   check("no purchase control is a mailto", !/<a [^>]*href="mailto:[^"]*"[^>]*>[^<]*(\$490|\$990|Audit|Diagnostic|availability)/i.test(page), "mailto buy");
   check("the engine may be named and no model string appears", /Named engine: Claude/.test(page) && !/claude-(?:sonnet|haiku)|sonar-pro/i.test(page), "engine naming");
   check("both paid surfaces link to the published price ladder", (pageBody.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
@@ -397,7 +397,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     head.includes('class="bw-shared-wordmark" href="https://broadcastwell.com/"')
     && ['Product','Research','Free tools','Pricing','Exchange','Company'].every(label=>head.includes('>'+label+'</a>'))
     && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
-    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/audit" aria-label="Get the Category Audit, $490">$490 Audit</a>'), "header shell");
+    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/answer-repair">Fix one answer, $490</a>'), "header shell");
   check("the phone menu is a named native disclosure with Escape handling",
     head.includes('data-bw-site-menu><summary aria-label="Open Broadcastwell navigation">') && page.includes("event.key === 'Escape'"), "menu semantics");
   check("the Audit header action remains outlined",
@@ -407,7 +407,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
     (foot.match(/data-bw-footer-group/g)||[]).length===5 && [...foot.matchAll(/<details class="bw-shared-group"[^>]*>([\s\S]*?)<\/details>/g)].every(group=>(group[1].match(/<li>/g)||[]).length===6), "footer groups");
   check("footer contact, legal links and dated publication line are present",
     foot.includes('href="tel:+18123457272">(812) 345 7272') && foot.includes('517 E Kirkwood Ave<br>Bloomington, IN 47408')
-    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-16">')
+    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-26">')
     && ['privacy','terms','cookies'].every(slug=>foot.includes('href="https://broadcastwell.com/'+slug+'">')), "footer details");
   check("the footer preserves the free check's research disclosure above the shared groups",
     foot.indexOf('Broadcastwell is excluded from its own sample')>=0 && foot.indexOf('Broadcastwell is excluded from its own sample')<foot.indexOf('bw-shared-columns'), "disclosure");
@@ -563,7 +563,7 @@ let failed = 0;
   check("the one engine is stated in the form, under the button", pageBody.indexOf(oneEngine) > pageBody.indexOf('<button id="go"') && pageBody.indexOf(oneEngine) < pageBody.indexOf("</form>"), "under the button");
   check("the one engine is stated again in the result", /We ask Claude the ten questions a buyer in your category would ask, once/.test(resultBlock) && /BwReport\.scope\(data\)/.test(script), "in result");
   const visible = pageBody.replace(/<[^>]+>/g, " ");
-  check("the five paid engines are named together once on the page", visible.split('The Category Audit measures ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.').length === 2, "engine names");
+  check("the five paid engines are named together once on the page", visible.split('The five engines in the Agency Deadline Audit are ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.').length === 2, "engine names");
   // A sentence may set the free result beside the five engine products, but no sentence may
   // put five engines on the free check without naming the paid product that runs them.
   const claims = visible.split(/\.\s/).filter((sentence) => /(10[- ]question check|this check|this result)/i.test(sentence) && /(five|5) engines/i.test(sentence) && !/Category Audit/.test(sentence));
@@ -573,13 +573,13 @@ let failed = 0;
   const buyAt = fullResult.indexOf('class="buy-path"');
   const buy = fullResult.slice(buyAt, fullResult.indexOf('id="keep"'));
   check("the buy path follows the questions and comes before the keep and share block", buyAt > fullResult.indexOf('id="question-block"') && buyAt < fullResult.indexOf('id="keep"'), "buy path place");
-  check("the buy path leads with the one next step after the stated one-engine method", /<h2 id="buy-title">The one next step<\/h2>/.test(buy) && fullResult.includes('five engines, three runs each, 150 observed answers'), "buy sentence");
+  check("the result leads with one completed repair after the honest one-engine method", buy.includes('<h2 id="buy-title">One buyer question. One completed repair.</h2>') && fullResult.includes("We ask Claude the ten questions") && buy.includes("Due 48 elapsed hours after recorded Ready."), "repair scope after measurement");
   check("the buy path has one priced button, then the terms and the sample link",
-    /<a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/audit" data-buy>Start with the \$490 Category Audit<\/a>/.test(buy)
-    && buy.includes('Refundable in full within 30 days of delivery.') && buy.includes('The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.')
-    && (buy.match(/class="cta /g) || []).length === 1 && fullResult.includes('https://app.broadcastwell.com/sample">See a sample Audit</a>'), "buy path order");
+    /<a class="cta cta-filled" href="https:\/\/broadcastwell\.com\/buy\/answer-repair" data-buy>Fix one answer, \$490<\/a>/.test(buy)
+    && buy.includes('If we miss the deliverable or deadline, we initiate a full $490 refund within five business days.') && buy.includes('You may also request a full refund within 30 days of delivery.')
+    && (buy.match(/class="cta /g) || []).length === 1 && fullResult.includes('https://app.broadcastwell.com/sample">Read the fictional measurement sample</a>'), "buy path order");
   const filledOffers = [...pageBody.matchAll(/<a class="cta cta-filled" href="([^"]+)"/g)];
-  check("the one filled purchase button is the $490 Category Audit", filledOffers.length === 1 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/audit') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled purchase action");
+  check("the one filled purchase button is the $490 Category Audit", filledOffers.length === 1 && filledOffers.every(match => match[1] === 'https://broadcastwell.com/buy/answer-repair') && !/class="[^"]*\bprimary\b[^"]*"[^>]*href=/.test(pageBody), "one filled purchase action");
   check("the submit is filled before a result and steps down once one is shown",
     /<button id="go" class="primary" type="submit">/.test(page) && /\.primary\.settled \{[^}]*background: transparent/.test(page)
     && /settle\(true\)/.test(script) && /go\.classList\.remove\('settled'\)/.test(script) && /refuse\(reason, message\) \{ stopProgress\(\); hide\(working\); settle\(false\)/.test(script), "submit state");
@@ -590,7 +590,7 @@ let failed = 0;
   const app = graph.find((node) => node["@type"] === "WebApplication");
   const audit = graph.find((node) => node["@type"] === "Service");
   check("the structured data names the Free 10-question check as a free web application", app && app.name === "Free 10-question check (one engine)" && app.offers.price === "0", JSON.stringify(app || {}).slice(0, 80));
-  check("the structured data carries the $490 offer at the site's /buy switch", audit && audit.offers.price === "490" && audit.offers.url === "https://broadcastwell.com/buy/audit" && audit.offers.availability === "https://schema.org/InStock", JSON.stringify(audit || {}).slice(0, 80));
+  check("the structured data carries the $490 offer at the site's /buy switch", audit && audit.name === 'Answer Repair' && audit.description.includes('Due 48 elapsed hours after recorded Ready.') && audit.offers.price === "490" && audit.offers.url === "https://broadcastwell.com/buy/answer-repair" && audit.offers.availability === "https://schema.org/InStock", JSON.stringify(audit || {}).slice(0, 80));
 }
 
 

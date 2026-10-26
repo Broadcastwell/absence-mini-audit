@@ -90,12 +90,12 @@ check("no em dash, en dash or double hyphen in anything a visitor reads", dashes
 
 // The offers the ruling allows, in its words.
 const buyLinks = [...page.matchAll(/https:\/\/broadcastwell\.com\/buy\/[a-z0-9-]*/g)].map((match) => match[0]);
-check("purchase controls use only the approved $490 Audit or PHP2Shell Record Check routes", buyLinks.length >= 3 && buyLinks.every((url) => ["https://broadcastwell.com/buy/audit","https://broadcastwell.com/buy/record-check"].includes(url)) && buyLinks.filter(url=>url==='https://broadcastwell.com/buy/record-check').length===1, [...new Set(buyLinks)].join(","));
-const CREDIT = "The $490 credits once against the $2,900 Fix Sprint within 30 days of delivery, so the Sprint is $2,410.";
-check("every credit the page states is the published credit line", visible.includes(CREDIT) && !/\bcredit/i.test(visible.split(CREDIT).join(" ")) && !/\bcredit/i.test(ldStrings.join("\n")), "credit");
+check("all four purchase controls use the approved Answer Repair switch", (page.match(/<a[^>]+href="https:\/\/broadcastwell\.com\/buy\/answer-repair"[^>]*>/g)||[]).length === 4 && buyLinks.length>=4 && buyLinks.every(url=>url === "https://broadcastwell.com/buy/answer-repair"), [...new Set(buyLinks)].join(","));
+const CREDIT = "The $490 credits once against the $3,900 Fix Sprint within 30 days of delivery, so the Sprint is $3,410.";
+check("the public page has no credit or retired Sprint price promotion", !/credits once|\$2,900|\$2,410|\$3,900|\$3,410/.test(visible) && !/\bcredit/i.test(ldStrings.join("\n")), "no retired credit promotion");
 const said = [visible, ldStrings.join("\n")].join("\n");
-const promises = (said.match(/within 48 hours/gi) || []).length, published = (said.match(/within 48 hours of (?:your category confirmation|confirming your category)/g) || []).length;
-check("every delivery promise uses one of the owner's two exact approved phrasings", promises >= 4 && promises === published, published + " of " + promises);
+const promises = (said.match(/within 48 hours/gi) || []).length, published = (said.match(/within 48 hours of recorded scope confirmation/g) || []).length;
+check("every Agency deadline starts at recorded scope confirmation", promises >= 2 && promises === published && said.includes("Due 48 elapsed hours after recorded Ready."), published + " of " + promises);
 
 // The result view. A check's result is built in the browser by revealing the #result section
 // and filling its slots, /r/<id> serves the same bytes with a stored result, and /embed is the
@@ -113,11 +113,11 @@ for (const name of ["index.html", "embed.html"]) {
   const doc = file("public/" + name);
   const result = element(doc, doc.indexOf('<section id="result"'), "section");
   const said = words(result);
-  check(name + ": the result view states the credit line once, word for word, and no other credit", result.length > 1000 && said.split(CREDIT).length === 2 && !/\bcredit/i.test(said.split(CREDIT).join(" ")), (said.match(/[^.]*\bcredit[^.]*\./gi) || []).join(" | "));
-  check(name + ": the result view's promises use the approved delivery and method words", (said.match(/within 48 hours/gi) || []).length === (said.match(/within 48 hours of (?:your category confirmation|confirming your category)/g) || []).length && said.includes("Findings within 48 hours of your category confirmation."), "result promise");
+  check(name + ": the result has no retired credit promotion and keeps one repair scope", result.length>1000 && !/\bcredit/i.test(said) && said.includes("Answer Repair is $490 for one agreed buyer question and one source-backed page or fix."), "exact repair scope");
+  check(name + ": the result keeps the Ready deadline and both refund windows", said.includes("Due 48 elapsed hours after recorded Ready.") && said.includes("full $490 refund within five business days") && said.includes("full refund within 30 days of delivery") && !/48 hours of your category confirmation/.test(said), "current result terms");
   const scripts = [...doc.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]).join("\n");
     const interfaceScripts = scripts.replace(/\/\* question bank: begin \*\/[\s\S]*?\/\* question bank: end \*\//, "");
-    check(name + ": no interface script writes a credit, a Sprint or a Sprint price into the result", interfaceScripts.length > 10000 && !/\bcredit|\bSprint\b|\$2,900|\$2,410/i.test(interfaceScripts), "interface script scan, published credit union question retained");
+    check(name + ": no interface script writes a credit, a Sprint or a Sprint price into the result", interfaceScripts.length > 10000 && !/\bcredit|\bSprint\b|\$2,900|\$2,410|\$3,900|\$3,410/i.test(interfaceScripts), "interface script scan, published credit union question retained");
   check(name + ": the result links the sample report beside its purchase path", /href="\/assets\/sample\/category-audit-sample\.pdf"/.test(result), "sample link");
 }
 
@@ -172,7 +172,7 @@ function pdfPages(bytes) {
     }
     return text.replace(/[ \t]*\n+/g, "\n");
   });
-  const links = [...pdf.matchAll(/\/URI \(([^)]*)\)/g)].map((match) => match[1]);
+  const links = [...pdf.matchAll(/\/URI \(([^)]*)\)/g)].map((match) => literal(match[1]));
   return { count: Number((/\/Count (\d+)/.exec(tree) || [])[1]), pages, links };
 }
 {
@@ -181,13 +181,13 @@ function pdfPages(bytes) {
   const flat = text.replace(/\s+/g, " ");
   check("the sample report keeps its four pages", sample.count === 4 && sample.pages.length === 4 && sample.pages.every((page) => page.length > 200), sample.count + " pages");
   check("the sample report's text decodes cleanly through its fonts", !text.includes("\uFFFD") && /Kalvenor Systems on the AI shortlist/.test(flat), "decode");
-  check("the sample report's promise reads Findings within 48 hours of your category confirmation.", flat.includes("Ten buyer questions, five engines, three measured runs. Findings within 48 hours of your category confirmation.") && !/48 hours of category confirmation/.test(flat), (flat.match(/.{0,40}48 hours.{0,40}/g) || []).join(" | "));
-  check("every delivery promise in the sample report uses the published words", (flat.match(/within 48 hours/gi) || []).length >= 1 && (flat.match(/within 48 hours/gi) || []).length === (flat.match(/within 48 hours of your category confirmation/g) || []).length, "sample promise");
+  check("the fictional sample offers a repair due after recorded Ready", flat.includes("One source-backed page or fix, due 48 elapsed hours after recorded Ready.") && !/48 hours of your category confirmation/.test(flat), "current sample deadline");
+  check("the fictional sample states both exact refund windows", flat.includes("full $490 refund initiated within five business days. You keep the work.") && flat.includes("Full refund on request within 30 days of delivery."), "refund windows");
   check("the sample report carries none of the banned words", hits(flat).length === 0, hits(flat).join(" | "));
   check("the sample report has no em dash, en dash or double hyphen", !/[\u2013\u2014]|--/.test(text), "dashes");
   check("every credit the sample report states is the published credit line", !/\bcredit/i.test(flat.split(CREDIT).join(" ")), "sample credit");
   check("the only price in the sample report is the $490 Category Audit", (flat.match(/\$[\d,]+/g) || []).length > 0 && (flat.match(/\$[\d,]+/g) || []).every((price) => price === "$490"), (flat.match(/\$[\d,]+/g) || []).join(","));
-  check("the sample report's button goes to the $490 Audit through https://broadcastwell.com/buy/audit", sample.links.length === 1 && sample.links[0] === "https://broadcastwell.com/buy/audit", sample.links.join(","));
+  check("the sample report's button goes to the $490 Audit through https://broadcastwell.com/buy/answer-repair", sample.links.length === 1 && sample.links[0] === "https://broadcastwell.com/buy/answer-repair", sample.links.join(","));
   check("every page of the sample report says it is fictional", sample.pages.every((page) => page.replace(/\s+/g, " ").includes("Sample. All companies, pages, quotes and figures are fictional.")), "fictional mark");
 }
 
@@ -201,11 +201,11 @@ const sentLines = ["lib/analyze.js", "lib/link.js", "lib/event.js", "lib/seal.js
 const sent = runMessages.concat(sentLines.flatMap((line) => [...line.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((match) => match[1])));
 check("the scan reads the website read, result link and result page messages", sent.length >= 16, sent.length + " strings");
 check("no message the handlers can send carries a banned word", hits(sent.join("\n")).length === 0, hits(sent.join("\n")).join(" | "));
-check("a run the engine could not answer says so plainly, with what to do next", /unavailable: 'Claude did not answer all ten questions\.'/.test(page) && runMessages.includes("Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Category Audit."), "unavailable copy");
+check("a run the engine could not answer says so plainly, with what to do next", /unavailable: 'Claude did not answer all ten questions\.'/.test(page) && runMessages.includes("Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Answer Repair."), "unavailable copy");
 
 
 check('the PHP2Shell mode states its one-question scope and separates the record from the answer',page.includes('value="php2shell"')&&page.includes('PHP2Shell: one question, one answer')&&page.includes('The answer and the statement record are separate observations'));
-check('PHP2Shell has company/domain inputs and the approved $490 Record Check route',page.includes('id="php-company"')&&page.includes("mode:'php2shell',company:company,domain:domain")&&page.includes('href="https://broadcastwell.com/buy/record-check">PHP2Shell Record Check, $490 once'));
+check("PHP2Shell retains its inputs and links the approved Answer Repair",page.includes('id="php-company"')&&page.includes("mode:'php2shell',company:company,domain:domain")&&page.includes('href="https://broadcastwell.com/answer-repair">Answer Repair, $490'));
 check('a PHP2Shell timeout cannot trigger an automatic paid retry',page.includes("if(payload.mode!=='php2shell'&&(status===502||!status)"));
 check('PHP2Shell answer text is rendered as text and not inserted as HTML',page.includes("document.getElementById('php-answer').textContent=data.answer")&&!/php-answer[^\n]*innerHTML/.test(page));
 console.log("\n" + passed + " passed, " + failed + " failed");

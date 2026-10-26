@@ -30,7 +30,7 @@ const W = globalThis.BwWheel;
   check("the five engines are named exactly, in the site's order", W.ENGINES.map((engine) => engine.label).join(",") === "ChatGPT,Claude,Perplexity,Google AI Overviews,Google AI Mode", "engines");
   const wheel = W.svg(free, { interactive: true });
   check("named and not named differ in shape, not only colour", (wheel.match(/<circle[^>]*r="9"[^>]*fill="#3B82F6"/g) || []).length === 3 && (wheel.match(/<circle[^>]*r="8"[^>]*fill="#111727"[^>]*stroke="#CBD5E1"/g) || []).length === 7, "shapes");
-  check("the unmeasured rings are faint and labelled for the $490 Category Audit", W.UNMEASURED === "Measured in the $490 Category Audit" && (wheel.match(/stroke-dasharray/g) || []).length >= 4, "rings");
+  check("the unmeasured rings are faint and labelled for the $490 Category Audit", W.UNMEASURED === "Not measured in this one engine run" && (wheel.match(/stroke-dasharray/g) || []).length >= 4, "rings");
   check("every measured node is focusable and says its question and status", (wheel.match(/class="wheel-node" tabindex="0"/g) || []).length === 10 && wheel.includes('aria-label="Question 1, Perplexity: Named. Question 1"'), "nodes");
   check("the centre says named in N of 10 answers", wheel.includes("Named in 3 of 10 answers") && wheel.includes("Perplexity, 21 September 2026"), "centre");
   const unknown = W.svg(W.fromFreeCheck(Object.assign({}, UPSTREAM, { questions: UPSTREAM.questions.map((q) => ({ question: q.question, status: "not itemised" })) }), { brand: "A", category: "b" }), {});

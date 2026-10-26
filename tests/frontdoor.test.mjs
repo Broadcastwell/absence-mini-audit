@@ -236,10 +236,10 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the handler allows the health check's ninety second completion window", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 90000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
-  check("the only prices on the page are the $490 Audit and the Fix Sprint credit line's $2,900 and $2,410", dollars.length > 0 && dollars.every((d) => d === "$490" || d === "$2,900" || d === "$2,410") && dollars.indexOf("$990") === -1, dollars.join(","));
+  check("the only promoted entry price is $490", dollars.length===1 && dollars[0]==="$490", dollars.join(","));
   check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bcomposite score\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
   check("no engine is called Gemini and nothing says four engines", !/Gemini|four engines/i.test(PAGE), "engines");
-  check("the $490 block states the delivery and refund terms", PAGE.includes("Findings within 48 hours of your category confirmation.") && PAGE.includes("Refundable in full within 30 days of delivery.") && PAGE.includes("Start with the $490 Category Audit"), "pricing terms");
+  check("the $490 block states current delivery and both refund terms", PAGE.includes("Due 48 elapsed hours after recorded Ready.") && PAGE.includes("full $490 refund within five business days") && PAGE.includes("full refund within 30 days of delivery") && PAGE.includes("Fix one answer, $490"), "entry terms");
   const result = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf("</section>", PAGE.indexOf('class="buy-path"')));
   const whole = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf('<section id="email-card"'));
   const order = ['id="score-title"', 'id="instead-title"', 'id="sources-title"', 'id="questions-title"', 'id="scope-title"', 'id="buy-title"', 'class="cta cta-filled"', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));

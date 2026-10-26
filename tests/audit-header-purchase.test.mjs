@@ -22,12 +22,12 @@ test('header purchase participates in real result reference and optional email p
  const ui=harness();
  ui.context.setReference('testresult');ui.context.setPrefill('test@example.invalid');
  const url=new URL(ui.link.href);
- assert.equal(url.origin+url.pathname,'https://broadcastwell.com/buy/audit');
+ assert.equal(url.origin+url.pathname,'https://broadcastwell.com/buy/answer-repair');
  assert.equal(url.searchParams.get('client_reference_id'),'fc_testresult');
  assert.equal(url.searchParams.get('fc'),'testresult');
  assert.equal(url.searchParams.get('prefilled_email'),'test@example.invalid');
  ui.context.setReference(null);ui.context.setPrefill('');
- assert.equal(ui.link.href,'https://broadcastwell.com/buy/audit');
+ assert.equal(ui.link.href,'https://broadcastwell.com/buy/answer-repair');
 });
 test('header purchase matches the real delegated buy handler',()=>{
  const ui=harness();ui.click();assert.deepEqual(ui.events,['buy_490']);

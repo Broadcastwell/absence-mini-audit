@@ -197,7 +197,7 @@ const auditSource = file("lib/audit.js");
 const responsesAt = auditSource.indexOf("const RESPONSES = {");
 const runMessages = [...auditSource.slice(responsesAt, auditSource.indexOf("};", responsesAt)).matchAll(/^\s+[a-z_]+: "([^"]+)",$/gm)].map((match) => match[1]);
 check("the scan reads all six run refusals", runMessages.length === 6, runMessages.length + " found");
-const sentLines = ["lib/analyze.js", "lib/link.js", "lib/event.js", "lib/seal.js", "lib/guard.js"].flatMap((path) => file(path).split("\n").filter((line) => /message: |<title>/.test(line)));
+const sentLines = ["lib/analyze.js", "lib/link.js", "lib/event.js", "lib/seal.js", "lib/guard.js", "lib/result.js"].flatMap((path) => file(path).split("\n").filter((line) => /message: |<title>/.test(line)));
 const sent = runMessages.concat(sentLines.flatMap((line) => [...line.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((match) => match[1])));
 check("the scan reads the website read, result link and result page messages", sent.length >= 16, sent.length + " strings");
 check("no message the handlers can send carries a banned word", hits(sent.join("\n")).length === 0, hits(sent.join("\n")).join(" | "));

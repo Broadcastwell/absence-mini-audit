@@ -18,6 +18,7 @@ own email app.
 | `lib/audit.js` | The request handler: validation, the three limits, the spend cap, and the response contract. It also routes the calls below. |
 | `lib/analyze.js`, `lib/guard.js`, `lib/lexicon.js` | `POST /api/analyze`: reads the visitor's homepage and at most two more pages through the fetch guard, and proposes a name and a category from the lexicon. Free: it never calls the upstream. |
 | `lib/seal.js`, `lib/link.js` | `POST /api/link`, `POST /api/unlink` and `GET /r/<id>`: private, noindex result links, made only on request, kept 30 days, only for a result this handler sealed, and deletable sooner by the browser that made them. |
+| `lib/result.js` | `GET /api/result/<id>`: the stored result of one result link as JSON, read only and noindex, for the app's free account to fetch server to server when a visitor keeps a result. Only records `/api/link` stored are served; nothing about the visitor is returned. |
 | `lib/event.js` | `POST /api/event`: the daily funnel count. No personal data. |
 | `functions/` | Entry points. Each does nothing but hand the request to `lib/audit.js`. |
 | `scripts/build-page.mjs` | Inlines the wheel and report modules, embeds the export font and recomputes the CSP hashes. Run after editing the page. |

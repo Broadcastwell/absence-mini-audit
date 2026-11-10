@@ -236,7 +236,10 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the handler allows the health check's ninety second completion window", file("lib/audit.js").includes("const UPSTREAM_TIMEOUT_MS = 90000;"), "timeout");
   check("the free tool is never called an audit", !/free (?:ai visibility )?audit|audit for free/i.test(PAGE) && !/"name":"Free[^"]*[Aa]udit/.test(PAGE), "no free audit");
   const dollars = [...new Set(PAGE.match(/\$[0-9][0-9,]*/g) || [])];
-  check("the only promoted entry price is $490", dollars.length===1 && dollars[0]==="$490", dollars.join(","));
+  // STEP 3.3 brief section 10.3 step 2: a company named in all ten answers sees the $19 live question
+  // as its second next step. $19 is written nowhere else on the page, and $490 stays the only other price.
+  const liveStep = (/<div id="next-live"[^>]*>[\s\S]*?<\/div>/.exec(PAGE) || [""])[0];
+  check("the only promoted entry price is $490, beside the $19 live question in the second next step only", dollars.slice().sort().join(",") === "$19,$490" && (PAGE.match(/\$19\b/g) || []).length === (liveStep.match(/\$19\b/g) || []).length && (liveStep.match(/\$19\b/g) || []).length === 2, dollars.join(","));
   check("no percentage, score, grade, guarantee or promise in the visible copy", !/\d\s?%|percent(?!age)|\bcomposite score\b|\bgrade\b|guarantee|we promise/i.test(visible.replace(/95 percent confidence interval/, "")) , "copy law");
   check("no engine is called Gemini and nothing says four engines", !/Gemini|four engines/i.test(PAGE), "engines");
   check("the $490 block states current delivery and both refund terms", PAGE.includes("Due 48 elapsed hours after recorded Ready.") && PAGE.includes("full $490 refund within five business days") && PAGE.includes("full refund within 30 days of delivery") && PAGE.includes("Fix one answer, $490"), "entry terms");

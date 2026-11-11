@@ -143,7 +143,7 @@ for (const name of ["index.html", "embed.html"]) {
   check("named in all ten, the second step becomes the $19 live question", element("next-fix").hidden.has("hidden") && !element("next-live").hidden.has("hidden"));
   sandbox.out({ named: 4, questions: Array.from({ length: 10 }, (_, i) => ({ question: "Question " + (i + 1), status: "not itemised" })) });
   check("a saved count without marks names no question it cannot point to", element("next-fix-text").textContent === "Answer Repair fixes one buyer question where Claude did not name you, with one source-backed page or fix, for $490." && !element("next-fix").hidden.has("hidden"));
-  const keep = script.slice(script.indexOf("var APP_ORIGIN"), script.indexOf("document.getElementById('link-create').addEventListener"));
+  const keep = script.slice(script.indexOf("var APP_ORIGIN"), script.indexOf("function copyNow("));
   check("Keep this result goes to the app's own sign-up with the result id, on production", keep.includes("'https://app.broadcastwell.com'") && keep.includes("APP_ORIGIN + '/signin?keep=' + encodeURIComponent(id)"), "target");
   check("Keep this result makes the private link first, or reuses the one already made", /if \(linkId\) \{ leaveTo\(keepTarget\(linkId\)\); return; \}/.test(keep) && /createLink\(\)\.then\(function \(made\) \{ button\.disabled = false; leaveTo\(keepTarget\(made\.id\)\); \}/.test(keep), "link first");
   check("Keep this result sends only the id: no result, count or company travels in the address", !/keep=' \+ [^;]*(named|result|brand|category)/.test(keep) && !/sessionStorage|localStorage/.test(keep), "id only");

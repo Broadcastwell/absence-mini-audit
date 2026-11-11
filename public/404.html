@@ -562,6 +562,17 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 @media (min-width: 768px) { .result .verdict { font-size: var(--bw-text-49); line-height: var(--bw-leading-49); } }
 .measurement-company { margin: 0; font-size: var(--bw-text-20); line-height: var(--bw-leading-20); font-weight: var(--bw-weight-semibold); color: var(--bw-color-ink); }
 .result-record { margin: var(--bw-space-32) 0; }
+/* The next action stays in view with the score on the screen the result scrolls to (art director's live
+   round 1, point 1): the outlined style, so the one filled purchase button stays the repair. */
+.score-next .small-button { text-decoration: none; }
+.score-next { margin: var(--bw-space-16) 0 0; }
+/* The two bar graphics carry the answer record's caption (base, capture date, source) and its
+   "Read as a table" control (point 11). */
+.report-figure { margin: 0 0 var(--bw-space-16); }
+.report-caption { display: grid; justify-items: start; gap: var(--bw-space-8); margin-top: var(--bw-space-16); }
+.report-caption .meta { margin: 0; }
+.report-table { margin-top: var(--bw-space-16); }
+.report-table .bw-table caption { font-size: var(--bw-text-13); line-height: var(--bw-leading-13); }
 .result .position { margin: var(--bw-space-16) 0; font-size: var(--bw-text-20); line-height: var(--bw-leading-20); color: var(--bw-color-ink); }
 .result .scope { margin-top: var(--bw-space-16); font-size: var(--bw-text-16); line-height: var(--bw-leading-16); font-variant-numeric: tabular-nums lining-nums; }
 .report-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -589,7 +600,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .q-ask a{display:inline-flex;align-items:center;min-height:40px;padding:0 var(--bw-space-8);border-radius:var(--bw-radius-4);color:var(--bw-color-accent);font-weight:var(--bw-weight-medium);text-decoration:underline;text-decoration-thickness:var(--bw-stroke-hairline);text-underline-offset:.2em}
 .q-ask a:hover{background:var(--bw-color-panel);color:var(--bw-color-accent-strong);text-decoration-thickness:var(--bw-stroke-focus)}
 .q-ask a:focus-visible{outline:var(--bw-focus-width) var(--bw-focus-style) var(--bw-focus-color);outline-offset:var(--bw-focus-offset)}
-.next-list { margin: 0; }
+.next-list { display: grid; gap: var(--bw-space-32); margin: 0; padding: 0; list-style: none; }
 .next-list h3 { margin-bottom: var(--bw-space-4); }
 .next-list p { margin: 0 0 var(--bw-space-8); }
 .buy-path { padding-block: var(--bw-space-32); border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
@@ -624,6 +635,9 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .bw-button--secondary.bw-site-nav__phone-start { display: none; }
   .bw-site-nav__bar:has(> .bw-button--secondary.bw-site-nav__phone-start) .bw-site-nav__phone { margin-left: auto; }
 }
+/* The fictional sample's label is plain secondary text beside the drawing, not an amber tag: amber is for
+   notices, which carry an icon (art director's live round 1, point 6). The words stay. */
+.bw-ar__sample, .bw-tag--sample { padding: 0; background: none; color: var(--bw-color-ink-secondary); }
 /* Brand 3.0.2: the wordmark never wraps, at 320 px or any other width. */
 .bw-logotype { white-space: nowrap; flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) {

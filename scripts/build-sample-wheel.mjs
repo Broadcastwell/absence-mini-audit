@@ -47,7 +47,7 @@ async function load(name, path) {
 // The fields the answer record's caption reads, beyond the contract's core (WHEEL_CONTRACT.md).
 // Each mark is one question on one engine (10 questions on 5 engines, 50 marks), and each mark sums
 // three runs, so the count is stated in marks and the base says so (count_unit, public/assets/wheel.js).
-const CAPTION = { release: "Fictional measurement sample", base: "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs; each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs", source_label: "the sample account", count_unit: "question and engine pairs" };
+const CAPTION = { release: "Fictional measurement sample", base: "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs. Each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs", source_label: "the sample account", count_unit: "question and engine pairs" };
 
 async function fromEndpoints() {
   const displacement = await load("displacement", "baselines/" + BASELINE + "/displacement");

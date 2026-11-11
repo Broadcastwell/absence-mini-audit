@@ -32,7 +32,7 @@ control; on a phone the table form replaces the wheel whenever its marks would b
   "sample": true,
   "sample_url": "https://app.broadcastwell.com/sample",
   "release": "Fictional measurement sample",
-  "base": "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs; each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs",
+  "base": "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs. Each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs",
   "source_label": "the sample account",
   "count_unit": "question and engine pairs",
   "summary": { "named": 13, "asked": 50 },

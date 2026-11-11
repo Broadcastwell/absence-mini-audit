@@ -6,18 +6,19 @@
 # checkout to LF and why tests/limits.test.mjs recomputes both hashes from
 # public/index.html and fails if this file has drifted from the page.
 #
-# What the page loads, and nothing else: its own inline stylesheet, the two Inter
-# subsets that stylesheet declares as @font-face and serves from this origin, the
-# favicon from framerusercontent.com, the sample wheel from this origin, and same-origin
-# requests to /api/analyze, /api/run, /api/link and /api/event. Inter used to come from a
-# font CDN, which needed two more hosts here.
+# What the page loads, and nothing else: its own inline stylesheet (the brand system's
+# tokens and components among it), the two brand faces that stylesheet declares as
+# @font-face and this origin serves (Geist and Newsreader, /assets/brand/fonts/), the
+# favicon from framerusercontent.com, and same-origin requests to /api/analyze, /api/run,
+# /api/link and /api/event. 404.html carries the same style block, so the same hash covers
+# it, and no script.
 #
 # style-src carries a second hash, for the one fixed font rule an exported image embeds
-# (public/assets/fonts/inter-embed.css), because some browsers apply this policy to an SVG
+# (public/assets/fonts/geist-embed.css, Geist), because some browsers apply this policy to an SVG
 # image's own stylesheet. It allows that exact rule and nothing else.
 #
 # img-src allows data: and blob: for one reason: the wheel's image export draws an SVG
-# into a canvas in the browser, through a blob: URL, with Inter embedded as data:. No
+# into a canvas in the browser, through a blob: URL, with Geist embedded as data:. No
 # other directive was opened for it. scripts/build-page.mjs rewrites the two hashes and
 # lib/headers.js; run it after editing the page.
 
@@ -37,10 +38,9 @@
   ! X-Frame-Options
   Content-Security-Policy: default-src 'none'; script-src 'sha256-M1fuLydM4e5hnjewoH0BCQFuvE9znFYmcUHeFQZNS6w='; style-src 'self' 'sha256-Sk9iU0ditui1ccdOOMTHOgetYjo8LJT/JfTRjnhpJy4=' 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors https://broadcastwell.com https://*.broadcastwell.com https://*.framer.app https://*.framer.website https://framer.com https://*.framercanvas.com; upgrade-insecure-requests
 
-# The sample wheel is a standalone SVG image with Inter embedded. Served as its own
-# document it would carry the page's policy above, which some browsers apply to its
-# stylesheet and its data: font. It gets an image's policy instead: nothing runs, and the
-# one fixed font rule is allowed by its hash. scripts/build-page.mjs keeps the hash current.
+# The sample images are standalone files. Served as their own document they would carry
+# the page's policy above. They get an image's policy instead: nothing runs, and the one
+# fixed font rule an exported card embeds is allowed by its hash. scripts/build-page.mjs keeps the hash current.
 /assets/sample/*
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'none'; style-src 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src data:

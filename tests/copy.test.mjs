@@ -186,7 +186,8 @@ function pdfPages(bytes) {
   check("the sample report keeps its four pages", sample.count === 4 && sample.pages.length === 4 && sample.pages.every((page) => page.length > 200), sample.count + " pages");
   check("the sample report's text decodes cleanly through its fonts", !text.includes("\uFFFD") && /Kalvenor Systems on the AI shortlist/.test(flat), "decode");
   check("the fictional sample offers a repair due after recorded Ready", flat.includes("One source-backed page or fix, due 48 elapsed hours after recorded Ready.") && !/48 hours of your category confirmation/.test(flat), "current sample deadline");
-  check("the fictional sample states both exact refund windows", flat.includes("full $490 refund initiated within five business days. You keep the work.") && flat.includes("Full refund on request within 30 days of delivery."), "refund windows");
+  // Follow-up 3 item 2 (R-168): the Next step section states the owner's long form, word for word.
+  check("the fictional sample states both exact refund windows in the owner's long form", flat.includes("If we miss the deliverable or deadline, we initiate a full $490 refund within five business days. You keep the work. You may also request a full refund within 30 days of delivery. Terms: broadcastwell.com/terms.") && !/Missed work or deadline|refund initiated/.test(flat), "refund windows");
   check("the sample report carries none of the banned words", hits(flat).length === 0, hits(flat).join(" | "));
   check("the sample report has no em dash, en dash or double hyphen", !/[\u2013\u2014]|--/.test(text), "dashes");
   check("every credit the sample report states is the published credit line", !/\bcredit/i.test(flat.split(CREDIT).join(" ")), "sample credit");

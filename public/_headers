@@ -24,7 +24,7 @@
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-1LT0/pVVAAxLEcyZs3fCfzIs5osys+20PelJ47Ys9Gw='; style-src 'self' 'sha256-Un7s1jAIejiJrImKsRCzYe4/4PJEoTahVswMzdbRZTE=' 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-XkERKoQbpVSFMavOOss1O/qtxJ/NPdJDVTkNiYA3A/Q='; style-src 'self' 'sha256-vlZ3xtaWi+OPSdEp1V5DbabxQru1/l0JWPYPKiN7hXM=' 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -36,7 +36,7 @@
 /embed
   ! Content-Security-Policy
   ! X-Frame-Options
-  Content-Security-Policy: default-src 'none'; script-src 'sha256-1LT0/pVVAAxLEcyZs3fCfzIs5osys+20PelJ47Ys9Gw='; style-src 'self' 'sha256-Un7s1jAIejiJrImKsRCzYe4/4PJEoTahVswMzdbRZTE=' 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors https://broadcastwell.com https://*.broadcastwell.com https://*.framer.app https://*.framer.website https://framer.com https://*.framercanvas.com; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'sha256-XkERKoQbpVSFMavOOss1O/qtxJ/NPdJDVTkNiYA3A/Q='; style-src 'self' 'sha256-vlZ3xtaWi+OPSdEp1V5DbabxQru1/l0JWPYPKiN7hXM=' 'sha256-LfyHtbUcxyKgo4SlQw0U8etvYEX1vqLrOixIwzr30e0='; font-src 'self'; img-src 'self' data: blob: https://framerusercontent.com; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors https://broadcastwell.com https://*.broadcastwell.com https://*.framer.app https://*.framer.website https://framer.com https://*.framercanvas.com; upgrade-insecure-requests
 
 # The sample images are standalone files. Served as their own document they would carry
 # the page's policy above. They get an image's policy instead: nothing runs, and the one

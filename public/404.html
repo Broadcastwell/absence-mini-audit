@@ -509,6 +509,9 @@ input:focus-visible, select:focus-visible { outline: var(--bw-focus-width) var(-
 input::placeholder { color: var(--bw-color-ink-secondary); opacity: 1; }
 input[readonly] { background: var(--bw-color-canvas); }
 select:disabled, input:disabled { background: var(--bw-color-canvas); color: var(--bw-color-ink-secondary); cursor: not-allowed; }
+/* A field holding a value the page cannot use keeps its error line under it and an amber left rule, as the
+   brand's invalid input does (art director's live round 3, point 15). */
+input[aria-invalid="true"] { border-color: var(--bw-color-notice-rule); border-left-width: var(--bw-stroke-rule); }
 .field-error, .message h3 { display: flex; align-items: flex-start; gap: var(--bw-space-8); }
 .field-error { margin: var(--bw-space-8) 0 0; font-size: var(--bw-text-16); line-height: var(--bw-leading-16); font-weight: var(--bw-weight-semibold); color: var(--bw-color-notice-ink); }
 /* The notice icon: one outline mark, always beside its words. */
@@ -647,6 +650,19 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .export-actions .small-button, #link-copy { width: 100%; padding-inline: var(--bw-space-8); }
   .link-row { flex-direction: column; }
   .report-section { padding-block: var(--bw-space-24); }
+  /* Art director's live round 3, point 5: on a phone the check's card and every inset panel run full-bleed, so
+     their text hangs from the 16 px page gutter like the navigation and keeps 45 or more characters a line. A
+     card keeps its top hairline (the section after it draws its own); a panel keeps its fill and its left rule.
+     The /embed frame has no gutter to bleed into, so its cards and panels stay as they are. */
+  html:not(.embed) .card:not(.result) { margin-inline: calc(-1 * var(--bw-layout-margin)); padding-inline: var(--bw-layout-margin); border-width: var(--bw-stroke-hairline) 0 0; border-radius: 0; }
+  html:not(.embed) :is(.progress, .message, .shared-note) { margin-inline: calc(-1 * var(--bw-layout-margin)); padding-inline: var(--bw-layout-margin); border-radius: 0; }
+  html:not(.embed) :is(.card .engine-note, .card .read, .answer-disclosure) { margin-inline: calc(-1 * var(--bw-layout-margin)); padding-inline: var(--bw-layout-margin); }
+  html:not(.embed) :is(.card .read, .message) { padding-left: calc(var(--bw-layout-margin) - var(--bw-stroke-rule)); }
+  html:not(.embed) .card .preview { margin-inline: calc(-1 * var(--bw-layout-margin)); border-inline: 0; }
+  html:not(.embed) .card .preview summary { padding-inline: var(--bw-layout-margin); }
+  html:not(.embed) .question-list { gap: 0; }
+  html:not(.embed) .question-list li { margin-inline: calc(-1 * var(--bw-layout-margin)); padding-inline: var(--bw-layout-margin); border-width: 0 0 var(--bw-stroke-hairline); border-radius: 0; }
+  html:not(.embed) .question-list li:first-child { border-top-width: var(--bw-stroke-hairline); }
 }
 /* The result at 1024 px and up spans the grid and fills both columns (art director's live round 2, points
    7 and 8): the score beside its answer record, each bar graphic beside its caption, the ten questions in two

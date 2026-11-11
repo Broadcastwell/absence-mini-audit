@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { renderNav, renderFooter } from '../vendor/brand/nav-render.mjs';
 import { renderLegacyNav, renderLegacyFooter } from './legacy-chrome.mjs';
 
-export const SHARED_NAV = false;
+export const SHARED_NAV = true;
 
 export const SHARED = JSON.parse(readFileSync(new URL('../vendor/brand/nav.json', import.meta.url), 'utf8'));
 

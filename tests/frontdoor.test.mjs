@@ -609,6 +609,53 @@ let made = null;
  check('the mode selector is available again after the PHP2Shell result',page.document.getElementById('check-mode').disabled===false);
 }
 
+// Art director's live round 3 (B132), points 15 and 18: the website field checks itself when it loses focus, in
+// the browser only, and shows its plain error line; the run button and the check selector are disabled, and the
+// button says it is busy, while the website is read and while a check runs.
+{
+  const FOUND = { found: true, website: "acmefield.com", brand: "Acme Field", category: "field service management software", alternatives: [] };
+  const RESULT = { named: 3, asked: 10, tier: "named 1 to 3", chapter: "/category-door/", engine: "Claude", measured_on: "2026-11-11", questions: Array.from({ length: 10 }, (_, i) => ({ question: "Question " + (i + 1), status: i < 3 ? "named" : "not named" })) };
+  const gate = () => { let open; const promise = new Promise((resolve) => { open = resolve; }); return { promise, open }; };
+  const reading = gate(), running = gate();
+  const page = fakePage({ respond: async (url) => {
+    if (url === "/api/analyze") { await reading.promise; return new Response(JSON.stringify(FOUND), { status: 200, headers: { "content-type": "application/json" } }); }
+    if (url === "/api/run") { await running.promise; return new Response(JSON.stringify(RESULT), { status: 200, headers: { "content-type": "application/json", "x-result-seal": "test-seal" } }); }
+    return new Response("{}", { status: 404 });
+  } });
+  const d = page.document, site = d.getElementById("company"), error = d.getElementById("site-error"), go = d.getElementById("go"), mode = d.getElementById("check-mode");
+  const fire = (el, type) => (el.listeners[type] || []).forEach((fn) => fn({ preventDefault() {} }));
+  const shown = () => !error.classList.contains("hidden");
+  const leave = (value) => { site.value = value; fire(site, "input"); fire(site, "blur"); };
+
+  leave("not a website");
+  check("a website field that loses focus with an invalid value shows its plain error line", shown() && error.textContent === "Enter your website address, for example example.com." && site.getAttribute("aria-invalid") === "true", error.textContent);
+  check("the field's own check sends nothing", page.requests.length === 0, page.requests.join(","));
+  fire(site, "input");
+  check("typing again clears the error line and the invalid state", !shown() && site.getAttribute("aria-invalid") === null);
+  leave("intranet.local");
+  check("a private address reads as the server would refuse it", shown() && error.textContent === "Enter the public address of your website.", error.textContent);
+  leave("");
+  check("an empty field waits for the submit", !shown() && site.getAttribute("aria-invalid") === null);
+  leave("https://acmefield.com/pricing");
+  check("a public address passes without a line", !shown() && site.getAttribute("aria-invalid") === null);
+  leave("not a website");
+  page.submit(); await page.settle();
+  check("a submit with an invalid value keeps the line, focuses the field and reads nothing", shown() && site.focused === true && page.requests.length === 0 && go.disabled !== true, page.requests.join(","));
+
+  leave("acmefield.com");
+  page.submit(); await page.settle();
+  check("while the website is read the run button and the selector are disabled and the button is busy", go.disabled === true && go.getAttribute("aria-busy") === "true" && mode.disabled === true && go.textContent === "Reading your website", go.textContent);
+  reading.open(); await page.settle();
+  check("the confirm step gives the button and the selector back", go.disabled === false && go.getAttribute("aria-busy") === null && mode.disabled === false && go.textContent === "Run the free 10-question check", go.textContent);
+  page.submit(); await page.settle();
+  check("while a check runs the run button and the selector are disabled and the button is busy", go.disabled === true && go.getAttribute("aria-busy") === "true" && mode.disabled === true && go.textContent === "Running the check", go.textContent);
+  site.value = "acmefield.com/edited"; fire(site, "input");
+  check("typing in the website field while a check runs leaves the button and the selector disabled", go.disabled === true && go.getAttribute("aria-busy") === "true" && mode.disabled === true && go.textContent === "Running the check", go.textContent);
+  running.open(); await page.settle();
+  check("a result gives the button and the selector back", go.disabled === false && go.getAttribute("aria-busy") === null && mode.disabled === false, String(go.disabled));
+  check("the run path made exactly its two requests", page.requests.filter((r) => r.startsWith("fetch")).join(",") === "fetch /api/analyze,fetch /api/run", page.requests.join(","));
+}
+
 let failed = 0;
 for (const r of results) {
   if (!r.pass) failed += 1;

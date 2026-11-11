@@ -553,7 +553,10 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .buy-actions { display: flex; flex-wrap: wrap; gap: var(--bw-space-12); margin: var(--bw-space-16) 0; }
 .export-actions { display: flex; flex-wrap: wrap; gap: var(--bw-space-8); margin: var(--bw-space-8) 0 0; }
 .link-row { display: flex; gap: var(--bw-space-8); margin-top: var(--bw-space-12); }
-#link-create { margin-top: var(--bw-space-12); }
+.link-row .small-button { flex-shrink: 0; }
+#link-hint, #link-status { margin-top: var(--bw-space-8); }
+#link-delete { margin-top: var(--bw-space-12); }
+#link-area { margin-bottom: var(--bw-space-24); }
 
 /* The run in progress: plain words and one bar that answers the visitor's action. */
 .progress { margin-top: var(--bw-space-32); padding: var(--bw-space-24); background: var(--bw-color-panel); border-radius: var(--bw-radius-12); }
@@ -641,7 +644,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .q-main { grid-template-columns: minmax(0, 1fr); gap: var(--bw-space-8); }
   .result .cta-filled, .buy-actions .cta, .outline-button { width: 100%; }
   .export-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .export-actions .small-button, #link-create { width: 100%; padding-inline: var(--bw-space-8); }
+  .export-actions .small-button, #link-copy { width: 100%; padding-inline: var(--bw-space-8); }
   .link-row { flex-direction: column; }
   .report-section { padding-block: var(--bw-space-24); }
 }
@@ -705,7 +708,7 @@ main .bw-door__title { margin: 0; font-family: var(--bw-font-sans); letter-spaci
 <section class="report-section hidden" id="question-block" aria-labelledby="questions-title"><h2 id="questions-title">Question by question</h2><p id="question-note" class="small hidden">This saved result reports the count, without identifying individual answers.</p><p id="receipt-note" class="small hidden">Answer text and sources were not returned for this saved result.</p><ul id="question-results" class="question-list"></ul></section>
 <section class="report-section next-steps" id="next-steps" aria-labelledby="next-title"><h2 id="next-title">Next steps</h2><ul class="next-list" id="next-list"><li id="next-keep"><h3>Keep this result</h3><p>Create a free account, no card. It keeps this check, and for 14 days it opens the tracking screens on ten buyer questions for your category, with up to three one-engine runs while free runs are open.</p><p><button type="button" class="small-button" id="keep-result">Create a free account</button></p><p id="keep-status" class="small hidden" aria-live="polite"></p></li><li id="next-second"><div id="next-fix"><h3>Fix the first missing answer</h3><p id="next-fix-text">Answer Repair fixes one buyer question where Claude did not name you, with one source-backed page or fix, for $490.</p><p><a id="next-fix-link" href="https://broadcastwell.com/answer-repair">Fix this answer, $490</a></p></div><div id="next-live" class="hidden"><h3>Ask one buyer question on five engines</h3><p>Claude named you in all ten answers. The $19 live question asks one buyer question of your own on ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode, three runs each.</p><p><a id="next-live-link" href="https://app.broadcastwell.com/signin?next=credits">Ask a live question, $19</a></p></div></li><li id="next-talk"><h3>Talk to us</h3><p>Book a 30 minute conversation with our team about your category and the answers above.</p><p><a id="next-talk-link" href="https://broadcastwell.com/contact">Talk to us</a></p></li></ul></section>
 <section class="report-section" aria-labelledby="scope-title"><h2 id="scope-title">What this is and is not</h2><p>We ask Claude the ten questions a buyer in your category would ask, once, and record who it names and which sources it cites.</p><p>The five engines in the Agency Deadline Audit are ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.</p><p>Runs are limited per network and per day. The allowance resets at 00:00 UTC.</p><p>One run is a measurement on its stated date. Answers vary between runs.</p><p><a href="https://app.broadcastwell.com/sample">Read the fictional measurement sample</a>. <a id="chapter-link" href="https://docs.broadcastwell.com/absence-ladder/">Read the relevant Manual chapter</a>.</p></section>
-<section class="buy-path" role="group" aria-labelledby="buy-title"><h2 id="buy-title">One buyer question. One completed repair.</h2><p>Answer Repair is $490 for one agreed buyer question and one source-backed page or fix. Choose Live or Handoff before payment. Due 48 elapsed hours after recorded Ready.</p><div class="buy-actions"><a class="cta cta-filled" href="https://broadcastwell.com/buy/answer-repair" data-buy>Fix one answer, $490</a></div><p>If we miss the deliverable or deadline, we initiate a full $490 refund within five business days. You keep the work. You may also request a full refund within 30 days of delivery.</p><p class="small"><a href="https://broadcastwell.com/pricing">See the published price ladder</a>.</p><p class="small" id="buy-link-note">Buying from this result keeps a private result link for 30 days, so the order can start from it.</p><p class="small"><a href="/assets/sample/category-audit-sample.pdf">Read the fictional sample report (PDF)</a>.</p><div class="keep" id="keep"><h3>Keep and share this result</h3><p class="small flush">Images are drawn in your browser. Each carries broadcastwell.com, the engine, the date and the honest one-engine, one-run scope</p><div class="export-actions" role="group" aria-label="Save the report as an image"><button class="small-button" type="button" data-export="1200x630">PNG 1200 by 630</button><button class="small-button" type="button" data-export="1080x1080">PNG 1080 by 1080</button><button class="small-button" type="button" data-export="1600x900">PNG 1600 by 900</button><button class="small-button" type="button" data-export="svg">SVG</button></div><p id="export-status" class="small hidden" aria-live="polite"></p><div id="link-area"><button id="link-create" class="small-button" type="button">Create a private result link</button><p class="small flush" id="link-hint">A link is made only when you ask. It is private and not indexed by search engines. It keeps this result for 30 days, with no email and nothing about you, and this browser can delete it sooner.</p><div id="link-out" class="hidden"><div class="link-row"><input id="link-url" type="text" readonly aria-label="Result link"><button id="link-copy" class="small-button" type="button">Copy link</button></div><p id="link-expiry" class="small flush"></p><button id="link-delete" class="small-button hidden" type="button">Delete this link</button></div><p id="link-status" class="small hidden" aria-live="polite"></p></div></div><p><a href="#email-card">Email me this result</a></p><p><button type="button" class="small-button" id="another-check">Run another check</button></p></section>
+<section class="buy-path" role="group" aria-labelledby="buy-title"><h2 id="buy-title">One buyer question. One completed repair.</h2><p>Answer Repair is $490 for one agreed buyer question and one source-backed page or fix. Choose Live or Handoff before payment. Due 48 elapsed hours after recorded Ready.</p><div class="buy-actions"><a class="cta cta-filled" href="https://broadcastwell.com/buy/answer-repair" data-buy>Fix one answer, $490</a></div><p>If we miss the deliverable or deadline, we initiate a full $490 refund within five business days. You keep the work. You may also request a full refund within 30 days of delivery.</p><p class="small"><a href="https://broadcastwell.com/pricing">See the published price ladder</a>.</p><p class="small" id="buy-link-note">Buying from this result keeps a private result link for 30 days, so the order can start from it.</p><p class="small"><a href="/assets/sample/category-audit-sample.pdf">Read the fictional sample report (PDF)</a>.</p><div class="keep" id="keep"><h3>Keep and share this result</h3><p class="small flush">Images are drawn in your browser. Each carries broadcastwell.com, the engine, the date and the honest one-engine, one-run scope</p><div class="export-actions" role="group" aria-label="Save the report as an image"><button class="small-button" type="button" data-export="1200x630">PNG 1200 by 630</button><button class="small-button" type="button" data-export="1080x1080">PNG 1080 by 1080</button><button class="small-button" type="button" data-export="1600x900">PNG 1600 by 900</button><button class="small-button" type="button" data-export="svg">SVG</button></div><p id="export-status" class="small hidden" aria-live="polite"></p><div id="link-area"><div class="link-row"><input id="link-url" class="hidden" type="text" readonly aria-label="Result link"><button id="link-copy" class="small-button" type="button">Copy link to this result</button></div><p class="small flush" id="link-hint">A link is made only when you ask. It is private and not indexed by search engines. It keeps this result for 30 days, with no email and nothing about you, and this browser can delete it sooner.</p><p id="link-status" class="small flush hidden" aria-live="polite"></p><button id="link-delete" class="small-button hidden" type="button">Delete this link</button></div></div><p><a href="#email-card">Email me this result</a></p><p><button type="button" class="small-button" id="another-check">Run another check</button></p></section>
 </section>
     <section id="email-card" class="card email-card hidden" aria-labelledby="email-title"><h2 id="email-title">Email me this result with its sources</h2><form id="email-form" novalidate><label for="email">Your email address, optional</label><input id="email" name="email" type="email" maxlength="200" autocomplete="email" placeholder="you@company.com"><p class="hint">Your email app opens with this result written out to hello@broadcastwell.com, and our team replies with the sources behind each answer. Leave the address blank to get the reply at the address you write from. It is used for that reply and, if you then buy the Audit from this page, to fill in the checkout. We keep it for 24 months and then delete it.</p><p id="email-error" class="small hidden" role="alert"></p><button class="outline-button" type="submit">Email me this result</button></form></section>
     <section id="error" class="message hidden" aria-live="assertive" tabindex="-1"><h3 id="errortitle">Your check could not start</h3><p id="errorwhy"></p><p id="errormsg" class="flush"></p><p><a href="https://broadcastwell.com/buy/answer-repair" data-buy>Fix one answer, $490</a></p></section>
@@ -1830,7 +1833,7 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     document.getElementById('php-index-link').href=data.index_url;hide(result);hide(emailCard);show(phpResultBox);phpResultBox.scrollIntoView({behavior:smooth(),block:'start'});phpResultBox.focus();
   }
   modeInput.addEventListener('change',applyMode);
-  var wheelBox = document.getElementById('wheel'), wheelCleanup = null, stage = 'site', templates = null, wheelData = null, linkId = null, fontCss = null;
+  var wheelBox = document.getElementById('wheel'), wheelCleanup = null, stage = 'site', templates = null, wheelData = null, linkId = null, linkExpires = null, fontCss = null;
   // One plain sentence per reason the handler can give back. The handler sends the
   // word; the page owns the sentence.
   var WHY = { address: "The address has used today's check.", network: 'This network has used its checks for today.', global: "The site's daily allowance is used.", unavailable: 'Claude did not answer all ten questions.', allowance: "The check's overall allowance is used.", input: 'The category and website are both needed.', email: 'That email address could not be read.' };
@@ -2034,7 +2037,7 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     fetch('/api/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}).then(function(response){return response.json().then(function(data){return {ok:response.ok,status:response.status,data:data,seal:response.headers.get('x-result-seal'),preview:response.headers.get('x-free-check-preview')==='1'};});}).then(function(outcome){
       if(!late)return;window.clearTimeout(late);stopProgress();hide(working);
       if(!outcome.ok){failedAttempt(outcome.data||{reason:'unavailable'},payload,attempt,outcome.status);return;}
-      settle(true);if(payload.mode==='php2shell'){renderPhp(outcome.data,outcome.preview);return;}linkId=null;setReference(null);hide(document.getElementById('link-out'));show(document.getElementById('link-create'));show(document.getElementById('link-hint'));show(document.getElementById('buy-link-note'));hide(document.getElementById('shared-note'));
+      settle(true);if(payload.mode==='php2shell'){renderPhp(outcome.data,outcome.preview);return;}resetLink(true);hide(document.getElementById('shared-note'));
       renderResult({category:payload.category,company:payload.company,brand:payload.brand,seal:outcome.seal,preview:outcome.preview,at:new Date()},outcome.data);
       hide(emailError);show(result);show(emailCard);drawWheel();drawReportCharts();result.scrollIntoView({behavior:smooth(),block:'start'});
     }).catch(function(){if(!late)return;window.clearTimeout(late);failedAttempt({reason:'unavailable',message:payload.mode==='php2shell'?'The PHP2Shell answer could not be completed. We could not confirm whether this attempt was counted.':'Claude did not answer all ten questions. We could not confirm whether this attempt was counted.'},payload,attempt);});
@@ -2086,7 +2089,12 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
   function dropToken(id) { try { var all = tokens(); delete all[id]; window.localStorage.setItem(TOKENS_KEY, JSON.stringify(all)); } catch (_) { /* storage is a convenience */ } }
   function tokenFor(id) { var entry = tokens()[id]; return entry && entry.token ? entry.token : null; }
 
-  function showLink(id, url, expires, token) { linkId = id; setReference(id); if (token) keepToken(id, token, expires); document.getElementById('link-url').value = url; document.getElementById('link-expiry').textContent = 'Kept until ' + longDate(expires) + ', then deleted. Private, and not indexed by search engines.'; document.getElementById('link-delete').classList.toggle('hidden', !tokenFor(id)); show(document.getElementById('link-out')); hide(document.getElementById('link-create')); hide(document.getElementById('link-hint')); hide(document.getElementById('buy-link-note')); }
+  // What every result link is, said beside the control: private, not indexed, and kept 30 days
+  // from the day it was made, to the date the store deletes it.
+  function linkTerms(expires) { return 'private and not indexed by search engines. We keep it for 30 days from the day it was made, until ' + longDate(expires) + ', then delete it.'; }
+  function showLink(id, url, expires, token) { linkId = id; linkExpires = expires; setReference(id); if (token) keepToken(id, token, expires); var input = document.getElementById('link-url'), status = document.getElementById('link-status'); input.value = url; show(input); status.textContent = 'This link is ' + linkTerms(expires); show(status); document.getElementById('link-delete').classList.toggle('hidden', !tokenFor(id)); hide(document.getElementById('link-hint')); hide(document.getElementById('buy-link-note')); }
+  // No link: the control makes one on its first click, where this page can (a result it sealed).
+  function resetLink(canMake) { linkId = null; linkExpires = null; setReference(null); var input = document.getElementById('link-url'); input.value = ''; hide(input); hide(document.getElementById('link-status')); hide(document.getElementById('link-delete')); ['link-copy', 'link-hint', 'buy-link-note'].forEach(function (name) { document.getElementById(name).classList.toggle('hidden', !canMake); }); }
   function createLink() {
     return fetch('/api/link', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ brand: last.brand, category: last.category, website: last.company, result: last.data, seal: last.seal }) }).then(function (response) { return response.json().then(function (data) { return { ok: response.ok, data: data }; }); }).then(function (outcome) {
       if (!outcome.ok) throw new Error((outcome.data && outcome.data.message) || 'The link could not be created. Try again in a few minutes.');
@@ -2108,10 +2116,40 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     button.disabled = true; status.textContent = 'Saving this result for your account.'; show(status);
     createLink().then(function (made) { button.disabled = false; leaveTo(keepTarget(made.id)); }, function (error) { button.disabled = false; status.textContent = error && error.message ? error.message : 'This result could not be kept just now. Try again in a few minutes.'; });
   });
-  document.getElementById('link-create').addEventListener('click', function () {
-    if (!last || !last.data) return;
-    var button = this, status = document.getElementById('link-status'); button.disabled = true; status.textContent = 'Creating the link.'; show(status);
-    createLink().then(function () { button.disabled = false; hide(status); }, function (error) { button.disabled = false; status.textContent = error && error.message ? error.message : 'The link could not be created. Try again in a few minutes.'; });
+  // Copy link to this result, in one step: the first click makes the private link when there is
+  // none yet and copies it; every later click copies that same link and makes nothing new. A link
+  // still being made goes to the clipboard inside the click, as a pending item, where the browser
+  // has one: some browsers refuse a copy that starts only after the request has returned.
+  function copyNow(url) {
+    var input = document.getElementById('link-url'), clip = navigator.clipboard; input.value = url; input.select();
+    var legacy = function () { try { return document.execCommand('copy') === true; } catch (error) { return false; } };
+    if (clip && typeof clip.writeText === 'function') { try { return clip.writeText(url).then(function () { return true; }, legacy); } catch (error) { return Promise.resolve(legacy()); } }
+    return Promise.resolve(legacy());
+  }
+  function copyWhenMade(made) {
+    var clip = navigator.clipboard;
+    if (clip && typeof clip.write === 'function' && typeof window.ClipboardItem === 'function') {
+      try {
+        var item = new window.ClipboardItem({ 'text/plain': made.then(function (url) { return new Blob([url], { type: 'text/plain' }); }) });
+        return clip.write([item]).then(function () { return made.then(function () { return true; }); }, function () { return made.then(copyNow); });
+      } catch (error) { /* no pending clipboard item here: the link is copied once it is made */ }
+    }
+    return made.then(copyNow);
+  }
+  document.getElementById('link-copy').addEventListener('click', function () {
+    var button = this, input = document.getElementById('link-url'), status = document.getElementById('link-status'), copying;
+    if (linkId) copying = copyNow(input.value);
+    else {
+      if (!last || !last.data) return;
+      button.disabled = true; status.textContent = 'Creating the link.'; show(status);
+      copying = copyWhenMade(createLink().then(function (made) { return made.url; }));
+    }
+    copying.then(function (copied) {
+      button.disabled = false;
+      if (copied) { status.textContent = 'Link copied. It is ' + linkTerms(linkExpires); show(status); return; }
+      status.textContent = 'Could not copy the link. Copy the selected Result link manually.'; show(status);
+      input.focus(); input.select();
+    }, function (error) { button.disabled = false; status.textContent = error && error.message ? error.message : 'The link could not be created. Try again in a few minutes.'; show(status); });
   });
   document.getElementById('link-delete').addEventListener('click', function () {
     var id = linkId, token = id && tokenFor(id), button = this, status = document.getElementById('link-status'); if (!token) return;
@@ -2119,25 +2157,8 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     fetch('/api/unlink', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id, token: token }) }).then(function (response) { return response.json().then(function (data) { return { ok: response.ok, data: data }; }); }).then(function (outcome) {
       button.disabled = false;
       if (!outcome.ok) { status.textContent = (outcome.data && outcome.data.message) || 'The link could not be deleted. Try again in a few minutes.'; return; }
-      dropToken(id); linkId = null; setReference(null); hide(document.getElementById('link-out')); status.textContent = 'The link is deleted. Anyone who opens it now sees that it has expired.';
-      if (last && last.seal) { show(document.getElementById('link-create')); show(document.getElementById('link-hint')); show(document.getElementById('buy-link-note')); }
+      dropToken(id); resetLink(!!(last && last.seal)); status.textContent = 'The link is deleted. Anyone who opens it now sees that it has expired.'; show(status);
     }).catch(function () { button.disabled = false; status.textContent = 'The link could not be deleted. Try again in a few minutes.'; });
-  });
-  document.getElementById('link-copy').addEventListener('click', function () {
-    var input = document.getElementById('link-url'), button = this, status = document.getElementById('link-status');
-    input.select(); button.textContent = 'Copy link'; hide(status);
-    var done = function () { button.textContent = 'Copied'; hide(status); window.setTimeout(function () { button.textContent = 'Copy link'; }, 2000); };
-    var fallback = function () {
-      var copied = false;
-      try { copied = document.execCommand('copy') === true; } catch (error) {}
-      if (copied) { done(); return; }
-      button.textContent = 'Copy link';
-      status.textContent = 'Could not copy the link. Copy the selected Result link manually.'; show(status);
-      input.focus(); input.select();
-    };
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      try { navigator.clipboard.writeText(input.value).then(done, fallback); } catch (error) { fallback(); }
-    } else { fallback(); }
   });
   // A buy click from a fresh result with no link yet makes the link first, so the order
   // carries fc_ plus its id. If that fails or takes more than four seconds, checkout opens anyway.
@@ -2163,7 +2184,7 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     if (record && record.result) {
       siteInput.value = record.website || '';
       renderResult({ category: record.category, company: record.website, brand: record.brand, seal: null, preview: record.preview === true }, record.result);
-      var note = document.getElementById('shared-note'); note.textContent = record.preview ? 'Fictional preview data for layout review. No measurement was run.' : 'A shared result for ' + (record.brand || record.website) + ', measured on ' + longDate(record.result.measured_on) + '. This link is kept until ' + longDate(record.expires_on) + ', then deleted. Run your own check above.'; show(note);
+      var note = document.getElementById('shared-note'); note.textContent = (record.preview ? 'Fictional preview data for layout review. No measurement was run.' : 'A shared result for ' + (record.brand || record.website) + ', measured on ' + longDate(record.result.measured_on) + '.') + ' This link is kept for 30 days from the day it was made, until ' + longDate(record.expires_on) + ', then deleted. To check your own website, use Run another check below.'; show(note);
       showLink(record.id, location.origin + '/r/' + record.id, record.expires_on, null);
       go.classList.add('settled'); show(result); show(emailCard); drawWheel(); drawReportCharts();
     } else {

@@ -245,9 +245,9 @@ const RUN = { category: "field service management software", company: "acmefield
   check("the $490 block states current delivery and both refund terms", PAGE.includes("Due 48 elapsed hours after recorded Ready.") && PAGE.includes("full $490 refund within five business days") && PAGE.includes("full refund within 30 days of delivery") && PAGE.includes("Fix one answer, $490"), "entry terms");
   const result = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf("</section>", PAGE.indexOf('class="buy-path"')));
   const whole = PAGE.slice(PAGE.indexOf('<section id="result"'), PAGE.indexOf('<section id="email-card"'));
-  const order = ['id="score-title"', 'id="instead-title"', 'id="sources-title"', 'id="questions-title"', 'id="scope-title"', 'id="buy-title"', 'class="cta cta-filled"', 'id="keep"', 'id="link-create"'].map((mark) => whole.indexOf(mark));
+  const order = ['id="score-title"', 'id="instead-title"', 'id="sources-title"', 'id="questions-title"', 'id="scope-title"', 'id="buy-title"', 'class="cta cta-filled"', 'id="keep"', 'id="link-copy"'].map((mark) => whole.indexOf(mark));
   check("the result reads scope, verdict, wheel, position, questions, one engine against five, the one button, then keep and share", order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), order.join(","));
-  check("export and link controls are outlined, never filled", !/data-export[^>]*cta-filled|link-create[^>]*cta-filled|link-delete[^>]*cta-filled/.test(PAGE) && (whole.match(/cta-filled/g) || []).length === 1 && !/cta-outline/.test(whole), "one filled");
+  check("export and link controls are outlined, never filled", !/data-export[^>]*cta-filled|link-copy[^>]*cta-filled|link-delete[^>]*cta-filled/.test(PAGE) && (whole.match(/cta-filled/g) || []).length === 1 && !/cta-outline/.test(whole), "one filled");
   check("the buy links gain the reference only from a result link id", /url\.searchParams\.set\('client_reference_id', 'fc_' \+ id\)/.test(PAGE) && !/client_reference_id=/.test(main) && /querySelectorAll\('a\[data-buy\]'\)/.test(PAGE), "reference");
   check("the buy links carry the visitor's own address only when one was typed", /url\.searchParams\.set\('prefilled_email', address\)/.test(PAGE) && !/prefilled_email=/.test(main) && /emailInput\.addEventListener\('input'/.test(PAGE), "prefill");
   check("a buy from a fresh result makes its link first, and never waits more than four seconds", /createLink\(\)\.then\(function \(\) \{ window\.clearTimeout\(late\); leave\(\); \}/.test(PAGE) && /window\.setTimeout\(leave, 4000\)/.test(PAGE) && /id="buy-link-note"/.test(PAGE), "link first");
@@ -348,7 +348,7 @@ function fakePage(options) {
     location: { search: opts.search || "", origin: "https://audit.broadcastwell.com", href: "https://audit.broadcastwell.com/" },
     navigator: { clipboard: opts.clipboard, sendBeacon: (url) => { requests.push("beacon " + url); return true; } },
     fetch: async (url, init) => { requests.push("fetch " + url); return opts.respond(String(url), init); },
-    URL, URLSearchParams, Response, Blob, console,
+    URL, URLSearchParams, Response, Blob, console, ClipboardItem: opts.ClipboardItem,
     setTimeout: () => timers.next++, clearTimeout() {}, setInterval: () => timers.next++, clearInterval() {},
     matchMedia: () => ({ matches: false }),
     addEventListener() {},
@@ -424,10 +424,138 @@ function fakePage(options) {
   check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:var\(--bw-focus-width\) var\(--bw-focus-style\) var\(--bw-focus-color\);outline-offset:var\(--bw-focus-offset\)\}/.test(PAGE) && PAGE.includes("--bw-focus-width:2px;--bw-focus-offset:2px;"), "css");
 }
 
-// Exercise the real registered Copy link handler with controlled browser API outcomes.
-// These tests never read or write the host clipboard and cannot prove browser delivery.
+// Copy link to this result (owner's follow-up 2, item 7): one control that makes the private link
+// on its first click and copies it, then copies that same link on every later click. The page's own
+// script runs against the fake DOM, and its requests go to the real run, link, unlink and result link
+// handlers over a fake key-value store and the stubbed upstream, so the link copied is the link the
+// store keeps. These tests never touch the host clipboard and cannot prove browser delivery; they
+// prove what the page hands the clipboard.
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const longDay = (iso) => { const [y, m, d] = String(iso).split("-").map(Number); return d + " " + MONTH_NAMES[m - 1] + " " + y; };
+const until = async (done) => { for (let i = 0; i < 400 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 5)); };
+const terms = (expires) => "private and not indexed by search engines. We keep it for 30 days from the day it was made, until " + longDay(expires) + ", then delete it.";
+function servedBy(e, ip) {
+  const found = { found: true, website: RUN.company, brand: RUN.brand, category: RUN.category, alternatives: [] };
+  return async (url, init) => {
+    if (url === "/api/analyze") return new Response(JSON.stringify(found), { status: 200, headers: { "content-type": "application/json" } });
+    if (["/api/run", "/api/link", "/api/unlink"].includes(url)) return audit.fetch(new Request("https://audit.broadcastwell.com" + url, { method: init.method, headers: Object.assign({ "cf-connecting-ip": ip }, init.headers), body: init.body }), e, {});
+    throw new Error("unexpected request " + url);
+  };
+}
+async function resultPage(e, extra) {
+  const page = fakePage(Object.assign({ respond: servedBy(e, "198.51.100.80") }, extra));
+  page.document.getElementById("company").value = RUN.company;
+  page.submit(); await page.settle();
+  page.submit(); await until(() => page.document.getElementById("lead-line").textContent === "Named in 3 of 10");
+  return page;
+}
+const press = (page, id) => { const el = page.document.getElementById(id); for (const fn of el.listeners.click || []) fn.call(el, { preventDefault() {} }); };
+const calls = (page, path) => page.requests.filter((r) => r === "fetch " + path).length;
+const hiddenIn = (page, id) => page.document.getElementById(id).classList.contains("hidden");
+const storedLinks = (e) => [...e.AUDIT.store.keys()].filter((key) => key.startsWith("link:")).map((key) => JSON.parse(e.AUDIT.store.get(key)));
+
+{
+  const area = (/<div id="link-area">[\s\S]*?<\/div><\/div>/.exec(PAGE) || [""])[0];
+  check("the result has one link control, Copy link to this result, beside Delete this link", (area.match(/<button\b/g) || []).length === 2 && /<button id="link-copy" class="small-button" type="button">Copy link to this result<\/button>/.test(area) && /<button id="link-delete" class="small-button hidden" type="button">Delete this link<\/button>/.test(area) && !/Create a private result link|id="link-create"|>Copy link</.test(PAGE), area.slice(0, 200));
+  check("the link field stays out of sight until a link exists", /<input id="link-url" class="hidden" type="text" readonly aria-label="Result link">/.test(area), "field");
+  check("the frame carries the same control", file("public/embed.html").includes(area), "embed");
+  check("a link id is 16 bytes from the platform's random source, and /r/ reads only a 32 hex id", /crypto\.getRandomValues\(bytes\)/.test(file("lib/link.js")) && /new Uint8Array\(16\)/.test(file("lib/link.js")) && file("lib/link.js").includes("/^\\/r\\/([0-9a-f]{32})\\/?$/"), "id source");
+  check("no result link is listed in the sitemap, and crawlers may read /r/ so they see its noindex", !/\/r\//.test(file("public/sitemap.xml")) && !/Disallow: \/r/.test(file("public/robots.txt")), "sitemap");
+}
+
+// One click makes the link and copies it; a second click copies the same link and makes no other.
+let made = null;
+{
+  const e = env(), writes = [];
+  const page = await resultPage(e, { clipboard: { writeText: async (value) => { writes.push(value); } } });
+  const status = page.document.getElementById("link-status"), input = page.document.getElementById("link-url"), button = page.document.getElementById("link-copy");
+  check("before a click the control shows, its hint shows, and no link exists", !hiddenIn(page, "link-copy") && !hiddenIn(page, "link-hint") && hiddenIn(page, "link-url") && hiddenIn(page, "link-status") && calls(page, "/api/link") === 0 && storedLinks(e).length === 0, page.requests.join(","));
+  press(page, "link-copy");
+  check("the click says the link is being made, and the control waits", status.textContent === "Creating the link." && !hiddenIn(page, "link-status") && button.disabled === true, status.textContent);
+  await until(() => /^Link copied/.test(status.textContent));
+  const links = storedLinks(e), url = "https://audit.broadcastwell.com/r/" + (links[0] && links[0].id);
+  check("one click makes one private link and copies it", calls(page, "/api/link") === 1 && links.length === 1 && writes.length === 1 && writes[0] === url && input.value === url && !hiddenIn(page, "link-url"), writes.join(",") + " / " + links.length);
+  check("the status line says copied, private, not indexed and kept 30 days, to the date", links[0] && status.textContent === "Link copied. It is " + terms(links[0].expires_on) && button.disabled === false, status.textContent);
+  check("the date it names is 30 days after the day the link was made", links[0] && links[0].expires_on === new Date(Date.parse(links[0].created_on + "T00:00:00Z") + 30 * 86400000).toISOString().slice(0, 10), links[0] && links[0].expires_on);
+  check("the hint gives way to the status line, and Delete this link shows for the browser that made it", hiddenIn(page, "link-hint") && !hiddenIn(page, "link-delete"), "delete");
+  press(page, "link-copy");
+  await until(() => writes.length === 2);
+  check("a second click copies the same link and makes no other", writes.length === 2 && writes[1] === url && calls(page, "/api/link") === 1 && storedLinks(e).length === 1 && status.textContent === "Link copied. It is " + terms(links[0].expires_on), writes.join(","));
+  made = { e, page, id: links[0] && links[0].id, url, expires: links[0] && links[0].expires_on };
+
+  // Delete this link stays: it deletes the record, and the next click makes a new link.
+  const other = env(), otherWrites = [];
+  const second = await resultPage(other, { clipboard: { writeText: async (value) => { otherWrites.push(value); } } });
+  press(second, "link-copy"); await until(() => otherWrites.length === 1);
+  const first = storedLinks(other)[0];
+  press(second, "link-delete"); await until(() => /deleted/.test(second.document.getElementById("link-status").textContent));
+  check("Delete this link deletes the stored record and says so", storedLinks(other).length === 0 && second.document.getElementById("link-status").textContent === "The link is deleted. Anyone who opens it now sees that it has expired." && !hiddenIn(second, "link-copy") && hiddenIn(second, "link-url") && hiddenIn(second, "link-delete"), second.document.getElementById("link-status").textContent);
+  press(second, "link-copy"); await until(() => otherWrites.length === 2);
+  check("after a delete, the next click makes a new link and copies that one", calls(second, "/api/link") === 2 && storedLinks(other).length === 1 && storedLinks(other)[0].id !== first.id && otherWrites[1] === "https://audit.broadcastwell.com/r/" + storedLinks(other)[0].id, otherWrites.join(","));
+}
+
+// Where the browser has a pending clipboard item, the copy starts inside the click, before the
+// link exists, and holds the link once it is made.
+{
+  const e = env(), items = [];
+  class PendingItem { constructor(parts) { this.parts = parts; } }
+  const clipboard = {
+    write: (list) => { items.push(list[0]); return list[0].parts["text/plain"].then((blob) => blob.text()).then((text) => { items.text = text; }); },
+    writeText: () => Promise.reject(new Error("NotAllowedError")),
+  };
+  const page = await resultPage(e, { clipboard, ClipboardItem: PendingItem });
+  press(page, "link-copy");
+  check("the pending copy is handed over inside the click, before the link is stored", items.length === 1 && storedLinks(e).length === 0, String(items.length));
+  await until(() => /^Link copied/.test(page.document.getElementById("link-status").textContent));
+  const links = storedLinks(e);
+  check("the pending copy holds the link the store keeps", links.length === 1 && items.text === "https://audit.broadcastwell.com/r/" + links[0].id && page.document.getElementById("link-status").textContent === "Link copied. It is " + terms(links[0].expires_on), String(items.text));
+
+  const refused = env(), tried = [];
+  const fallback = await resultPage(refused, { clipboard: { write: () => Promise.reject(new Error("NotAllowedError")), writeText: async (value) => { tried.push(value); } }, ClipboardItem: PendingItem });
+  press(fallback, "link-copy"); await until(() => tried.length === 1);
+  check("a refused pending copy writes the link as text once it is made", storedLinks(refused).length === 1 && tried[0] === "https://audit.broadcastwell.com/r/" + storedLinks(refused)[0].id && /^Link copied/.test(fallback.document.getElementById("link-status").textContent), tried.join(","));
+}
+
+// A link the store refuses is said plainly, nothing is copied, and the control can be pressed again.
+{
+  const e = env({ "config:limits": JSON.stringify({ link_per_ip_per_day: 0 }) }), writes = [];
+  const page = await resultPage(e, { clipboard: { writeText: async (value) => { writes.push(value); } } });
+  press(page, "link-copy");
+  await until(() => page.document.getElementById("link-copy").disabled === false);
+  check("a refused link says why, copies nothing and claims nothing", page.document.getElementById("link-status").textContent === "This network has made enough result links for today." && writes.length === 0 && storedLinks(e).length === 0 && hiddenIn(page, "link-url"), page.document.getElementById("link-status").textContent);
+}
+
+// /r/<id> opens the same record: its snapshot notice, the same three next steps, noindex, and the
+// line that says how long it stays available.
+{
+  const { e, page, id, url, expires } = made;
+  const served = await audit.fetch(new Request(url), e, {});
+  const html = await served.text();
+  check("/r/<id> answers 200, noindex in its header and its meta", served.status === 200 && served.headers.get("x-robots-tag") === "noindex, nofollow" && html.includes('<meta name="robots" content="noindex, nofollow">') && !html.includes('content="index, follow"') && !/<link rel="canonical"/.test(html), served.headers.get("x-robots-tag"));
+  const scriptOf = (doc) => doc.slice(doc.indexOf("<script>") + 8, doc.indexOf("</script>", doc.indexOf("<script>")));
+  check("/r/<id> runs the result page's own script", scriptOf(html) === scriptOf(PAGE), "script");
+  const record = JSON.parse((/<script type="application\/json" id="shared-result">([\s\S]*?)<\/script>/.exec(html) || ["", "null"])[1]);
+  const writes = [];
+  const shared = fakePage({ shared: record, respond: () => { throw new Error("a result link page requests nothing on its own"); }, clipboard: { writeText: async (value) => { writes.push(value); } } });
+  await shared.settle();
+  const text = (p, name) => p.document.getElementById(name).textContent;
+  check("/r/<id> shows the same record: count, company and category, position", record.id === id && ["lead-line", "measurement-company", "position"].every((name) => text(shared, name) === text(page, name) && text(page, name)), text(shared, "lead-line"));
+  check("/r/<id> carries the snapshot notice, the dated one-engine scope line", text(shared, "meta") === text(page, "meta") && /^(Claude|Earlier one-engine check), ten questions, one run, measured on \d{4}-\d{2}-\d{2}\.$/.test(text(shared, "meta")), text(shared, "meta"));
+  check("/r/<id> carries the same three next steps", text(shared, "next-fix-text") === text(page, "next-fix-text") && /^Claude did not name you for "Question 4"./.test(text(shared, "next-fix-text")) && !hiddenIn(shared, "next-fix") && hiddenIn(shared, "next-live") && hiddenIn(page, "next-live") && !hiddenIn(page, "next-fix") && /<li id="next-keep">[\s\S]*<li id="next-second">[\s\S]*<li id="next-talk">/.test(html), text(shared, "next-fix-text"));
+  const anchors = [], create = shared.document.createElement;
+  shared.document.createElement = (tag) => { const el = create(tag); anchors.push(el); return el; };
+  press(shared, "keep-result");
+  check("/r/<id>: Keep this result keeps this same record, by its id, with no request", anchors.some((el) => el.tagName === "A" && el.href === "https://app.broadcastwell.com/signin?keep=" + id && el.target === "_top") && shared.requests.length === 0, "keep");
+  check("/r/<id> says how long the link stays available, with the date", text(shared, "shared-note") === "A shared result for " + RUN.brand + ", measured on " + longDay(record.result.measured_on) + ". This link is kept for 30 days from the day it was made, until " + longDay(expires) + ", then deleted. To check your own website, use Run another check below." && text(shared, "link-status") === "This link is " + terms(expires) && !hiddenIn(shared, "link-status"), text(shared, "shared-note"));
+  check("/r/<id>: the button the note sends you to sits below it", html.indexOf('id="another-check">Run another check</button>') > html.indexOf('id="shared-note"') && html.indexOf('id="shared-note"') > 0, "another-check");
+  press(shared, "link-copy"); await until(() => /^Link copied/.test(text(shared, "link-status")));
+  check("/r/<id>: Copy link to this result copies this same link and makes nothing new", writes[0] === url && shared.document.getElementById("link-url").value === url && shared.requests.length === 0 && storedLinks(e).length === 1 && text(shared, "link-status") === "Link copied. It is " + terms(expires), writes.join(",") + " / " + text(shared, "link-status"));
+}
+
+// The copy itself, against every clipboard outcome, on a page opened from a result link.
 {
   const link = "https://audit.broadcastwell.com/r/" + "a".repeat(32);
+  const record = { id: "a".repeat(32), brand: RUN.brand, category: RUN.category, website: RUN.company, result: cleanResult(UPSTREAM), expires_on: "2026-12-11" };
   const cases = [
     { name: "modern clipboard success", modern: "resolve", fallback: false, success: true, fallbackCalls: 0 },
     { name: "legacy fallback success", modern: "absent", fallback: true, success: true, fallbackCalls: 1 },
@@ -442,23 +570,24 @@ function fakePage(options) {
     let resolveModern, rejectModern;
     const pending = scenario.modern === "absent" ? null : new Promise((resolve, reject) => { resolveModern = resolve; rejectModern = reject; });
     const page = fakePage({
+      shared: record,
       respond: () => { throw new Error("Copy must not request a measurement or any endpoint"); },
       clipboard: pending ? { writeText: (value) => { writes.push(value); return pending; } } : undefined,
       execCommand: (command) => { commands.push(command); if (scenario.fallback === "throw") throw new Error("Copy refused"); return scenario.fallback; },
     });
+    await page.settle();
     const input = page.document.getElementById("link-url"), button = page.document.getElementById("link-copy"), status = page.document.getElementById("link-status");
-    input.value = link; button.textContent = "Copy link"; status.classList.add("hidden");
     for (const listener of button.listeners.click) listener.call(button);
     if (pending) {
-      check(scenario.name + ": pending clipboard promise does not announce success", button.textContent === "Copy link" && commands.length === 0);
+      check(scenario.name + ": pending clipboard promise does not announce success", !/copied/i.test(status.textContent) && commands.length === 0, status.textContent);
       if (scenario.modern === "resolve") resolveModern(); else rejectModern(new Error("NotAllowedError"));
     }
     await page.settle();
     check(scenario.name + ": copies only the existing link without a request", input.value === link && input.selected && writes.join("") === (pending ? link : "") && commands.length === scenario.fallbackCalls && commands.every((command) => command === "copy") && page.requests.length === 0);
     if (scenario.success) {
-      check(scenario.name + ": success feedback is retained", button.textContent === "Copied" && status.classList.contains("hidden"));
+      check(scenario.name + ": success says copied, private, not indexed and kept to the date", status.textContent === "Link copied. It is " + terms("2026-12-11") && !status.classList.contains("hidden") && button.disabled !== true, status.textContent);
     } else {
-      check(scenario.name + ": failure gives manual-copy guidance without claiming success", button.textContent === "Copy link" && !status.classList.contains("hidden") && /could not copy/i.test(status.textContent) && /selected Result link manually/.test(status.textContent) && input.focused);
+      check(scenario.name + ": failure gives manual-copy guidance without claiming success", !status.classList.contains("hidden") && /could not copy/i.test(status.textContent) && !/copied/i.test(status.textContent) && /selected Result link manually/.test(status.textContent) && input.focused);
     }
   }
 }

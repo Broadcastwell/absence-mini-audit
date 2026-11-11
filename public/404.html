@@ -536,7 +536,10 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .buy-actions { display: flex; flex-wrap: wrap; gap: var(--bw-space-12); margin: var(--bw-space-16) 0; }
 .export-actions { display: flex; flex-wrap: wrap; gap: var(--bw-space-8); margin: var(--bw-space-8) 0 0; }
 .link-row { display: flex; gap: var(--bw-space-8); margin-top: var(--bw-space-12); }
-#link-create { margin-top: var(--bw-space-12); }
+.link-row .small-button { flex-shrink: 0; }
+#link-hint, #link-status { margin-top: var(--bw-space-8); }
+#link-delete { margin-top: var(--bw-space-12); }
+#link-area { margin-bottom: var(--bw-space-24); }
 
 /* The run in progress: plain words and one bar that answers the visitor's action. */
 .progress { margin-top: var(--bw-space-32); padding: var(--bw-space-24); background: var(--bw-color-panel); border-radius: var(--bw-radius-12); }
@@ -624,7 +627,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .q-main { grid-template-columns: minmax(0, 1fr); gap: var(--bw-space-8); }
   .result .cta-filled, .buy-actions .cta, .outline-button { width: 100%; }
   .export-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .export-actions .small-button, #link-create { width: 100%; padding-inline: var(--bw-space-8); }
+  .export-actions .small-button, #link-copy { width: 100%; padding-inline: var(--bw-space-8); }
   .link-row { flex-direction: column; }
   .report-section { padding-block: var(--bw-space-24); }
 }

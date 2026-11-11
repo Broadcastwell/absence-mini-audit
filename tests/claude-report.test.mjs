@@ -6,6 +6,7 @@ import audit, {questionFrame} from '../lib/audit.js';
 import {questionTemplate} from '../lib/analyze.js';
 import {sealKey,verify} from '../lib/seal.js';
 await import('../public/assets/report.js');
+await import('../public/assets/brand/answer-record.js');
 await import('../public/assets/wheel.js');
 const R=globalThis.BwReport;
 const PAGE=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
@@ -75,7 +76,14 @@ test('three failures are refunded and later failures consume allowance until the
 
 test('workflow allowance stop is a clear outcome, releases reservations and creates no refund failure',async()=>{
   globalThis.fetch=async()=>new Response('{"status":"allowance_used","private":"not public"}',{status:503});
-  const env=environment();const {response,data}=await run(env);assert.equal(response.status,503);assert.equal(data.reason,'allowance');assert.match(data.message,/\$490 Category Audit/);
+  const env=environment();const {response,data}=await run(env);assert.equal(response.status,503);assert.equal(data.reason,'allowance');
+  // The lane stop is a running total with no reset date (owner ruling R-132): the words say what
+  // happened and what to do next, name no retired offer and promise no time.
+  assert.equal(data.message,'This check has reached its overall limit, so no run was started and this attempt was not counted. Start with the $490 Answer Repair.');
+  assert.doesNotMatch(data.message,/Category Audit|Today|today|UTC|\d{1,2}:\d{2}|tomorrow|midnight|again later|come back|reopen|resets?|month|daily/i);
+  // The page's own sentence for this reason says the same and no more.
+  assert.match(PAGE,/allowance: "The check's overall allowance is used\.",/);
+  assert.doesNotMatch(PAGE,/Today's allowance/);
   assert.ok([...env.AUDIT.store].filter(([k])=>k.startsWith('count:')).every(([k,v])=>!k.includes('refund')&&v==='0'));assert.ok(!JSON.stringify(data).includes('private'));
 });
 
@@ -107,7 +115,7 @@ test('enriched saved results retain their receipts and are served noindex',async
 
 test('company bars include the visitor at zero and source bars mark its actual domain',()=>{
   const value=rich();value.named=0;const companies=R.companies(value,body);assert.equal(companies[0].count,0);assert.equal(companies[0].own,true);
-  const svg=R.bars(companies,'Companies');assert.match(svg,/Acme \(you\)/);assert.match(svg,/0\/10/);assert.match(svg,/tabindex="0"/);assert.match(svg,/#1D4ED8/);assert.match(svg,/#475569/);
+  const svg=R.bars(companies,'Companies');assert.match(svg,/Acme \(you\)/);assert.match(svg,/0\/10/);assert.match(svg,/tabindex="0"/);assert.match(svg,/fill="#1D4ED8"/);assert.match(svg,/fill="#3B82F6"/);assert.match(svg,/fill="#EEF4FF"/);assert.doesNotMatch(svg,/#475569|#0A0E1A|Inter/);
   assert.equal(R.sources(value,body).find(r=>r.label==='acme.test').own,true);assert.equal(R.bars([],'Empty'),'');
 });
 

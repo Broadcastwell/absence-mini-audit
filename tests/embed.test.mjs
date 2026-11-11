@@ -33,7 +33,7 @@ const embedAt = script.indexOf("// Embed mode (/embed)");
 const embedCode = script.slice(embedAt);
 check("embed mode is its own block at the end of the page script", embedAt > 0 && /^\/\/ Embed mode[\s\S]*\}\)\(\);\s*$/.test(embedCode));
 check("embed mode measures the root element, never a viewport-floored measure", /root\.getBoundingClientRect\(\)\.height/.test(embedCode) && !/scrollHeight|innerHeight|clientHeight/.test(embedCode));
-check("embed mode hides the site chrome and long sections in CSS", /html\.embed \.site-header,html\.embed \.site-footer,html\.embed \.detail\{display:none\}/.test(page));
+check("embed mode hides the site chrome and long sections in CSS", /html\.embed \.bw-skip,html\.embed \.bw-site-nav,html\.embed \.page-notes,html\.embed \.bw-site-footer,html\.embed \.detail\{display:none\}/.test(page));
 check("embed mode keeps the intro and its h1 for screen readers, visually hidden, with nothing focusable in it",
   /html\.embed \.intro\{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect\(0 0 0 0\);white-space:nowrap;border:0\}/.test(page)
   && (() => { const intro = page.slice(page.indexOf('<section class="intro"'), page.indexOf("</section>", page.indexOf('<section class="intro"'))); return /<h1[ >]/.test(intro) && !/<a |<button|<input|tabindex="0"/.test(intro); })());

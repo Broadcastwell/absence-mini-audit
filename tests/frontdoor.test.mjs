@@ -217,12 +217,12 @@ const RUN = { category: "field service management software", company: "acmefield
   const csp = (/Content-Security-Policy:\s*(.+)/.exec(headers) || [])[1];
   check("lib/headers.js matches the headers file", PAGE_HEADERS["Content-Security-Policy"] === csp && PAGE_HEADERS["Strict-Transport-Security"] === "max-age=31536000; includeSubDomains", "run node scripts/build-page.mjs");
   check("the policy opened images to data and blob for export, and nothing else", /img-src 'self' data: blob: https:\/\/framerusercontent\.com;/.test(csp) && /connect-src 'self';/.test(csp) && /font-src 'self';/.test(csp) && !/script-src[^;]*(data:|blob:|'self')/.test(csp), csp);
-  const face = file("public/assets/fonts/inter-embed.css");
+  const face = file("public/assets/fonts/geist-embed.css");
   const faceHash = "'sha256-" + createHash("sha256").update(face, "utf8").digest("base64") + "'";
-  check("the one font rule exported images embed is allowed by its hash, and only it", /^@font-face\{font-family:Inter;[^}]*src:url\(data:font\/woff2;base64,[A-Za-z0-9+/=]+\) format\('woff2'\)\}$/.test(face) && (/style-src ([^;]+)/.exec(csp) || [])[1].split(" ").length === 3 && csp.includes(faceHash) && !/unsafe/.test(csp), faceHash);
+  check("the one font rule exported images embed is allowed by its hash, and only it", /^@font-face\{font-family:Geist;[^}]*src:url\(data:font\/woff2;base64,[A-Za-z0-9+/=]+\) format\('woff2'\)\}$/.test(face) && face.includes(readFileSync(fileURLToPath(new URL("../vendor/brand/fonts/geist-latin-var.woff2", import.meta.url))).toString("base64")) && (/style-src ([^;]+)/.exec(csp) || [])[1].split(" ").length === 3 && csp.includes(faceHash) && !/unsafe/.test(csp), faceHash);
   const sampleRule = headers.slice(headers.indexOf("/assets/sample/*"));
   check("the sample image has an image's own policy: nothing runs, only the font rule by hash", /! Content-Security-Policy/.test(sampleRule) && sampleRule.includes("Content-Security-Policy: default-src 'none'; style-src " + faceHash + "; font-src data:") && !/script-src|unsafe/.test(sampleRule), sampleRule.slice(0, 80));
-  check("the page and the sample wheel embed that same rule", PAGE.includes("var REPORT_FONT_CSS = ") && PAGE.includes(JSON.stringify(face)) && file("public/assets/sample/kalvenor-wheel.svg").includes('<style type="text/css">' + face + "</style>"), "embed");
+  check("the page and the social card embed that same rule; the sample wheel form draws no text and needs none", PAGE.includes("var REPORT_FONT_CSS = ") && PAGE.includes(JSON.stringify(face)) && file("public/assets/absence-mini-audit-2026-11.svg").includes('<style type="text/css">' + face + "</style>") && !/<text|<style/.test(file("public/assets/sample/kalvenor-wheel.svg")), "embed");
   const main = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
   const visible = main.replace(/<[^>]+>/g, " ");
   check("the entry asks for a website and nothing else first", /<label for="company">Your website<\/label><input id="company"/.test(PAGE) && PAGE.indexOf('id="confirm" class="confirm hidden"') > PAGE.indexOf('id="company"'), "entry");
@@ -260,14 +260,18 @@ const RUN = { category: "field service management software", company: "acmefield
   check("?domain= fills the website and reads it in category mode, and runs nothing", /get\('domain'\)/.test(PAGE) && /if \(arriving\) \{ siteInput\.value = arriving; if\(!isPhp\(\)\)readSite\(true\); \}/.test(PAGE), "domain");
   check("no Stripe address and no retired $990 button remain", !/buy\.stripe\.com|Get the Diagnostic, \$990|4gM7sMgDOdmYbi93grds401|dRm7sM3R23Mo0Dv6sDds400/.test(PAGE), "stripe");
   check("exports wait for fonts before drawing", /document\.fonts\.ready/.test(PAGE), "fonts");
-  check("the wheel respects reduced motion and hides its labels at phone width", /prefers-reduced-motion: reduce/.test(PAGE) && /@media \(max-width: 560px\) \{ \.wheel \.wheel-arc-label, \.wheel \.wheel-ring-label \{ display: none; \}/.test(PAGE), "responsive");
+  check("the answer record honors reduced motion and turns to its table form when its marks would be smaller than 8 px", PAGE.includes("@media (prefers-reduced-motion:reduce){.bw-ar--animate .bw-ar__mark{animation:none}") && PAGE.includes(".bw-ar[data-form=\"table\"] .bw-ar__wheel{display:none}") && PAGE.includes("minMarkPixels: 8") && PAGE.includes("const table = units * wheelWidth() / box < AR_GEOMETRY.minMarkPixels;") && /BwWheel\.enhance\(figure\)/.test(PAGE), "responsive");
   check("the question list follows the two charts and retains question types", PAGE.indexOf('id="question-block"') > PAGE.indexOf('id="source-chart"') && /type\.className = 'q-type'/.test(PAGE), "question order");
   const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(PAGE)[1])["@graph"];
   const faq = ld.find((node) => node["@type"] === "FAQPage");
   check("the structured data carries a short FAQ", faq && faq.mainEntity.length >= 4 && faq.mainEntity.every((q) => q.name && q.acceptedAnswer.text), "faq");
   check("the FAQ on the page matches the FAQ in the structured data", faq.mainEntity.every((q) => main.includes("<summary>" + q.name.replace(/&/g, "&amp;") + "</summary>")), "faq match");
   check("the page title says what a searcher wants and never audit", /<title>Free AI visibility check[^<]*<\/title>/.test(PAGE) && !/<title>[^<]*[Aa]udit/.test(PAGE), (/<title>[^<]*<\/title>/.exec(PAGE) || [""])[0]);
-  check("Kalvenor is labelled SAMPLE DATA wherever it is shown", (main.match(/Kalvenor/g) || []).length > 0 && main.split("Kalvenor").slice(1).every((after) => /SAMPLE DATA/.test(after.slice(0, 260))), "sample label");
+  // Brief 8.2: the fictional Kalvenor sample is drawn only where "Sample data, fictional company" sits
+  // beside it, so every block of the page that names Kalvenor carries those words, ahead of the drawing.
+  const blocks = main.split(/<section class="left-section"/).slice(1);
+  const kalvenor = blocks.filter((block) => /Kalvenor/.test(block));
+  check("Kalvenor is labelled Sample data, fictional company wherever it is shown", kalvenor.length > 0 && kalvenor.every((block) => /<p class="bw-ar__sample">Sample data, fictional company<\/p>/.test(block) && block.indexOf("Sample data, fictional company") < block.indexOf("<svg")) && !/SAMPLE DATA/.test(main), "sample label");
 }
 
 // Ask the engine yourself: the page's own script, run in Node against a small fake DOM, so
@@ -417,7 +421,7 @@ function fakePage(options) {
   const builder = script.slice(script.indexOf("function askLinks("), script.indexOf("function renderQuestions("));
   check("the ask links are built with DOM calls, never innerHTML, and request nothing", builder.length > 200 && /setAttribute\('href', engine\[1\] \+ encodeURIComponent\(question\)\)/.test(builder) && /a\.textContent = engine\[0\]/.test(builder) && !/innerHTML|insertAdjacentHTML|fetch\(|sendBeacon|window\.open/.test(builder), "builder");
   check("askLinks is called only from the row and answer disclosure renderers", (script.match(/askLinks\(/g) || []).length === 3 && /item\.appendChild\(askLinks\(row\.question, index \+ 1\)\)/.test(script) && script.includes("details.appendChild(askLinks(row.question,number))"), "calls");
-  check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:2px solid var\(--blue\);outline-offset:2px\}/.test(PAGE), "css");
+  check("the ask links have a 40 px tap target, a hover state and a 2 px focus ring", /\.q-ask a\{[^}]*min-height:40px/.test(PAGE) && /\.q-ask a:hover\{[^}]+\}/.test(PAGE) && /\.q-ask a:focus-visible\{outline:var\(--bw-focus-width\) var\(--bw-focus-style\) var\(--bw-focus-color\);outline-offset:var\(--bw-focus-offset\)\}/.test(PAGE) && PAGE.includes("--bw-focus-width:2px;--bw-focus-offset:2px;"), "css");
 }
 
 // Exercise the real registered Copy link handler with controlled browser API outcomes.

@@ -34,7 +34,10 @@ const paths = (svg) => [...svg.matchAll(/\sd="([^"]+)"/g)].map((m) => m[1]);
   check("the Kalvenor sample fits the contract and the brand's own rules", W.validate(sample).length === 0 && brand.validate(W.record(sample)).length === 0, W.validate(sample).join("; "));
   check("the sample is marked as sample data with all five rings measured", sample.sample === true && sample.engines.every((engine) => engine.measured) && sample.brand === "Kalvenor Systems" && W.record(sample).engines.length === 5, "sample flags");
   const svg = file("public/assets/sample/kalvenor-wheel.svg");
-  check("the sample image is the brand's wheel form for the sample, and says sample data, fictional company", svg.trim() === W.svg(sample, { size: 720, id: "kalvenor" }) && svg.includes("<title id=\"kalvenor-alt\">Sample data, fictional company: Kalvenor Systems was named in 13 of 50 valid answers"), "sample image");
+  check("the sample image is the brand's wheel form for the sample, and says sample data, fictional company", svg.trim() === W.svg(sample, { size: 720, id: "kalvenor" }) && svg.includes("<title id=\"kalvenor-alt\">Sample data, fictional company: Kalvenor Systems was named in 13 of 50 question and engine pairs across 10 buyer questions"), "sample image");
+  // R-154 round 1: the sample's marks are question and engine pairs (10 questions on 5 engines), each
+  // summing three runs, so the count and its stated base agree and neither says "valid answers".
+  check("the sample counts its marks in the unit its base states", sample.count_unit === "question and engine pairs" && /50 question and engine pairs; each pair had three runs/.test(sample.base) && !W.draw(sample, { id: "u" }).html.includes("valid answers") && W.draw(sample, { id: "u" }).html.includes("named in 13 of 50 question and engine pairs"), "sample unit");
   const free = W.fromFreeCheck(UPSTREAM, { brand: "Acme Field", category: RUN.category, website: RUN.company });
   check("a free result becomes contract data with one measured ring, Perplexity", W.validate(free).length === 0 && free.engines.filter((engine) => engine.measured).map((engine) => engine.id).join() === "perplexity", W.validate(free).join("; "));
   const claude = W.fromFreeCheck(CLAUDE, { brand: "Acme Field", category: RUN.category, website: RUN.company });
@@ -78,7 +81,12 @@ const paths = (svg) => [...svg.matchAll(/\sd="([^"]+)"/g)].map((m) => m[1]);
   };
   for (const [name, data] of Object.entries(cases)) {
     const ours = W.draw(data, { id: "parity" });
-    const theirs = brand.draw(W.record(data), { id: "parity" });
+    // A record with its own count unit (the sample) differs from the brand's words in the unit only:
+    // "of N valid answers" reads "of N <unit>", and nothing else in the drawing moves.
+    const brandDrawn = brand.draw(W.record(data), { id: "parity" });
+    const unit = (text) => !data.count_unit ? text : text.replace(/ of (\d+) valid answers to /g, " of $1 " + data.count_unit + " across ").replace(/ of (\d+) valid answers/g, " of $1 " + data.count_unit);
+    const theirs = { html: unit(brandDrawn.html), alt: unit(brandDrawn.alt), svg: unit(brandDrawn.svg) };
+    if (data.count_unit) check("parity, " + name + ": the brand's own drawing carries the words the unit replaces", brandDrawn.html.includes(" valid answers") && !ours.html.includes(" valid answers"), name);
     check("parity, " + name + ": the same SVG path data", paths(ours.svg).length > 10 && JSON.stringify(paths(ours.svg)) === JSON.stringify(paths(theirs.svg)), paths(ours.svg).length + " paths");
     check("parity, " + name + ": the same drawing, table and words", ours.html === theirs.html && ours.alt === theirs.alt && ours.svg === theirs.svg, name);
   }

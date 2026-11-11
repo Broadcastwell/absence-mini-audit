@@ -45,7 +45,9 @@ async function load(name, path) {
 }
 
 // The fields the answer record's caption reads, beyond the contract's core (WHEEL_CONTRACT.md).
-const CAPTION = { release: "Fictional measurement sample", base: "10 of the sample's 35 buyer questions, three runs on each of the five engines; a mark is filled where the company was named in at least 2 of 3 runs", source_label: "the sample account" };
+// Each mark is one question on one engine (10 questions on 5 engines, 50 marks), and each mark sums
+// three runs, so the count is stated in marks and the base says so (count_unit, public/assets/wheel.js).
+const CAPTION = { release: "Fictional measurement sample", base: "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs; each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs", source_label: "the sample account", count_unit: "question and engine pairs" };
 
 async function fromEndpoints() {
   const displacement = await load("displacement", "baselines/" + BASELINE + "/displacement");
@@ -100,7 +102,7 @@ writeFileSync(root("public/assets/sample/kalvenor-wheel.json"), JSON.stringify(d
 // The wheel form draws no text, so the standalone image needs no font.
 writeFileSync(root("public/assets/sample/kalvenor-wheel.svg"), wheel.svg(data, { size: 720, id: "kalvenor" }) + "\n");
 const sum = wheel.summary(data);
-console.log("Kalvenor sample wheel: " + data.spokes.length + " spokes, named in " + sum.named + " of " + sum.asked + " answers, measured " + data.measured_on);
+console.log("Kalvenor sample wheel: " + data.spokes.length + " spokes, named in " + sum.named + " of " + sum.asked + " " + data.count_unit + ", measured " + data.measured_on);
 
 // The PNG is the shareable card at 1080 by 1080, with Geist embedded. Drawing it needs a browser,
 // which this repository does not ship, so the step runs only where Playwright can be loaded

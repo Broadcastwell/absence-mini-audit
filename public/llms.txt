@@ -1,6 +1,6 @@
 # Broadcastwell Free 10-question check (one engine)
 
-> Free 10-question check (one engine) for B2B software companies.
+> Broadcastwell measures and fixes whether AI search engines name B2B software companies. This is its Free 10-question check (one engine).
 
 The Free 10-question check (one engine) at audit.broadcastwell.com asks Claude ten buyer questions in one run and shows whether the confirmed company is named. It reads the submitted website to propose a company name and category. The visitor confirms them before the check runs.
 

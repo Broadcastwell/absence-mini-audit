@@ -32,8 +32,9 @@ control; on a phone the table form replaces the wheel whenever its marks would b
   "sample": true,
   "sample_url": "https://app.broadcastwell.com/sample",
   "release": "Fictional measurement sample",
-  "base": "10 of the sample's 35 buyer questions, three runs on each of the five engines; a mark is filled where the company was named in at least 2 of 3 runs",
+  "base": "10 of the sample's 35 buyer questions on each of the five engines, 50 question and engine pairs; each pair had three runs, and a mark is filled where the company was named in at least 2 of its 3 runs",
   "source_label": "the sample account",
+  "count_unit": "question and engine pairs",
   "summary": { "named": 13, "asked": 50 },
   "engines": [
     { "id": "chatgpt", "measured": true },
@@ -64,6 +65,7 @@ control; on a phone the table form replaces the wheel whenever its marks would b
 | `sample` | yes | `true` for the fictional sample. Every drawing then says "Sample data, fictional company" beside the record and never names the free check. The fictional company is drawn only as the sample. |
 | `sample_url` | no | Where the sample can be inspected; the caption's source for a sample. |
 | `release`, `base`, `source_url`, `source_label` | no | The caption. Without them a free check reads "Free 10-question check (one engine)", "N buyer questions, one run on" the engine, and the published method; a sample reads "Fictional measurement sample" and the sample account. |
+| `count_unit` | no | What one mark counts, when it is not one valid answer. The drawing then reads "named in N of M" followed by this unit instead of "valid answers", so the count agrees with its base. The sample sets "question and engine pairs": each mark sums three runs of one question on one engine. |
 | `summary` | no | `{ named, asked }` counts kept from the source. Leave it out and the module counts true and false marks on measured rings. |
 | `engines` | yes | Exactly five, in the order above, each `{ id, measured }`; at least one measured. |
 | `spokes` | yes | 3 to 12 questions, drawn clockwise in the order given. |

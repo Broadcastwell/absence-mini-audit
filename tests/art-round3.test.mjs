@@ -112,6 +112,9 @@ test("a bar graphic is drawn at the width it is shown at, so its words stay 16 p
   const wide = R.bars(rows, "Companies", { width: 588 });
   assert.match(wide, /viewBox="0 0 588 132"/);
   assert.match(wide, /<rect x="0" y="40" width="528" height="12"/, "the track runs to 60 px short of the edge");
-  assert.match(R.bars(rows, "Companies", { width: 300 }), /viewBox="0 0 640 132"/, "below 480 px the width option is ignored");
+  assert.match(R.bars(rows, "Companies", { compact: true, width: 358 }), /viewBox="0 0 358 132"/, "a phone column draws at its own width too");
+  assert.match(R.bars(rows, "Companies", { compact: true, width: 476 }), /viewBox="0 0 476 132"/, "so does a half column at 1024 px");
+  assert.match(R.bars(rows, "Companies", { width: 0 }), /viewBox="0 0 640 132"/, "a column not yet shown keeps the default width");
+  assert.match(R.bars(rows, "Companies", { compact: true, width: 0 }), /viewBox="0 0 360 132"/, "or the compact one");
   for (const name of ["company", "source"]) assert.equal(script.split("{compact:document.getElementById('" + name + "-chart').clientWidth<480,width:document.getElementById('" + name + "-chart').clientWidth}").length, 3, name);
 });

@@ -1804,8 +1804,8 @@ root.BwQuestionBank={release:'2026-09',entries:entries,get:function(category){va
   function sources(data,ctx) { var own=host(ctx.website||ctx.company), all=data.cited_sources&&Array.isArray(data.cited_sources.domains)?data.cited_sources.domains:[]; var list=all.slice(0,8); var ownRow=all.find(function(r){return r.domain===own||r.domain.endsWith('.'+own);}); if(ownRow&&!list.includes(ownRow))list=list.slice(0,7).concat([ownRow]); return list.map(function(r){return {label:r.domain,count:r.count,own:r.domain===own||r.domain.endsWith('.'+own)};}); }
   function bars(rows,title,options) {
     if(!rows.length)return '';
-    // options.width: the width the graphic is shown at, so its words stay 16 px (480 px or wider).
-    var height=rows.length*60+12, compact=options&&options.compact, W=compact?360:(options&&options.width>=480?Math.round(options.width):640), bar=W-60;
+    // options.width: the width the graphic is shown at (300 px or wider), so its words stay 16 px at any width.
+    var height=rows.length*60+12, compact=options&&options.compact, W=options&&options.width>=300?Math.round(options.width):compact?360:640, bar=W-60;
     var description=title+': '+rows.map(function(r){return r.label+', '+r.count+' of 10 answers';}).join('; ');
     var out=['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+height+'" role="img" tabindex="0" aria-label="'+esc(description)+'"><title>'+esc(title)+'</title>'];
     rows.forEach(function(r,i){var y=i*60+12,label=plain(r.label),cut=label.length>31?label.slice(0,28)+'...':label;out.push('<g tabindex="0" aria-label="'+esc(label+', '+r.count+' of 10 answers')+'">'+text(0,y+18,cut,16,r.own?'font-weight="700"':'')+'<rect x="0" y="'+(y+28)+'" width="'+bar+'" height="12" rx="4" fill="'+TRACK+'"/><rect x="0" y="'+(y+28)+'" width="'+(Math.max(0,Math.min(10,r.count))*bar/10)+'" height="12" rx="4" fill="'+(r.own?BLUE:DATA)+'"/>'+text(bar+20,y+40,r.count+'/10',15,'font-weight="700"')+'</g>');});

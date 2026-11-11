@@ -108,7 +108,10 @@ for (const name of ["index.html", "embed.html"]) {
   const result = doc.slice(doc.indexOf('<section id="result"'), doc.indexOf('<section id="email-card"'));
   const at = (needle) => result.indexOf(needle);
   check(name + ": the next steps follow the answer record and come before the method note and the repair terms", at('id="next-steps"') > at('id="question-block"') && at('id="next-steps"') < at('id="scope-title"') && at('id="next-steps"') < at('class="buy-path"'), "order");
-  const list = (/<ol class="next-list[^"]*" id="next-list">([\s\S]*?)<\/ol>/.exec(result) || ["", ""])[1];
+  // The art director's live round 1 (point 13, STEP 3.3 B122): the three steps are alternatives, not a
+  // sequence, so they stand in an unordered list with no step numerals (no bw-steps counter).
+  check(name + ": the next steps carry no numerals: an unordered list without the brand's step counter", /<ul class="next-list" id="next-list">/.test(result) && !/id="next-list"[^>]*bw-steps|class="[^"]*bw-steps[^"]*" id="next-list"|<ol[^>]*id="next-list"/.test(result), "numerals");
+  const list = (/<ul class="next-list" id="next-list">([\s\S]*?)<\/ul><\/section>/.exec(result) || ["", ""])[1];
   const items = [...list.matchAll(/<li id="([a-z-]+)">/g)].map((m) => m[1]);
   check(name + ": exactly three next steps, in order: keep, fix or live question, talk to us", items.join(",") === "next-keep,next-second,next-talk" && (list.match(/<li\b/g) || []).length === 3, items.join(","));
   const keep = list.slice(list.indexOf('id="next-keep"'), list.indexOf('id="next-second"'));

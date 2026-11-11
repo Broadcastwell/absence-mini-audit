@@ -18,6 +18,19 @@
     rows.forEach(function(r,i){var y=i*60+12,label=plain(r.label),cut=label.length>31?label.slice(0,28)+'...':label;out.push('<g tabindex="0" aria-label="'+esc(label+', '+r.count+' of 10 answers')+'">'+text(0,y+18,cut,16,r.own?'font-weight="700"':'')+'<rect x="0" y="'+(y+28)+'" width="'+bar+'" height="12" rx="4" fill="'+TRACK+'"/><rect x="0" y="'+(y+28)+'" width="'+(Math.max(0,Math.min(10,r.count))*bar/10)+'" height="12" rx="4" fill="'+(r.own?BLUE:DATA)+'"/>'+text(bar+20,y+40,r.count+'/10',15,'font-weight="700"')+'</g>');});
     return out.join('')+'</svg>';
   }
+  // The table form of a bar graphic: one row a bar, the count right-aligned (brand table, bw-num).
+  function table(rows,title,column) {
+    if(!rows.length)return '';
+    return '<table class="bw-table"><caption>'+esc(title)+'</caption><thead><tr><th scope="col">'+esc(column)+'</th><th scope="col" class="bw-num">Answers, of 10</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><th scope="row">'+esc(plain(r.label))+'</th><td class="bw-num">'+esc(r.count)+'</td></tr>';}).join('')+'</tbody></table>';
+  }
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function longDate(iso) { var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); return m&&MONTHS[Number(m[2])-1]?Number(m[3])+' '+MONTHS[Number(m[2])-1]+' '+m[1]:String(iso||''); }
+  // A bar graphic's caption, in the answer record's own form (release, category, capture date, base, source):
+  // ctx.category as the visitor confirmed it, ctx.counted what each bar counts, ctx.preview for preview data.
+  function caption(data,ctx) {
+    var c=String(ctx.category||''),engine=data.engine==='Claude'?'Claude':(data.engine||'one engine');
+    return (ctx.preview?'Fictional preview data for layout review. ':'')+esc('Free 10-question check (one engine). '+c.charAt(0).toUpperCase()+c.slice(1)+'. Answers captured '+longDate(data.measured_on)+'. Base: 10 buyer questions, one run on '+engine+'; each bar counts the answers that '+ctx.counted+'.')+' Source: <a href="https://broadcastwell.com/methodology">the published method</a>.';
+  }
   function card(data,ctx,options) {
     var o=options||{}, W=o.width||1200,H=o.height||630,scale=Math.min(W/1200,H/630),pad=48*scale, y=pad+24*scale;
     var out=['<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img"><title>'+esc('Free 10-question check (one engine), '+(ctx.brand||ctx.website||ctx.company))+'</title>'];
@@ -38,5 +51,5 @@
     out.push('<rect x="0" y="'+(H-56*scale)+'" width="'+W+'" height="'+(56*scale)+'" fill="'+TRACK+'"/>',text(pad,H-22*scale,'broadcastwell.com  |  One engine, one run. Answers vary between runs.',16*scale));
     return out.join('')+'</svg>';
   }
-  root.BwReport={plain:plain,scope:scope,companies:companies,sources:sources,bars:bars,card:card};
+  root.BwReport={plain:plain,scope:scope,companies:companies,sources:sources,bars:bars,table:table,caption:caption,card:card};
 })(typeof globalThis!=='undefined'?globalThis:this);

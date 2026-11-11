@@ -579,6 +579,17 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 @media (min-width: 768px) { .result .verdict { font-size: var(--bw-text-49); line-height: var(--bw-leading-49); } }
 .measurement-company { margin: 0; font-size: var(--bw-text-20); line-height: var(--bw-leading-20); font-weight: var(--bw-weight-semibold); color: var(--bw-color-ink); }
 .result-record { margin: var(--bw-space-32) 0; }
+/* The next action stays in view with the score on the screen the result scrolls to (art director's live
+   round 1, point 1): the outlined style, so the one filled purchase button stays the repair. */
+.score-next .small-button { text-decoration: none; }
+.score-next { margin: var(--bw-space-16) 0 0; }
+/* The two bar graphics carry the answer record's caption (base, capture date, source) and its
+   "Read as a table" control (point 11). */
+.report-figure { margin: 0 0 var(--bw-space-16); }
+.report-caption { display: grid; justify-items: start; gap: var(--bw-space-8); margin-top: var(--bw-space-16); }
+.report-caption .meta { margin: 0; }
+.report-table { margin-top: var(--bw-space-16); }
+.report-table .bw-table caption { font-size: var(--bw-text-13); line-height: var(--bw-leading-13); }
 .result .position { margin: var(--bw-space-16) 0; font-size: var(--bw-text-20); line-height: var(--bw-leading-20); color: var(--bw-color-ink); }
 .result .scope { margin-top: var(--bw-space-16); font-size: var(--bw-text-16); line-height: var(--bw-leading-16); font-variant-numeric: tabular-nums lining-nums; }
 .report-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -606,7 +617,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .q-ask a{display:inline-flex;align-items:center;min-height:40px;padding:0 var(--bw-space-8);border-radius:var(--bw-radius-4);color:var(--bw-color-accent);font-weight:var(--bw-weight-medium);text-decoration:underline;text-decoration-thickness:var(--bw-stroke-hairline);text-underline-offset:.2em}
 .q-ask a:hover{background:var(--bw-color-panel);color:var(--bw-color-accent-strong);text-decoration-thickness:var(--bw-stroke-focus)}
 .q-ask a:focus-visible{outline:var(--bw-focus-width) var(--bw-focus-style) var(--bw-focus-color);outline-offset:var(--bw-focus-offset)}
-.next-list { margin: 0; }
+.next-list { display: grid; gap: var(--bw-space-32); margin: 0; padding: 0; list-style: none; }
 .next-list h3 { margin-bottom: var(--bw-space-4); }
 .next-list p { margin: 0 0 var(--bw-space-8); }
 .buy-path { padding-block: var(--bw-space-32); border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
@@ -641,6 +652,9 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .bw-button--secondary.bw-site-nav__phone-start { display: none; }
   .bw-site-nav__bar:has(> .bw-button--secondary.bw-site-nav__phone-start) .bw-site-nav__phone { margin-left: auto; }
 }
+/* The fictional sample's label is plain secondary text beside the drawing, not an amber tag: amber is for
+   notices, which carry an icon (art director's live round 1, point 6). The words stay. */
+.bw-ar__sample, .bw-tag--sample { padding: 0; background: none; color: var(--bw-color-ink-secondary); }
 /* Brand 3.0.2: the wordmark never wraps, at 320 px or any other width. */
 .bw-logotype { white-space: nowrap; flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) {
@@ -685,11 +699,11 @@ main .bw-door__title { margin: 0; font-family: var(--bw-font-sans); letter-spaci
     <section id="working" class="progress hidden" aria-live="polite" aria-label="Check progress" tabindex="-1"><h3 id="working-title">Your check has started</h3><p id="working-detail" class="small flush">Allow about 40 seconds. We return a result only when all ten questions have answers.</p><p id="working-engine" class="small flush">Claude is answering the ten questions now. Leave this page open.</p><div class="progress-head"><span id="working-scope">One engine, ten questions, one run</span><span id="elapsed">Elapsed: 0 seconds</span></div><div class="bar" aria-hidden="true"><span></span></div></section>
     <section id="result" class="card result hidden" aria-live="polite" aria-labelledby="lead-line" tabindex="-1">
 <p class="eyebrow">Free 10-question check (one engine)</p><p id="shared-note" class="shared-note hidden"></p>
-<section class="report-section" aria-labelledby="score-title"><h2 id="score-title">The score</h2><p class="verdict" id="lead-line"></p><p id="measurement-company" class="measurement-company"></p><div id="wheel" class="result-record hidden"></div><p class="position" id="position"></p><p id="reading"></p><p class="meta scope" id="meta"></p></section>
-<section class="report-section" aria-labelledby="instead-title"><h2 id="instead-title">Who Claude names instead</h2><div id="company-chart" class="report-chart"></div><p id="company-summary"></p></section>
-<section class="report-section" aria-labelledby="sources-title"><h2 id="sources-title">Where the answers come from</h2><div id="source-chart" class="report-chart"></div><p id="own-site-summary"></p></section>
+<section class="report-section" aria-labelledby="score-title"><h2 id="score-title">The score</h2><p class="verdict" id="lead-line"></p><p id="measurement-company" class="measurement-company"></p><p class="score-next" id="score-next"><a id="score-next-link" class="small-button" href="https://broadcastwell.com/answer-repair">Fix this answer, $490</a></p><div id="wheel" class="result-record hidden"></div><p class="position" id="position"></p><p id="reading"></p><p class="meta scope" id="meta"></p></section>
+<section class="report-section" aria-labelledby="instead-title"><h2 id="instead-title">Who Claude names instead</h2><figure class="report-figure"><div id="company-chart" class="report-chart"></div><div id="company-table" class="bw-table-wrap report-table hidden"></div><figcaption class="report-caption"><button type="button" class="bw-button bw-button--text report-toggle hidden" id="company-toggle" aria-expanded="false" aria-controls="company-table">Read as a table</button><p class="meta hidden" id="company-caption"></p></figcaption></figure><p id="company-summary"></p></section>
+<section class="report-section" aria-labelledby="sources-title"><h2 id="sources-title">Where the answers come from</h2><figure class="report-figure"><div id="source-chart" class="report-chart"></div><div id="source-table" class="bw-table-wrap report-table hidden"></div><figcaption class="report-caption"><button type="button" class="bw-button bw-button--text report-toggle hidden" id="source-toggle" aria-expanded="false" aria-controls="source-table">Read as a table</button><p class="meta hidden" id="source-caption"></p></figcaption></figure><p id="own-site-summary"></p></section>
 <section class="report-section hidden" id="question-block" aria-labelledby="questions-title"><h2 id="questions-title">Question by question</h2><p id="question-note" class="small hidden">This saved result reports the count, without identifying individual answers.</p><p id="receipt-note" class="small hidden">Answer text and sources were not returned for this saved result.</p><ul id="question-results" class="question-list"></ul></section>
-<section class="report-section next-steps" id="next-steps" aria-labelledby="next-title"><h2 id="next-title">Next steps</h2><ol class="next-list bw-steps" id="next-list"><li id="next-keep"><h3>Keep this result</h3><p>Create a free account, no card. It keeps this check, and for 14 days it opens the tracking screens on ten buyer questions for your category, with up to three one-engine runs while free runs are open.</p><p><button type="button" class="small-button" id="keep-result">Create a free account</button></p><p id="keep-status" class="small hidden" aria-live="polite"></p></li><li id="next-second"><div id="next-fix"><h3>Fix the first missing answer</h3><p id="next-fix-text">Answer Repair fixes one buyer question where Claude did not name you, with one source-backed page or fix, for $490.</p><p><a id="next-fix-link" href="https://broadcastwell.com/answer-repair">Fix this answer, $490</a></p></div><div id="next-live" class="hidden"><h3>Ask one buyer question on five engines</h3><p>Claude named you in all ten answers. The $19 live question asks one buyer question of your own on ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode, three runs each.</p><p><a id="next-live-link" href="https://app.broadcastwell.com/signin?next=credits">Ask a live question, $19</a></p></div></li><li id="next-talk"><h3>Talk to us</h3><p>Book a 30 minute conversation with our team about your category and the answers above.</p><p><a id="next-talk-link" href="https://broadcastwell.com/contact">Talk to us</a></p></li></ol></section>
+<section class="report-section next-steps" id="next-steps" aria-labelledby="next-title"><h2 id="next-title">Next steps</h2><ul class="next-list" id="next-list"><li id="next-keep"><h3>Keep this result</h3><p>Create a free account, no card. It keeps this check, and for 14 days it opens the tracking screens on ten buyer questions for your category, with up to three one-engine runs while free runs are open.</p><p><button type="button" class="small-button" id="keep-result">Create a free account</button></p><p id="keep-status" class="small hidden" aria-live="polite"></p></li><li id="next-second"><div id="next-fix"><h3>Fix the first missing answer</h3><p id="next-fix-text">Answer Repair fixes one buyer question where Claude did not name you, with one source-backed page or fix, for $490.</p><p><a id="next-fix-link" href="https://broadcastwell.com/answer-repair">Fix this answer, $490</a></p></div><div id="next-live" class="hidden"><h3>Ask one buyer question on five engines</h3><p>Claude named you in all ten answers. The $19 live question asks one buyer question of your own on ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode, three runs each.</p><p><a id="next-live-link" href="https://app.broadcastwell.com/signin?next=credits">Ask a live question, $19</a></p></div></li><li id="next-talk"><h3>Talk to us</h3><p>Book a 30 minute conversation with our team about your category and the answers above.</p><p><a id="next-talk-link" href="https://broadcastwell.com/contact">Talk to us</a></p></li></ul></section>
 <section class="report-section" aria-labelledby="scope-title"><h2 id="scope-title">What this is and is not</h2><p>We ask Claude the ten questions a buyer in your category would ask, once, and record who it names and which sources it cites.</p><p>The five engines in the Agency Deadline Audit are ChatGPT, Claude, Perplexity, Google AI Overviews and Google AI Mode.</p><p>Runs are limited per network and per day. The allowance resets at 00:00 UTC.</p><p>One run is a measurement on its stated date. Answers vary between runs.</p><p><a href="https://app.broadcastwell.com/sample">Read the fictional measurement sample</a>. <a id="chapter-link" href="https://docs.broadcastwell.com/absence-ladder/">Read the relevant Manual chapter</a>.</p></section>
 <section class="buy-path" role="group" aria-labelledby="buy-title"><h2 id="buy-title">One buyer question. One completed repair.</h2><p>Answer Repair is $490 for one agreed buyer question and one source-backed page or fix. Choose Live or Handoff before payment. Due 48 elapsed hours after recorded Ready.</p><div class="buy-actions"><a class="cta cta-filled" href="https://broadcastwell.com/buy/answer-repair" data-buy>Fix one answer, $490</a></div><p>If we miss the deliverable or deadline, we initiate a full $490 refund within five business days. You keep the work. You may also request a full refund within 30 days of delivery.</p><p class="small"><a href="https://broadcastwell.com/pricing">See the published price ladder</a>.</p><p class="small" id="buy-link-note">Buying from this result keeps a private result link for 30 days, so the order can start from it.</p><p class="small"><a href="/assets/sample/category-audit-sample.pdf">Read the fictional sample report (PDF)</a>.</p><div class="keep" id="keep"><h3>Keep and share this result</h3><p class="small flush">Images are drawn in your browser. Each carries broadcastwell.com, the engine, the date and the honest one-engine, one-run scope</p><div class="export-actions" role="group" aria-label="Save the report as an image"><button class="small-button" type="button" data-export="1200x630">PNG 1200 by 630</button><button class="small-button" type="button" data-export="1080x1080">PNG 1080 by 1080</button><button class="small-button" type="button" data-export="1600x900">PNG 1600 by 900</button><button class="small-button" type="button" data-export="svg">SVG</button></div><p id="export-status" class="small hidden" aria-live="polite"></p><div id="link-area"><button id="link-create" class="small-button" type="button">Create a private result link</button><p class="small flush" id="link-hint">A link is made only when you ask. It is private and not indexed by search engines. It keeps this result for 30 days, with no email and nothing about you, and this browser can delete it sooner.</p><div id="link-out" class="hidden"><div class="link-row"><input id="link-url" type="text" readonly aria-label="Result link"><button id="link-copy" class="small-button" type="button">Copy link</button></div><p id="link-expiry" class="small flush"></p><button id="link-delete" class="small-button hidden" type="button">Delete this link</button></div><p id="link-status" class="small hidden" aria-live="polite"></p></div></div><p><a href="#email-card">Email me this result</a></p><p><button type="button" class="small-button" id="another-check">Run another check</button></p></section>
 </section>
@@ -1751,6 +1765,19 @@ root.BwQuestionBank={release:'2026-09',entries:entries,get:function(category){va
     rows.forEach(function(r,i){var y=i*60+12,label=plain(r.label),cut=label.length>31?label.slice(0,28)+'...':label;out.push('<g tabindex="0" aria-label="'+esc(label+', '+r.count+' of 10 answers')+'">'+text(0,y+18,cut,16,r.own?'font-weight="700"':'')+'<rect x="0" y="'+(y+28)+'" width="'+bar+'" height="12" rx="4" fill="'+TRACK+'"/><rect x="0" y="'+(y+28)+'" width="'+(Math.max(0,Math.min(10,r.count))*bar/10)+'" height="12" rx="4" fill="'+(r.own?BLUE:DATA)+'"/>'+text(bar+20,y+40,r.count+'/10',15,'font-weight="700"')+'</g>');});
     return out.join('')+'</svg>';
   }
+  // The table form of a bar graphic: one row a bar, the count right-aligned (brand table, bw-num).
+  function table(rows,title,column) {
+    if(!rows.length)return '';
+    return '<table class="bw-table"><caption>'+esc(title)+'</caption><thead><tr><th scope="col">'+esc(column)+'</th><th scope="col" class="bw-num">Answers, of 10</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><th scope="row">'+esc(plain(r.label))+'</th><td class="bw-num">'+esc(r.count)+'</td></tr>';}).join('')+'</tbody></table>';
+  }
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function longDate(iso) { var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); return m&&MONTHS[Number(m[2])-1]?Number(m[3])+' '+MONTHS[Number(m[2])-1]+' '+m[1]:String(iso||''); }
+  // A bar graphic's caption, in the answer record's own form (release, category, capture date, base, source):
+  // ctx.category as the visitor confirmed it, ctx.counted what each bar counts, ctx.preview for preview data.
+  function caption(data,ctx) {
+    var c=String(ctx.category||''),engine=data.engine==='Claude'?'Claude':(data.engine||'one engine');
+    return (ctx.preview?'Fictional preview data for layout review. ':'')+esc('Free 10-question check (one engine). '+c.charAt(0).toUpperCase()+c.slice(1)+'. Answers captured '+longDate(data.measured_on)+'. Base: 10 buyer questions, one run on '+engine+'; each bar counts the answers that '+ctx.counted+'.')+' Source: <a href="https://broadcastwell.com/methodology">the published method</a>.';
+  }
   function card(data,ctx,options) {
     var o=options||{}, W=o.width||1200,H=o.height||630,scale=Math.min(W/1200,H/630),pad=48*scale, y=pad+24*scale;
     var out=['<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img"><title>'+esc('Free 10-question check (one engine), '+(ctx.brand||ctx.website||ctx.company))+'</title>'];
@@ -1771,7 +1798,7 @@ root.BwQuestionBank={release:'2026-09',entries:entries,get:function(category){va
     out.push('<rect x="0" y="'+(H-56*scale)+'" width="'+W+'" height="'+(56*scale)+'" fill="'+TRACK+'"/>',text(pad,H-22*scale,'broadcastwell.com  |  One engine, one run. Answers vary between runs.',16*scale));
     return out.join('')+'</svg>';
   }
-  root.BwReport={plain:plain,scope:scope,companies:companies,sources:sources,bars:bars,card:card};
+  root.BwReport={plain:plain,scope:scope,companies:companies,sources:sources,bars:bars,table:table,caption:caption,card:card};
 })(typeof globalThis!=='undefined'?globalThis:this);
 /* report module: end */
 /* report font: begin */
@@ -1967,11 +1994,22 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     document.getElementById('company-summary').textContent=peers.length?'Among the other companies, '+data.named_instead[0].company+' appeared in '+data.named_instead[0].count+' of 10 answers.':'Company names were not returned for this result. No company chart is shown.';
     document.getElementById('source-chart').innerHTML=window.BwReport.bars(cited,'Cited domains, count of answers out of ten',{compact:document.getElementById('source-chart').clientWidth<480});
     document.getElementById('own-site-summary').textContent=data.cited_sources?'Your site was cited in '+data.cited_sources.own_site_cited+' of 10 answers.':'Source detail was not returned for this saved result.';
+    renderChartForm('company',peers,'Company','Companies named, count of answers out of ten','named the company',data,ctx);
+    renderChartForm('source',cited,'Cited domain','Cited domains, count of answers out of ten','cited the domain',data,ctx);
     renderQuestions(data.questions);
     renderNextSteps(data);
     var chapter = data.chapter || '/absence-ladder/', chapterLink = document.getElementById('chapter-link'); chapterLink.href = 'https://docs.broadcastwell.com' + chapter; chapterLink.textContent = 'Read: ' + (CHAPTERS[chapter] || 'The Absence Manual');
     hide(document.getElementById('export-status')); hide(document.getElementById('link-status'));
   }
+
+  // Each bar graphic's caption (base, capture date, source) and its table form, shown only when the visitor asks for it.
+  function renderChartForm(name,rows,column,title,counted,data,ctx){
+    var toggle=document.getElementById(name+'-toggle'),table=document.getElementById(name+'-table'),caption=document.getElementById(name+'-caption');
+    table.innerHTML=window.BwReport.table(rows,title,column);caption.innerHTML=window.BwReport.caption(data,{category:ctx.category,preview:ctx.preview,counted:counted});
+    hide(table);toggle.setAttribute('aria-expanded','false');
+    if(rows.length){show(toggle);show(caption);}else{hide(toggle);hide(caption);}
+  }
+  ['company','source'].forEach(function(name){var toggle=document.getElementById(name+'-toggle'),table=document.getElementById(name+'-table');toggle.addEventListener('click',function(){var open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',open?'true':'false');if(open)show(table);else hide(table);});});
 
   // The three next steps under the answer record (STEP 3.3 brief section 10.3 step 2), in this order:
   // keep this result in a free account, fix the first missing answer, talk to us. A company named in
@@ -1983,6 +2021,10 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     var everyAnswer = data && data.named === 10;
     document.getElementById('next-fix').classList.toggle('hidden', everyAnswer);
     document.getElementById('next-live').classList.toggle('hidden', !everyAnswer);
+    // The visible second step again, beside the score, so one next action is in view where the result
+    // opens. Its words and address are read from that step, so each price is written once on the page.
+    var stepLink = document.getElementById(everyAnswer ? 'next-live-link' : 'next-fix-link'), scoreNext = document.getElementById('score-next-link');
+    scoreNext.href = stepLink.href; scoreNext.textContent = stepLink.textContent;
     document.getElementById('next-fix-text').textContent = missing ? 'Claude did not name you for "' + missing + '". Answer Repair fixes that one buyer question with one source-backed page or fix, for $490.' : 'Answer Repair fixes one buyer question where Claude did not name you, with one source-backed page or fix, for $490.';
     hide(document.getElementById('keep-status'));
   }

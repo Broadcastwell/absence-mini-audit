@@ -1755,7 +1755,7 @@ root.BwQuestionBank={release:'2026-09',entries:entries,get:function(category){va
   var BLUE='#1D4ED8', DATA='#3B82F6', TRACK='#EEF4FF', INK='#0B1220';
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function plain(value) { return String(value || '').replace(/[\u2013\u2014]/g,', ').replace(/\x2d{2,}/g,' ').replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,function(_,text){return text;}).replace(/`/g,'').trim(); }
-  function scope(data) { return (data.engine==='Claude'?'Claude':'Earlier one-engine check')+', ten questions, one run, measured on '+data.measured_on+'.'; }
+  function scope(data) { return (data.engine==='Claude'?'Claude':'Earlier one-engine check')+', ten questions, one run, measured on '+longDate(data.measured_on)+'.'; }
   function text(x,y,value,size,extra) { return '<text x="'+x+'" y="'+y+'" font-family="Geist,Arial,sans-serif" font-size="'+size+'" fill="'+INK+'" '+(extra||'')+'>'+esc(plain(value))+'</text>'; }
   function host(value) { return String(value||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0]; }
   function companies(data,ctx) { var list=(Array.isArray(data.named_instead)?data.named_instead:[]).slice(0,8).map(function(r){return {label:r.company,count:r.count,own:false};}); if(!list.length)return []; return [{label:(ctx.brand||ctx.website||ctx.company)+' (you)',count:data.named,own:true}].concat(list); }
@@ -1825,11 +1825,11 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
     document.getElementById('working-detail').textContent=php?'We are preparing one dated answer and its cited sources.':standardCopy.progress[0];document.getElementById('working-engine').textContent=php?'Claude is answering one PHP2Shell question. Leave this page open.':standardCopy.progress[1];document.getElementById('working-scope').textContent=php?'One engine, one PHP2Shell question, one run':standardCopy.head;go.textContent=php?'Check the PHP2Shell answer':'Read your website';
   }
   function renderPhp(data,preview){
-    document.getElementById('php-meta').textContent=data.company+' ('+data.domain+'). '+data.engine+', '+data.measured_on+' UTC.'+(preview?' Fictional preview data.':'');
+    document.getElementById('php-meta').textContent=data.company+' ('+data.domain+'). '+data.engine+', '+readerDate(data.measured_on)+' UTC.'+(preview?' Fictional preview data.':'');
     document.getElementById('php-question').textContent=data.question;document.getElementById('php-answer').textContent=data.answer;
     var sources=document.getElementById('php-sources');sources.textContent='';(data.sources||[]).forEach(function(url){var li=document.createElement('li'),a=document.createElement('a');a.href=url;a.textContent=url;a.target='_blank';a.rel='noopener noreferrer';li.appendChild(a);sources.appendChild(li);});if(!sources.childNodes.length){var empty=document.createElement('li');empty.textContent='No cited URL was returned.';sources.appendChild(empty);}
-    var row=data.index_row;document.getElementById('php-status').textContent=row?row.company+': '+row.status+'. Record last checked '+(row.last_checked_utc||'date not supplied')+'.':'This company is not yet listed in the Statement Index.';
-    var statement=document.getElementById('php-statement');statement.textContent='';if(row&&row.statement_url){var link=document.createElement('a');link.href=row.statement_url;link.textContent='Company statement'+(row.statement_date?', '+row.statement_date:'');link.target='_blank';link.rel='noopener noreferrer';statement.appendChild(link);}else statement.textContent=row?'No public statement was located at the places recorded in the Index.':'Read the Index scope and submit a published statement.';
+    var row=data.index_row;document.getElementById('php-status').textContent=row?row.company+': '+row.status+'. Record last checked '+(row.last_checked_utc?readerDate(row.last_checked_utc):'date not supplied')+'.':'This company is not yet listed in the Statement Index.';
+    var statement=document.getElementById('php-statement');statement.textContent='';if(row&&row.statement_url){var link=document.createElement('a');link.href=row.statement_url;link.textContent='Company statement'+(row.statement_date?', '+readerDate(row.statement_date):'');link.target='_blank';link.rel='noopener noreferrer';statement.appendChild(link);}else statement.textContent=row?'No public statement was located at the places recorded in the Index.':'Read the Index scope and submit a published statement.';
     document.getElementById('php-index-link').href=data.index_url;hide(result);hide(emailCard);show(phpResultBox);phpResultBox.scrollIntoView({behavior:smooth(),block:'start'});phpResultBox.focus();
   }
   modeInput.addEventListener('change',applyMode);
@@ -1852,6 +1852,9 @@ var REPORT_FONT_CSS = "@font-face{font-family:Geist;font-style:normal;font-weigh
   function beacon(event) { try { if (navigator.sendBeacon) navigator.sendBeacon('/api/event', JSON.stringify({ e: event })); } catch (_) { /* counting is best effort */ } }
   function smooth() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
   function longDate(iso) { return window.BwWheel.date(iso); }
+  // A date a reader sees, in the house form (11 November 2026). An ISO day, or an ISO time in UTC with
+  // its hour and minute; anything else (a date already written out) is shown as it came.
+  function readerDate(value) { var text = String(value || '').trim(), m = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]00:?00)?)?$/.exec(text); return m ? longDate(m[1]) + (m[2] ? ', ' + m[2] + ':' + m[3] + ' UTC' : '') : text; }
   function updateProgress() { var seconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000)); elapsed.textContent = 'Elapsed: ' + seconds + ' seconds'; }
   function startProgress() { startedAt = Date.now(); updateProgress(); timer = window.setInterval(updateProgress, 1000); } function stopProgress() { window.clearInterval(timer); }
   // The submit is the filled button until a result is shown; after that the purchase button is.

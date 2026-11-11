@@ -5,7 +5,7 @@
   var BLUE='#1D4ED8', DATA='#3B82F6', TRACK='#EEF4FF', INK='#0B1220';
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function plain(value) { return String(value || '').replace(/[\u2013\u2014]/g,', ').replace(/\x2d{2,}/g,' ').replace(/^#{1,6}\s*/gm,'').replace(/\*\*([^*]+)\*\*/g,function(_,text){return text;}).replace(/`/g,'').trim(); }
-  function scope(data) { return (data.engine==='Claude'?'Claude':'Earlier one-engine check')+', ten questions, one run, measured on '+data.measured_on+'.'; }
+  function scope(data) { return (data.engine==='Claude'?'Claude':'Earlier one-engine check')+', ten questions, one run, measured on '+longDate(data.measured_on)+'.'; }
   function text(x,y,value,size,extra) { return '<text x="'+x+'" y="'+y+'" font-family="Geist,Arial,sans-serif" font-size="'+size+'" fill="'+INK+'" '+(extra||'')+'>'+esc(plain(value))+'</text>'; }
   function host(value) { return String(value||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0]; }
   function companies(data,ctx) { var list=(Array.isArray(data.named_instead)?data.named_instead:[]).slice(0,8).map(function(r){return {label:r.company,count:r.count,own:false};}); if(!list.length)return []; return [{label:(ctx.brand||ctx.website||ctx.company)+' (you)',count:data.named,own:true}].concat(list); }

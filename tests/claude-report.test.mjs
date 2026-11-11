@@ -121,7 +121,7 @@ test('company bars include the visitor at zero and source bars mark its actual d
 
 test('all three offline export sizes show true score, top peers, citations and scope, with escaped labels',()=>{
   for(const [width,height] of [[1200,630],[1080,1080],[1600,900]]){
-    const svg=R.card(rich(),{...body,brand:'Acme <unsafe>'},{width,height});assert.ok(svg.includes('width="'+width+'" height="'+height+'"'));assert.match(svg,/Named in 3 of 10/);assert.match(svg,/Peer A/);assert.match(svg,/10 of 10/);assert.match(svg,/Your site was cited in 3 of 10/);assert.match(svg,/Claude, ten questions, one run, measured on 2026-10-20/);assert.match(svg,/broadcastwell.com/);assert.match(svg,/Acme &lt;unsafe&gt;/);assert.ok(!/<script|\son\w+=|\sstyle=/.test(svg));
+    const svg=R.card(rich(),{...body,brand:'Acme <unsafe>'},{width,height});assert.ok(svg.includes('width="'+width+'" height="'+height+'"'));assert.match(svg,/Named in 3 of 10/);assert.match(svg,/Peer A/);assert.match(svg,/10 of 10/);assert.match(svg,/Your site was cited in 3 of 10/);assert.match(svg,/Claude, ten questions, one run, measured on 20 October 2026\./);assert.ok(!/\d{4}-\d{2}-\d{2}/.test(svg));assert.match(svg,/broadcastwell.com/);assert.match(svg,/Acme &lt;unsafe&gt;/);assert.ok(!/<script|\son\w+=|\sstyle=/.test(svg));
   }
 });
 

@@ -433,7 +433,10 @@ function fakePage(options) {
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const longDay = (iso) => { const [y, m, d] = String(iso).split("-").map(Number); return d + " " + MONTH_NAMES[m - 1] + " " + y; };
 const until = async (done) => { for (let i = 0; i < 400 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 5)); };
-const terms = (expires) => "private and not indexed by search engines. We keep it for 30 days from the day it was made, until " + longDay(expires) + ", then delete it.";
+// The words a reader sees in the fake DOM: every element's text and the text of any markup a script
+// wrote into it, tags and attributes (datetime and the like) left out. The record's own JSON is data.
+const isoInView = (page) => page.body.all().filter((el) => el.getAttribute("id") !== "shared-result").flatMap((el) => [el.textContent, el.innerHTML.replace(/<[^>]*>/g, " ")]).join(" ").match(/\b\d{4}-\d{2}-\d{2}\b/g) || [];
+const terms = (expires) =>"private and not indexed by search engines. We keep it for 30 days from the day it was made, until " + longDay(expires) + ", then delete it.";
 function servedBy(e, ip) {
   const found = { found: true, website: RUN.company, brand: RUN.brand, category: RUN.category, alternatives: [] };
   return async (url, init) => {
@@ -540,7 +543,8 @@ let made = null;
   await shared.settle();
   const text = (p, name) => p.document.getElementById(name).textContent;
   check("/r/<id> shows the same record: count, company and category, position", record.id === id && ["lead-line", "measurement-company", "position"].every((name) => text(shared, name) === text(page, name) && text(page, name)), text(shared, "lead-line"));
-  check("/r/<id> carries the snapshot notice, the dated one-engine scope line", text(shared, "meta") === text(page, "meta") && /^(Claude|Earlier one-engine check), ten questions, one run, measured on \d{4}-\d{2}-\d{2}\.$/.test(text(shared, "meta")), text(shared, "meta"));
+  check("/r/<id> carries the snapshot notice, the dated one-engine scope line", text(shared, "meta") === text(page, "meta") && text(shared, "meta") === (record.result.engine === "Claude" ? "Claude" : "Earlier one-engine check") + ", ten questions, one run, measured on " + longDay(record.result.measured_on) + ".", text(shared, "meta"));
+  check("every date a reader sees on the result page and on /r/<id> reads as 11 November 2026, never as an ISO date", [page, shared].every((p) => isoInView(p).length === 0) && /"measured_on":"\d{4}-\d{2}-\d{2}"/.test(html) && /"expires_on":"\d{4}-\d{2}-\d{2}"/.test(html), isoInView(page).concat(isoInView(shared)).join(" | "));
   check("/r/<id> carries the same three next steps", text(shared, "next-fix-text") === text(page, "next-fix-text") && /^Claude did not name you for "Question 4"./.test(text(shared, "next-fix-text")) && !hiddenIn(shared, "next-fix") && hiddenIn(shared, "next-live") && hiddenIn(page, "next-live") && !hiddenIn(page, "next-fix") && /<li id="next-keep">[\s\S]*<li id="next-second">[\s\S]*<li id="next-talk">/.test(html), text(shared, "next-fix-text"));
   const anchors = [], create = shared.document.createElement;
   shared.document.createElement = (tag) => { const el = create(tag); anchors.push(el); return el; };
@@ -601,6 +605,7 @@ let made = null;
  page.submit();await page.settle();
  check('PHP2Shell submits only the explicit company/domain request',sent?.mode==='php2shell'&&sent.company==='Preview Company'&&sent.domain==='example.com'&&!Object.hasOwn(sent,'category')&&page.requests.filter(r=>r==='fetch /api/run').length===1&&!page.requests.some(r=>r.includes('/api/analyze')));
  check('PHP2Shell renders the answer paragraphs and statement status separately',page.document.getElementById('php-answer').textContent===answer.answer&&page.document.getElementById('php-status').textContent.includes('not affected')&&!page.document.getElementById('php-result').classList.contains('hidden')&&page.document.getElementById('result').classList.contains('hidden'));
+ check('PHP2Shell dates read as 23 October 2026, with the record time in UTC',page.document.getElementById('php-meta').textContent==='Preview Company (example.com). Claude, 23 October 2026 UTC.'&&page.document.getElementById('php-status').textContent==='Preview Company: not affected. Record last checked 23 October 2026, 00:00 UTC.'&&page.document.getElementById('php-statement').textContent==='Company statement, 23 October 2026'&&isoInView(page).length===0,page.document.getElementById('php-meta').textContent+' / '+page.document.getElementById('php-status').textContent);
  check('the mode selector is available again after the PHP2Shell result',page.document.getElementById('check-mode').disabled===false);
 }
 

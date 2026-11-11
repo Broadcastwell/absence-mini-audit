@@ -33,7 +33,7 @@ const LEFT = new Set([
   "Delivery and refund terms.",
   "Read the dated delivery and refund terms."
 ]);
-const REFUND = /refund|money back|back if|full \$|credited|cancel/i;
+const REFUND = /refund|money back|back if|full \$|credited|cancel|guarantee|reimburs|\bback\b/i;
 
 const visible = (html) => html
   .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, " ")
@@ -54,8 +54,11 @@ const jsonLdStrings = (html) => {
 };
 
 test("item 2: every refund sentence on the page, in its JSON-LD and in llms.txt is the owner's sentence or a listed exception", () => {
+  // Attribute text a reader or a machine meets too: the head's description and social tags, labels, alt text.
+  const attributes = [...PAGE.matchAll(/\s(?:content|aria-label|title|alt|placeholder)="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
   const found = [
     ...sentences(visible(PAGE)),
+    ...attributes.flatMap((s) => sentences(s)),
     ...jsonLdStrings(PAGE).flatMap((s) => sentences(s)),
     ...sentences(LLMS.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/^[-#>] ?/gm, "").replace(/: /g, ".\n"))
   ].filter((s) => REFUND.test(s));

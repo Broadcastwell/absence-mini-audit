@@ -21,6 +21,8 @@
  * 6. The served brand files under public/assets/brand/, byte for byte from vendor/brand/.
  * 7. The sha256 hashes of the inline script, the inline style block and the font rule in every
  *    policy in public/_headers, and lib/headers.js from its "/*" block.
+ * 8. The page's JSON-LD: the one Broadcastwell Organization of scripts/entity.mjs first in the graph,
+ *    and every other mention of the company a reference to it by @id (brief 13.4).
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
@@ -28,6 +30,7 @@ import { createHash } from "node:crypto";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderChrome, SHARED_NAV } from "./site-chrome.mjs";
+import { withOrganizationInPage } from "./entity.mjs";
 
 const path = (p) => fileURLToPath(new URL("../" + p, import.meta.url));
 // Editors can write CRLF even with .gitattributes. Hash the LF bytes browsers parse.
@@ -103,7 +106,7 @@ const hash = (text) => "'sha256-" + createHash("sha256").update(text, "utf8").di
 export async function expected({ sharedNav = SHARED_NAV } = {}) {
   const files = {};
   // The page.
-  let page = textFile("public/index.html");
+  let page = withOrganizationInPage(textFile("public/index.html"));
   page = between(page, "/* brand: begin */", "/* brand: end */", "", "public/index.html").replace("/* brand: begin *//* brand: end */", brandBlock());
   page = chrome(page, "https://audit.broadcastwell.com/", "public/index.html", sharedNav);
   page = between(page, "<!-- sample record: begin -->", "<!-- sample record: end -->", await sampleRecord(), "public/index.html");

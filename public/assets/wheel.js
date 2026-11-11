@@ -83,7 +83,7 @@
         if (named[id] !== true && named[id] !== false && named[id] !== null) problems.push("spoke " + (i + 1) + " engine " + id + " must be true, false or null");
       });
     });
-    ["release", "base", "source_url", "source_label"].forEach(function (key) {
+    ["release", "base", "source_url", "source_label", "count_unit"].forEach(function (key) {
       if (data[key] !== undefined && typeof data[key] !== "string") problems.push(key + " must be text");
     });
     // The brand's own rules for any record it draws (a client's record is never drawn, the
@@ -141,10 +141,23 @@
     return measured.length === 5 ? "Five engines" : measured.length + " engines";
   }
 
+  // A record whose marks are not single answers names its own unit (count_unit), so the count and
+  // its base agree: each mark of the Kalvenor sample is a question on one engine, filled when the
+  // company was named in at least 2 of that pair's 3 runs. Without one, a mark is one valid answer.
+  function inUnit(drawn, unit) {
+    if (!unit) return drawn;
+    var safe = esc(unit), out = {};
+    Object.keys(drawn).forEach(function (key) {
+      var value = drawn[key];
+      out[key] = typeof value !== "string" ? value : value.replace(/ of (\d+) valid answers( to )?/g, function (all, n, to) { return " of " + n + " " + safe + (to ? " across " : ""); });
+    });
+    return out;
+  }
+
   /** The brand drawing of the contract data. Options: id (unique per page), animate, wide, note. */
   function draw(data, options) {
     var o = options || {};
-    return brand().draw(record(data), { id: o.id || o.idPrefix || "bw-wheel", animate: o.animate === true, wide: o.wide === true, note: o.note });
+    return inUnit(brand().draw(record(data), { id: o.id || o.idPrefix || "bw-wheel", animate: o.animate === true, wide: o.wide === true, note: o.note }), data.count_unit);
   }
 
   // The wheel form as a standalone image: the brand's SVG with a namespace and a size.
@@ -194,7 +207,7 @@
     var kind = data.sample ? SAMPLE_LABEL : FREE_CHECK;
     var head = data.sample ? "A full shortlist wheel, five engines" : "Is " + data.brand + " on the AI shortlist?";
     var sub = data.sample
-      ? "Kalvenor Systems is a fictional company. Named in " + stats.total.named + " of " + stats.total.of + " answers about " + data.category + "."
+      ? "Kalvenor Systems is a fictional company. Named in " + stats.total.named + " of " + stats.total.of + " " + (data.count_unit || "answers") + " about " + data.category + "."
       : engine + " named " + data.brand + " in " + stats.total.named + " of " + stats.total.of + " buyer answers about " + data.category + ".";
     var out = ['<rect width="' + W + '" height="' + H + '" fill="' + c.paper + '"/>', '<rect width="' + W + '" height="' + num(4 * s) + '" fill="' + c.accent + '"/>'];
     var wide = W / H >= 1.4, wheelSize, wx, wy, colW, x = pad, y;

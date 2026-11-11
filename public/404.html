@@ -441,12 +441,19 @@ main p:last-child { margin-bottom: 0; }
 .page { padding-block: var(--bw-space-64) var(--bw-space-96); }
 .audit-grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--bw-space-48); align-items: start; }
 .audit-grid > * { min-width: 0; }
+/* At 1024 px and up every second column starts on one grid line, column 7 (x=732 at 1440), on the front
+   door and on the result alike (art director's live round 2, point 8). The front door fills both columns
+   down the page (point 7): the intro and the sections that explain the check on the left; the check, then
+   the repair offer and the privacy note on the right. The last row is flexible, so neither column waits
+   for the other to end. A result spans the whole grid. */
 @media (min-width: 1024px) {
-  .audit-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--bw-layout-gutter); row-gap: 0; }
+  .audit-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto 1fr; column-gap: var(--bw-layout-gutter); row-gap: 0; }
   .intro { grid-column: 1 / span 6; grid-row: 1; }
-  .detail { grid-column: 1 / span 6; grid-row: 2; padding-top: var(--bw-space-16); }
-  .form-column { grid-column: 8 / span 5; grid-row: 1 / span 2; }
-  .audit-grid.has-result .form-column, .audit-grid.php-mode .form-column { grid-column: 1 / span 8; grid-row: 1; }
+  .detail { grid-column: 1 / span 6; grid-row: 2 / span 2; padding-top: var(--bw-space-48); }
+  .detail.detail-side { grid-column: 7 / span 6; grid-row: 3; }
+  .form-column { grid-column: 7 / span 6; grid-row: 1 / span 2; }
+  .audit-grid.has-result .form-column { grid-column: 1 / -1; grid-row: 1; }
+  .audit-grid.php-mode .form-column { grid-column: 1 / span 8; grid-row: 1; }
   .audit-grid.php-mode .intro { grid-column: 1 / span 8; }
   .audit-grid.php-mode .form-column { grid-row: 2; margin-top: var(--bw-space-32); }
 }
@@ -478,9 +485,17 @@ main h3 { margin: 0 0 var(--bw-space-8); font-family: var(--bw-font-sans); font-
 .sample-record { margin-top: var(--bw-space-24); }
 .faq details { border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
 .faq details:last-child { border-bottom: var(--bw-stroke-hairline) solid var(--bw-color-line); }
-.faq summary { display: list-item; min-height: var(--bw-layout-control-height); padding: var(--bw-space-12) 0; color: var(--bw-color-ink); font-weight: var(--bw-weight-semibold); cursor: pointer; }
+/* One disclosure everywhere, as the Framer pages draw it (art director's live round 2, point 19): the
+   question in 20 px semibold, a 16 px chevron on the right that turns when the answer is open, no native
+   triangle. The preview of the ten questions and "Read the full answer" take the same chevron. */
+.faq summary { display: flex; align-items: baseline; justify-content: space-between; gap: var(--bw-space-24); min-height: var(--bw-layout-control-height); padding-block: var(--bw-space-16); color: var(--bw-color-ink); font-size: var(--bw-text-20); line-height: var(--bw-leading-20); font-weight: var(--bw-weight-semibold); cursor: pointer; list-style: none; }
 .faq summary:hover { color: var(--bw-color-accent); }
+.faq summary::-webkit-details-marker, .preview summary::-webkit-details-marker, .answer-disclosure summary::-webkit-details-marker { display: none; }
+.faq summary::after, .preview summary::after, .answer-disclosure summary::after { content: ""; flex: none; width: var(--bw-space-16); height: var(--bw-space-16); background: var(--bw-color-ink-secondary); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; transition: transform var(--bw-motion-short) var(--bw-motion-easing); }
+.faq details[open] > summary::after, .preview[open] > summary::after, .answer-disclosure[open] > summary::after { transform: rotate(180deg); }
+.faq summary:focus-visible, .preview summary:focus-visible, .answer-disclosure summary:focus-visible { outline: var(--bw-focus-width) var(--bw-focus-style) var(--bw-focus-color); outline-offset: var(--bw-focus-offset); }
 .faq details p { margin: 0 0 var(--bw-space-16); }
+.faq details p:last-child { margin-bottom: var(--bw-space-24); }
 .offer-state { color: var(--bw-color-ink); }
 
 /* The check: a tool a visitor picks up, so a card (hairline, radius 8). */
@@ -501,7 +516,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .reading-note { margin: var(--bw-space-12) 0 0; }
 .confirm { margin-top: var(--bw-space-24); padding-top: var(--bw-space-24); border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
 .confirm h3 { margin-bottom: var(--bw-space-4); }
-.read { margin: var(--bw-space-16) 0 var(--bw-space-4); padding: var(--bw-space-16); border-left: var(--bw-stroke-rule) solid var(--bw-color-data-blue); background: var(--bw-color-panel); border-radius: 0 var(--bw-radius-4) var(--bw-radius-4) 0; }
+.read { margin: var(--bw-space-16) 0 var(--bw-space-4); padding: var(--bw-space-16); border-left: var(--bw-stroke-rule) solid var(--bw-color-data-blue); background: var(--bw-color-panel); border-radius: 0; }
 .read p { margin: 0; }
 .read .read-title { color: var(--bw-color-ink); font-weight: var(--bw-weight-semibold); }
 .read .read-desc { margin-top: var(--bw-space-4); }
@@ -511,12 +526,12 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .chip:active { border-color: var(--bw-color-accent-deep); background: var(--bw-color-panel); }
 .chip[aria-pressed="true"] { background: var(--bw-color-panel); border-color: var(--bw-color-accent); color: var(--bw-color-accent-deep); font-weight: var(--bw-weight-medium); }
 .chip[aria-pressed="true"]::before { content: "\2713"; margin-right: var(--bw-space-8); }
-.preview { margin-top: var(--bw-space-16); border: var(--bw-stroke-hairline) solid var(--bw-color-line); border-radius: var(--bw-radius-4); }
-.preview summary { display: list-item; min-height: var(--bw-layout-control-height); padding: var(--bw-space-12); color: var(--bw-color-ink); font-weight: var(--bw-weight-semibold); cursor: pointer; }
+.preview { margin-top: var(--bw-space-16); border: var(--bw-stroke-hairline) solid var(--bw-color-line); border-radius: 0; }
+.preview summary { display: flex; align-items: baseline; justify-content: space-between; gap: var(--bw-space-24); min-height: var(--bw-layout-control-height); padding: var(--bw-space-12); color: var(--bw-color-ink); font-weight: var(--bw-weight-semibold); cursor: pointer; list-style: none; }
 .preview ol { margin: 0; padding: 0 var(--bw-space-16) var(--bw-space-16) var(--bw-space-48); }
 .preview li { margin: var(--bw-space-4) 0; }
 .card-note { margin: var(--bw-space-12) 0 0; }
-.engine-note { margin: var(--bw-space-16) 0 0; padding: var(--bw-space-16); background: var(--bw-color-panel); border-radius: var(--bw-radius-4); color: var(--bw-color-ink); }
+.engine-note { margin: var(--bw-space-16) 0 0; padding: var(--bw-space-16); background: var(--bw-color-panel); border-radius: 0; color: var(--bw-color-ink); }
 
 /* Buttons: one filled primary, one outlined secondary, one text style (the brand's three). */
 .primary, .cta, .small-button, .outline-button, .php-buy { display: inline-flex; align-items: center; justify-content: center; gap: var(--bw-space-8); min-height: var(--bw-layout-control-height); padding: var(--bw-space-12) var(--bw-space-24); border: var(--bw-stroke-hairline) solid var(--bw-color-accent); border-radius: var(--bw-radius-4); font-family: var(--bw-font-sans); font-size: var(--bw-text-16); line-height: var(--bw-leading-16); font-weight: var(--bw-weight-semibold); text-align: center; text-decoration: none; cursor: pointer; transition: background-color var(--bw-motion-short) var(--bw-motion-easing), border-color var(--bw-motion-short) var(--bw-motion-easing), color var(--bw-motion-short) var(--bw-motion-easing); }
@@ -554,7 +569,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .message h3 { margin-bottom: var(--bw-space-8); color: var(--bw-color-notice-ink); }
 .message p { margin: 0 0 var(--bw-space-8); color: var(--bw-color-ink); }
 .message p:last-child { margin-bottom: 0; }
-.shared-note { margin: 0 0 var(--bw-space-24); padding: var(--bw-space-16); background: var(--bw-color-panel); border-radius: var(--bw-radius-4); color: var(--bw-color-ink); }
+.shared-note { margin: 0 0 var(--bw-space-24); padding: var(--bw-space-16); background: var(--bw-color-panel); border-radius: var(--bw-radius-12); color: var(--bw-color-ink); }
 
 /* The result: a measurement report. Sections ruled by hairlines, the answer record first. */
 .result { margin-top: 0; padding: 0; border: 0; border-radius: 0; }
@@ -591,8 +606,8 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .q-receipt p { margin: var(--bw-space-4) 0 0; overflow-wrap: anywhere; }
 .q-excerpt { color: var(--bw-color-ink); }
 .q-sources a { display: inline-flex; align-items: center; min-height: var(--bw-layout-target-min); margin-right: var(--bw-space-12); overflow-wrap: anywhere; }
-.answer-disclosure { margin-top: var(--bw-space-12); padding: var(--bw-space-4) var(--bw-space-16) var(--bw-space-12); background: var(--bw-color-canvas); border-radius: var(--bw-radius-4); }
-.answer-disclosure summary { display: flex; align-items: center; min-height: var(--bw-layout-control-height); color: var(--bw-color-accent); font-weight: var(--bw-weight-semibold); cursor: pointer; }
+.answer-disclosure { margin-top: var(--bw-space-12); padding: var(--bw-space-4) var(--bw-space-16) var(--bw-space-12); background: var(--bw-color-canvas); border-radius: 0; }
+.answer-disclosure summary { display: flex; align-items: center; justify-content: space-between; gap: var(--bw-space-24); min-height: var(--bw-layout-control-height); color: var(--bw-color-accent); font-weight: var(--bw-weight-semibold); cursor: pointer; list-style: none; }
 .answer-full { white-space: pre-wrap; overflow-wrap: anywhere; }
 /* Ask the engine yourself: one label above the rows, then three text links under each question.
    The page builds them only when a result is drawn. Each link is a 40 px target with a hover state
@@ -609,7 +624,8 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
 .buy-path { padding-block: var(--bw-space-32); border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
 .buy-path h2 { margin-bottom: var(--bw-space-16); }
 .keep { margin-top: var(--bw-space-32); padding-top: var(--bw-space-24); border-top: var(--bw-stroke-hairline) solid var(--bw-color-line); }
-.email-card { margin-top: var(--bw-space-32); }
+.keep h3 { margin-bottom: var(--bw-space-24); }
+.email-card { margin-top: var(--bw-space-32); border-radius: var(--bw-radius-12); }
 .email-card label { margin-top: var(--bw-space-16); }
 .php-answer { white-space: pre-wrap; overflow-wrap: anywhere; }
 #php-fields .hint { margin-bottom: 0; }
@@ -620,6 +636,7 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .audit-grid { row-gap: var(--bw-space-32); }
   .lede { margin-top: var(--bw-space-16); font-size: var(--bw-text-16); line-height: var(--bw-leading-16); }
   .card { padding: var(--bw-space-16); }
+  .card.result { padding: 0; }
   .card-eyebrow { display: none; }
   .card label { margin-top: var(--bw-space-16); }
   .primary { margin-top: var(--bw-space-16); }
@@ -630,6 +647,29 @@ select:disabled, input:disabled { background: var(--bw-color-canvas); color: var
   .export-actions .small-button, #link-copy { width: 100%; padding-inline: var(--bw-space-8); }
   .link-row { flex-direction: column; }
   .report-section { padding-block: var(--bw-space-24); }
+}
+/* The result at 1024 px and up spans the grid and fills both columns (art director's live round 2, points
+   7 and 8): the score beside its answer record, each bar graphic beside its caption, the ten questions in two
+   columns, the next steps beside what the check is and is not, the repair beside keep and share, and the
+   email form beside its note. Every second column starts at column 7. */
+@media (min-width: 1024px) {
+  #result { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--bw-layout-gutter); align-items: start; }
+  #result > * { grid-column: 1 / -1; min-width: 0; }
+  #result > .next-steps { grid-column: 1 / span 6; }
+  #result > .report-scope { grid-column: 7 / span 6; }
+  .report-score, .buy-path, .result .report-figure { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--bw-layout-gutter); }
+  .report-score { grid-template-rows: repeat(7, auto) 1fr; }
+  .report-score > *, .buy-path > * { grid-column: 1 / span 6; min-width: 0; }
+  .report-score > .result-record { grid-column: 7 / span 6; grid-row: 1 / -1; margin: 0; }
+  .buy-path { grid-template-rows: repeat(9, auto) 1fr; }
+  .buy-path > .keep { grid-column: 7 / span 6; grid-row: 1 / -1; margin-top: 0; padding-top: 0; border-top: 0; }
+  .result .report-figure > .report-chart { grid-column: 1 / span 6; grid-row: 1; min-width: 0; }
+  .result .report-figure > .report-caption { grid-column: 7 / span 6; grid-row: 1; margin-top: 0; }
+  .result .report-figure > .report-table { grid-column: 1 / span 6; grid-row: 2; min-width: 0; }
+  .result .question-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--bw-layout-gutter); }
+  #email-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--bw-layout-gutter); align-items: start; }
+  #email-form > * { grid-column: 1; }
+  #email-form > .hint { grid-column: 2; grid-row: 1 / span 4; margin-top: var(--bw-space-16); }
 }
 /* Today's navigation keeps its priced action, which is longer than the shared Start free: on a
    narrow phone that bar keeps the wordmark and the menu, and the action stands first in the menu.

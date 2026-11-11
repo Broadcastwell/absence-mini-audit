@@ -8,6 +8,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
+import { SHARED_NAV } from "../scripts/site-chrome.mjs";
 
 let passed = 0, failed = 0;
 function check(name, ok, detail = "") {
@@ -67,7 +68,7 @@ const publicRoot = root("public/");
 const served = publicFiles(publicRoot).filter((path) => TEXT_FILE.test(path));
 const withoutData = (text) => text.replace(/data:[a-z0-9.+\/-]+;base64,[A-Za-z0-9+\/=]+/gi, "data:");
 check("the scan covers the page, the frame, robots.txt, the sitemap, the social cards, the wheel module and the sample wheel",
-  ["index.html", "embed.html", "robots.txt", "sitemap.xml", "absence-mini-audit-2026-09.svg", "wheel.js", "kalvenor-wheel.svg", "kalvenor-wheel.json"].every((name) => served.some((path) => path.endsWith(name))), served.length + " files");
+  ["index.html", "embed.html", "robots.txt", "sitemap.xml", "absence-mini-audit-2026-11.svg", "wheel.js", "kalvenor-wheel.svg", "kalvenor-wheel.json"].every((name) => served.some((path) => path.endsWith(name))), served.length + " files");
 for (const path of served) {
   const found = hits(withoutData(readFileSync(path, "utf8")));
   check("served file " + relative(publicRoot, path).split("\\").join("/") + " carries none of the banned words", found.length === 0, found.join(" | "));
@@ -90,7 +91,10 @@ check("no em dash, en dash or double hyphen in anything a visitor reads", dashes
 
 // The offers the ruling allows, in its words.
 const buyLinks = [...page.matchAll(/https:\/\/broadcastwell\.com\/buy\/[a-z0-9-]*/g)].map((match) => match[0]);
-check("all four purchase controls use the approved Answer Repair switch", (page.match(/<a[^>]+href="https:\/\/broadcastwell\.com\/buy\/answer-repair"[^>]*>/g)||[]).length === 4 && buyLinks.length>=4 && buyLinks.every(url=>url === "https://broadcastwell.com/buy/answer-repair"), [...new Set(buyLinks)].join(","));
+// Three in the page itself, and today's header action three times while SHARED_NAV is off (the desktop
+// bar, the phone bar and the opened phone menu draw the same link; one shows at a time).
+const headerBuys = SHARED_NAV ? 0 : 3;
+check("every purchase control uses the approved Answer Repair switch", (page.match(/<a[^>]+href="https:\/\/broadcastwell\.com\/buy\/answer-repair"[^>]*>/g)||[]).length === 3 + headerBuys && (page.match(/<a[^>]+href="https:\/\/broadcastwell\.com\/buy\/answer-repair"[^>]*data-buy[^>]*>/g)||[]).length === 3 + headerBuys && buyLinks.length>=3 && buyLinks.every(url=>url === "https://broadcastwell.com/buy/answer-repair"), [...new Set(buyLinks)].join(","));
 const CREDIT = "The $490 credits once against the $3,900 Fix Sprint within 30 days of delivery, so the Sprint is $3,410.";
 check("the public page has no credit or retired Sprint price promotion", !/credits once|\$2,900|\$2,410|\$3,900|\$3,410/.test(visible) && !/\bcredit/i.test(ldStrings.join("\n")), "no retired credit promotion");
 const said = [visible, ldStrings.join("\n")].join("\n");

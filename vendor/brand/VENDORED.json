@@ -1,0 +1,53 @@
+{
+  "package": "Broadcastwell brand system",
+  "version": "3.0.1",
+  "built_at": "2026-11-11T00:58:22.311Z",
+  "source_commit": "5b05514f1c297b156932762b58899bcd33f100ea",
+  "synced_by": "vendor/brand/sync.mjs",
+  "files": {
+    "tokens.css": {
+      "from": "public/assets/brand/tokens.css",
+      "sha256": "b93058b230f86c336b92397ed8d5586c881e9201f4a0328933973da89f2eb028"
+    },
+    "components.css": {
+      "from": "public/assets/brand/components.css",
+      "sha256": "70774faa175e0dc7c20d6d971a6c40c668ccb7e74a886359bc3e5d03241171c8"
+    },
+    "nav.js": {
+      "from": "public/assets/brand/nav.js",
+      "sha256": "e0b03faecee8107573dc1025e279e87be103e2e24a5fcbb620cbbe63018428d1"
+    },
+    "answer-record.js": {
+      "from": "public/assets/brand/answer-record.js",
+      "sha256": "ae793891d6fcf8621ded93203094554659d40ea5aff22302db04d680f392281a"
+    },
+    "answer-record.mjs": {
+      "from": "brand/answer-record.mjs",
+      "sha256": "e2734881e9d9405ca026e0fce380ea879d04448aeeb53d4446bb6de771019475"
+    },
+    "nav.json": {
+      "from": "brand/nav.json",
+      "sha256": "3314ad56ed5ce8f42ba3bec66713d41c4e6672916f4c6c0cd7152ef8ee5135f3"
+    },
+    "nav-render.mjs": {
+      "from": "brand/nav-render.mjs",
+      "sha256": "3674fa55af88b3f16cd9912928c2046842794f1ff4f4450cc31f522013866654"
+    },
+    "fonts/geist-latin-var.woff2": {
+      "from": "public/assets/brand/fonts/geist-latin-var.woff2",
+      "sha256": "6ba2ee738a5770309a1a3f0488ff3d9024f9cc80aa49bf7c9b1c7d1ac7b9af66"
+    },
+    "fonts/newsreader-headline-latin.woff2": {
+      "from": "public/assets/brand/fonts/newsreader-headline-latin.woff2",
+      "sha256": "fa97b3c0246a913f5e7ef7b7c176df27fbacb9cb0e9cff1efd3970f3dddb98e0"
+    },
+    "fonts/LICENSE-Geist-OFL.txt": {
+      "from": "public/assets/brand/fonts/LICENSE-Geist-OFL.txt",
+      "sha256": "1781d2806a07d91c4edf4740b88449fab7d0eadad53f7c351b94cd4d4eb8c00f"
+    },
+    "fonts/LICENSE-Newsreader-OFL.txt": {
+      "from": "public/assets/brand/fonts/LICENSE-Newsreader-OFL.txt",
+      "sha256": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8"
+    }
+  }
+}

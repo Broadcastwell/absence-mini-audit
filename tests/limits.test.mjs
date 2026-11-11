@@ -10,6 +10,7 @@ import audit, { previewHost } from "../lib/audit.js";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
+import { SHARED_NAV, SHARED, LEGACY, DISCLOSURE, ALLOWANCE } from "../scripts/site-chrome.mjs";
 import { fileURLToPath } from "node:url";
 
 function fakeKV(seed = {}) {
@@ -82,7 +83,7 @@ const PUBLISHED = [
   "That does not look like a valid email address.",
   "You have already run today's check for this address. Read the chapter your result pointed to, or start with the $490 Answer Repair.",
   "Runs are limited per network and per day. This network's allowance resets at 00:00 UTC.",
-  "Today's free checks have all been used. Come back after 00:00 UTC, or start with the $490 Answer Repair.",
+  "This check has reached the site's daily limit, so this attempt was not counted. Start with the $490 Answer Repair.",
   "Claude did not answer all ten questions. This check was not counted. Try again in a few minutes, or start with the $490 Answer Repair.",
 ];
 
@@ -336,7 +337,12 @@ const body = (n) => ({ category: "field service management software", company: "
 // No user-visible string names the paid product by a retired name.
 {
   const strings = Object.values(PUBLISHED).join("\n");
-  check("no published refusal uses a retired product name", !/four-engine audit|Four-Engine AI Visibility Audit|four-engine Diagnostic/i.test(strings), "name scan");
+  check("no published refusal uses a retired product name", !/four-engine audit|Four-Engine AI Visibility Audit|four-engine Diagnostic|Category Audit/i.test(strings), "name scan");
+  // The free check's lane stop is a running total with no reset date (owner ruling R-132), so the
+  // site-wide refusals never promise a time when the check runs again; only a network's own
+  // allowance states its reset, which stays true under that stop.
+  const sitewide = PUBLISHED.filter((message) => /site's daily limit|did not answer/.test(message));
+  check("no site-wide refusal promises a time when the check runs again", sitewide.length === 2 && sitewide.every((message) => !/come back|reopen|tomorrow|\bUTC\b|\d{1,2}:\d{2}/i.test(message)), sitewide.join(" | "));
 }
 
 function publicFiles(folder) {
@@ -354,24 +360,31 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("public copy contains no banned dash characters", !/[\u2013\u2014]|&(?:mdash|ndash|#8211|#8212);/i.test(copy), "dash scan");
   check("public copy has no independent dark-mode switch", !/prefers-color-scheme\s*:\s*dark/i.test(copy), "theme scan");
   check("public copy keeps the user-visible engine free of model strings", !/sonar-pro/i.test(copy), "model scan");
-  // The dark theme values are the ones the marketing site serves: ground, raised panel, heading, body and muted text.
-  const allowedColours = new Set([
-    "#E3E8EF", "#2C3036", "#434A55", "#667085",
-    "#111827", "#475569", "#BFDBFE", "#1D4ED8", "#3B82F6", "#EFF6FF", "#FFFFFF", "#94A3B8", "#1E40AF",
-    "#0A0A0B", "#0A0E1A", "#F8FAFC", "#CBD5E1",
-    "#F7F9FC", "#EFF4FB", "#101828", "#475467", "#D5DDE8", "#98A2B3",
-    // The site navy behind the wheel and the card rule of the site (release review, 26 September 2026).
-    "#111727", "#E2E8F0"
-  ]);
+  // The brand palette (brand system 3): every color a served file carries is a value of
+  // vendor/brand/tokens.css. The two destructive values, a red the brand keeps for the signed-in app,
+  // appear only as token definitions inside the vendored brand block, and nothing on this site uses them.
+  const tokenCss = readFileSync(fileURLToPath(new URL("../vendor/brand/tokens.css", import.meta.url)), "utf8");
+  const tokenColours = new Map([...tokenCss.matchAll(/--bw-color-([a-z-]+):(#[0-9A-F]{6})/gi)].map((m) => [m[2].toUpperCase(), m[1]]));
+  const red = [...tokenColours].filter(([, name]) => name.startsWith("destructive")).map(([hex]) => hex);
   const colours = [...copy.matchAll(/#[0-9a-f]{6}/gi)].map((match) => match[0].toUpperCase());
-  check("public copy uses only the approved blue and neutral palette", colours.every((colour) => allowedColours.has(colour)), colours.join(","));
+  check("public copy uses only the brand palette", tokenColours.size >= 12 && colours.length > 0 && colours.every((colour) => tokenColours.has(colour)), [...new Set(colours.filter((colour) => !tokenColours.has(colour)))].join(","));
+  const outsideTokens = textPaths.map((path) => readFileSync(path, "utf8").replace(/:root\{--bw-color-paper[^}]*\}/g, "").replace(/\.bw-app \.bw-button--destructive[^}]*\}/g, "")).join("\n");
+  check("no red: the destructive values are token definitions only, and nothing on this site uses them", red.length === 2 && red.every((hex) => !outsideTokens.toUpperCase().includes(hex)) && !/var\(--bw-color-destructive/.test(outsideTokens), red.join(","));
 }
 
 // The audit tool uses the shared light reading surface and the published offers.
 {
   const page = readFileSync(fileURLToPath(new URL("../public/index.html", import.meta.url)), "utf8");
-  check("the page uses the shared light surface and readable ink", /--bw-canvas:\s*#F7F9FC/i.test(page) && /--bw-ink:\s*#101828/i.test(page) && /--bw-muted:\s*#475467/i.test(page), "token scan");
-  check("the page aliases the shared surface tokens", /--ground:\s*var\(--bw-canvas\)/.test(page) && /--body:\s*var\(--bw-muted\)/.test(page), "shared tokens");
+  check("the page uses the brand's one light theme: paper, ink and the accent", /--bw-color-paper:#FFFFFF/.test(page) && /--bw-color-ink:#0B1220/.test(page) && /--bw-color-accent:#1D4ED8/.test(page) && page.includes("body { margin: 0; background: var(--bw-color-paper); color: var(--bw-color-ink); }") && /<html lang="en" class="bw-page">/.test(page), "token scan");
+  check("the page's short names alias brand tokens and nothing else", /--blue: var\(--bw-color-accent\);/.test(page) && /--ink: var\(--bw-color-ink\);/.test(page) && /--muted: var\(--bw-color-ink-secondary\);/.test(page) && /--line: var\(--bw-color-line\);/.test(page) && /--tint: var\(--bw-color-panel\);/.test(page), "shared tokens");
+  // The token census of the page's own rules (everything after the vendored brand block): no color
+  // literal, every font size on the scale, every family a brand family, every radius a brand radius.
+  const own = page.slice(page.indexOf("/* brand: end */"), page.indexOf("</style>"));
+  const values = (property) => [...own.matchAll(new RegExp("(?:^|[;{\\s])" + property + ":\\s*([^;}]+)", "g"))].map((m) => m[1].trim());
+  check("the page's own rules carry no color literal", own.length > 2000 && !/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i.test(own.replace(/url\("data:[^"]*"\)/g, "")), "color census");
+  check("every font size in the page's own rules is a step of the type scale", values("font-size").length > 10 && values("font-size").every((v) => /^var\(--bw-text-(13|16|20|25|31|39|49|61)\)$/.test(v)), values("font-size").filter((v) => !/^var\(--bw-text-/.test(v)).join(" | "));
+  check("every font family in the page's own rules is Geist or Newsreader", values("font-family").length > 2 && values("font-family").every((v) => /^var\(--bw-font-(sans|display)\)$/.test(v)), values("font-family").join(" | "));
+  check("every radius in the page's own rules is a brand radius", values("border-radius").length > 5 && values("border-radius").every((v) => v.split(/\s+/).every((part) => /^(0|var\(--bw-radius-(4|8|12)\))$/.test(part))), values("border-radius").join(" | "));
   check("the running state states the measured wait", page.includes("Allow about 40 seconds. We return a result only when all ten questions have answers."), "running copy");
   check("the running state is announced politely", /id="working"[^>]*aria-live="polite"/.test(page), "aria-live");
   check("the result and the refusal both scroll into view", (page.match(/scrollIntoView/g) || []).length >= 3, "scrollIntoView");
@@ -390,29 +403,35 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the engine may be named and no model string appears", /Named engine: Claude/.test(page) && !/claude-(?:sonnet|haiku)|sonar-pro/i.test(page), "engine naming");
   check("both paid surfaces link to the published price ladder", (pageBody.match(/https:\/\/broadcastwell\.com\/pricing/g) || []).length === 2, "price ladder link");
 
-  // The shell the three subdomains share with the site.
-  const head = page.slice(page.indexOf("<header"), page.indexOf("</header>"));
-  const foot = page.slice(page.indexOf("<footer"), page.indexOf("</footer>"));
-  check("the header carries six site destinations, Sign in and the outlined Audit action",
-    head.includes('class="bw-shared-wordmark" href="https://broadcastwell.com/"')
-    && ['Product','Research','Free tools','Pricing','Exchange','Company'].every(label=>head.includes('>'+label+'</a>'))
-    && head.includes('href="https://app.broadcastwell.com/signin">Sign in<')
-    && head.includes('class="bw-shared-audit" href="https://broadcastwell.com/buy/answer-repair">Fix one answer, $490</a>'), "header shell");
+  // The shell: today's links drawn in the brand markup while SHARED_NAV is off (brief 11.1), the shared
+  // brand/nav.json while it is on. Every check here holds in the committed state of the switch.
+  const head = page.slice(page.indexOf('<header class="bw-site-nav"'), page.indexOf("</header>"));
+  const foot = page.slice(page.indexOf('<footer class="bw-site-footer"'), page.indexOf("</footer>"));
+  const desktop = [...((/<ul class="bw-site-nav__list">([\s\S]*?)<\/ul><\/nav>/.exec(head) || ["", ""])[1]).matchAll(/<(?:a|summary) class="bw-site-nav__trigger[^"]*"[^>]*>([^<]+)</g)].map((m) => m[1]);
+  const data = SHARED_NAV ? SHARED : LEGACY;
+  check("the header carries the navigation of the committed switch, in order, with its sign in",
+    head.includes('class="bw-logotype" href="https://broadcastwell.com/"') && desktop.join(",") === data.items.map((item) => item.label).join(",")
+    && head.includes('<a class="bw-site-nav__action" href="https://app.broadcastwell.com/signin">Sign in</a>'), desktop.join(","));
+  check("today's header keeps its outlined Audit action with its data-buy hook; the shared header has the two doors instead",
+    SHARED_NAV ? head.includes('<a class="bw-button bw-button--secondary" href="https://broadcastwell.com/contact">Talk to us</a>') && head.includes('<a class="bw-button bw-button--primary" href="https://audit.broadcastwell.com/">Start free</a>') && !/buy\/answer-repair/.test(head)
+      : head.includes('<a class="bw-button bw-button--secondary" href="https://broadcastwell.com/buy/answer-repair" data-buy>Fix one answer, $490</a>') && !/bw-button--primary/.test(head), "header shell");
   check("the phone menu is a named native disclosure with Escape handling",
-    head.includes('data-bw-site-menu><summary aria-label="Open Broadcastwell navigation">') && page.includes("event.key === 'Escape'"), "menu semantics");
-  check("the Audit header action remains outlined",
-    /\.bw-shared-audit\s*\{[^}]*background:transparent/.test(page), "secondary offer");
-  check("the footer names the free check with its one engine", foot.includes('href="https://audit.broadcastwell.com/">Free 10-question check (one engine)<'), "footer label");
-  check("the footer has exactly five groups with six links each",
-    (foot.match(/data-bw-footer-group/g)||[]).length===5 && [...foot.matchAll(/<details class="bw-shared-group"[^>]*>([\s\S]*?)<\/details>/g)].every(group=>(group[1].match(/<li>/g)||[]).length===6), "footer groups");
-  check("footer contact, legal links and dated publication line are present",
-    foot.includes('href="tel:+18123457272">(812) 345 7272') && foot.includes('517 E Kirkwood Ave<br>Bloomington, IN 47408')
-    && foot.includes('Copyright 2026 Broadcastwell LLC.') && foot.includes('<time datetime="2026-10-26">')
-    && ['privacy','terms','cookies'].every(slug=>foot.includes('href="https://broadcastwell.com/'+slug+'">')), "footer details");
-  check("the footer preserves the free check's research disclosure above the shared groups",
-    foot.indexOf('Broadcastwell is excluded from its own sample')>=0 && foot.indexOf('Broadcastwell is excluded from its own sample')<foot.indexOf('bw-shared-columns'), "disclosure");
-  check("mobile and desktop footer behavior have explicit breakpoints",page.includes('@media(max-width:809px)') && page.includes("group.open = mobileFooter.matches ? state.mobileOpen : true"),"responsive footer");
+    head.includes('<details class="bw-site-nav__phone" data-bw-phone-menu><summary class="bw-site-nav__menu-button">') && head.includes("<span>Menu</span>") && page.includes('if (event.key !== "Escape" && event.key !== "Esc") return;') && page.includes("closeMenu(inner, true);"), "menu semantics");
+  check("the outlined action is the brand's secondary button: paper, an accent border and accent words",
+    /\.bw-button--secondary\{background:var\(--bw-color-paper\);border-color:var\(--bw-color-accent\);color:var\(--bw-color-accent\)\}/.test(page), "secondary offer");
+  check("the footer names the free check with its one engine, marked as this page", foot.includes('href="https://audit.broadcastwell.com/" aria-current="page">Free 10-question check (one engine)<'), "footer label");
+  const columns = [...foot.matchAll(/<h2 class="bw-site-footer__title" id="[^"]+">([^<]+)<\/h2><ul class="bw-site-footer__list"[^>]*>([\s\S]*?)<\/ul>/g)].map((m) => [m[1], [...m[2].matchAll(/<a [^>]*>([\s\S]*?)<\/a>/g)].map((a) => a[1].replace(/<wbr>/g, ""))]);
+  check(SHARED_NAV ? "the footer carries the five shared columns exactly" : "the footer has exactly five groups with six links each",
+    columns.length === 5 && JSON.stringify(columns) === JSON.stringify(data.footer.columns.map((column) => [column.title, column.links.map((link) => link.label.replace(/&/g, "&amp;"))])) && (SHARED_NAV || columns.every(([, links]) => links.length === 6)), JSON.stringify(columns.map(([title, links]) => title + " " + links.length)));
+  check("footer contact, legal links and the publication line of the committed switch are present",
+    foot.includes('href="tel:+18123457272">(812) 345 7272') && foot.includes('Copyright 2026 Broadcastwell LLC.') && ['privacy','terms','cookies'].every(slug=>foot.includes('href="https://broadcastwell.com/'+slug+'"'))
+    && (SHARED_NAV ? foot.includes("Broadcastwell LLC, 517 E Kirkwood Ave, Bloomington, IN 47408, United States") && !/Last updated|<time/.test(foot) : foot.includes('517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States') && foot.includes('<time datetime="2026-10-26">26 October 2026</time>')), "footer details");
+  check("the free check's research disclosure and limits line stay above the footer columns",
+    page.indexOf(DISCLOSURE) > page.indexOf("</main>") && page.indexOf(DISCLOSURE) < page.indexOf('<nav class="bw-site-footer__columns"') && page.includes(ALLOWANCE), "disclosure");
+  check("the footer and the navigation have explicit brand breakpoints", page.includes("@media (max-width:1023px){.bw-site-footer__columns{grid-template-columns:repeat(3,minmax(0,1fr))}}") && page.includes("@media (max-width:767px){.bw-site-footer__columns{grid-template-columns:repeat(2,minmax(0,1fr))}}") && page.includes("@media (min-width:1024px){.bw-site-nav__bar{gap:var(--bw-space-24)}"), "responsive footer");
   check("no label on the page is set in capitals", !/text-transform:\s*uppercase/i.test(page), "sentence case");
+  // Brief 8.5: no strings of items joined by middle dots, in the markup or in what the script writes.
+  check("no middle-dot string in the page or its script", !/·|&middot;/.test(page), "middle dots");
   check("the header and footer add no third party request",
     !/<script[^>]+src=/i.test(page) && !/<link[^>]+rel="stylesheet"/i.test(page), "no third party");
   check("no retired price or offer term survives in the copy", !/\$3,000|\$6,000|\$5,000|founding|three-month minimum|three month minimum|120 observed|credited against month one|against the first month|starting at|best software in a category/i.test(page), "retired offer scan");
@@ -422,7 +441,7 @@ const TEXT_FILE = /\.(?:html|css|js|mjs|svg|txt|json|xml)$/i;
   check("the question list is hidden until ten real rows arrive", /class="report-section hidden" id="question-block"/.test(page) && /rows\.length !== 10/.test(page) && /block\.classList\.remove\('hidden'\)/.test(page), "question block");
   check("the six published response keys are the ones the page reads", ["tier", "engine", "measured_on", "named", "asked", "chapter"].every((key) => page.includes("data." + key)), "contract keys");
   check("the social card file exists at the declared size", (() => {
-    const png = readFileSync(fileURLToPath(new URL("../public/assets/absence-mini-audit-2026-09.png", import.meta.url)));
+    const png = readFileSync(fileURLToPath(new URL("../public/assets/absence-mini-audit-2026-11.png", import.meta.url)));
     return png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630;
   })(), "png header");
 }
@@ -477,8 +496,12 @@ let failed = 0;
   check("every host the page loads from is named in the policy", policy.includes("https://framerusercontent.com"), "csp hosts");
   // Inter is served from this origin now, so no font CDN should be reachable or named.
   check("no font CDN is loaded or allowed", !/fonts.(googleapis|gstatic).com/.test(page) && !/fonts.(googleapis|gstatic).com/.test(policy) && directives.get("font-src") === "'self'", "csp fonts");
-  check("Geist and both Inter subsets are declared and shipped, from this origin", (inlineBody('style').match(/@font-face/g) || []).length === 3 && ["geist-var.woff2", "inter-latin-var.woff2", "inter-latin-ext-var.woff2"].every(file => page.includes("/assets/fonts/" + file) && existsSync(fileURLToPath(new URL("../public/assets/fonts/" + file, import.meta.url)))) && page.includes('var REPORT_FONT_CSS = "@font-face'), "self hosted faces and offline export font");
-  check("Inter is the page's face and the preloaded local face", page.includes('<link rel="preload" href="/assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>') && (page.match(/font: [^;]*Inter, ui-sans-serif, system-ui, sans-serif/g) || []).length === 5 && !page.includes('font: 17px/1.6 Geist'), "type stack");
+  // Brief 8.8: on first view at most two families and three files, each 60 KB or less, font-display
+  // swap and size-adjusted fallbacks so text does not jump.
+  const faces = [...inlineBody('style').matchAll(/@font-face\{([^}]*)\}/g)].map((m) => m[1]);
+  const fontFiles = [...new Set(faces.flatMap((face) => [...face.matchAll(/url\("([^"]+)"\)/g)].map((m) => m[1])))];
+  check("Geist and Newsreader are declared and shipped from this origin, and no other face", faces.length === 4 && fontFiles.join(",") === "/assets/brand/fonts/geist-latin-var.woff2,/assets/brand/fonts/newsreader-headline-latin.woff2" && fontFiles.every((url) => existsSync(fileURLToPath(new URL("../public" + url, import.meta.url))) && statSync(fileURLToPath(new URL("../public" + url, import.meta.url))).size <= 60 * 1024) && faces.filter((face) => face.includes("url(")).every((face) => face.includes("font-display:swap")) && faces.filter((face) => face.includes("local(")).every((face) => face.includes("size-adjust:")) && !/\bInter\b|inter-latin/.test(page) && page.includes('var REPORT_FONT_CSS = "@font-face{font-family:Geist;'), "self hosted faces and offline export font");
+  check("Geist is the page's face and both first-view faces are preloaded", page.includes('<link rel="preload" href="/assets/brand/fonts/geist-latin-var.woff2" as="font" type="font/woff2" crossorigin>') && page.includes('<link rel="preload" href="/assets/brand/fonts/newsreader-headline-latin.woff2" as="font" type="font/woff2" crossorigin>') && page.includes('--bw-font-sans:"Geist","Geist Fallback",Arial,Helvetica,sans-serif') && page.includes(".bw-page{color:var(--bw-color-ink);background:var(--bw-color-paper);font-family:var(--bw-font-sans);"), "type stack");
 
   check("the started state is named and brought into view", page.includes("Your check has started") && page.includes("working.scrollIntoView"), "started state");
   check("the refusal names itself and its reason in one sentence",
@@ -487,7 +510,7 @@ let failed = 0;
   check("a run that never answers still ends in a stated outcome", page.includes("WAIT_MS") && page.includes("failedAttempt({reason:'unavailable'") && page.includes('attempt===0') && page.includes('runAttempt(payload,1)'), "bounded retry and late outcome");
   check("the page reads the reason word the handler sends", page.includes("outcome.data && outcome.data.reason"), "reason wiring");
 
-  check("the content column matches the shared 1200px container", /\.container\s*\{[^}]*max-width:1200px;[^}]*padding-inline:var\(--bw-gutter\)/.test(page), "container width");
+  check("the content column matches the brand's 1200px container", page.includes(".container { width: 100%; max-width: calc(var(--bw-layout-container) + 2 * var(--bw-layout-margin)); margin-inline: auto; padding-inline: var(--bw-layout-margin); }") && page.includes("--bw-layout-container:1200px"), "container width");
 
   const scriptTags = [...page.matchAll(/<script([^>]*)>/g)].map((match) => match[1].trim());
   check("every script tag is either the one hashed page script or a structured data block",

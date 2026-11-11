@@ -1,15 +1,24 @@
 # The shortlist wheel: data contract
 
-The wheel is one dependency free module, [`public/assets/wheel.js`](public/assets/wheel.js),
-served at `https://audit.broadcastwell.com/assets/wheel.js`. It turns one JSON object into
-SVG. Any surface can adopt it: load the file, build the object below, call `BwWheel.svg` or
-`BwWheel.card`.
+The wheel is one module, [`public/assets/wheel.js`](public/assets/wheel.js), served at
+`https://audit.broadcastwell.com/assets/wheel.js`. It turns one JSON object into the
+Broadcastwell answer record (brand system 3, brief 8.2) and draws it with the brand's own
+function, `BwAnswerRecord.draw`, from
+[`public/assets/brand/answer-record.js`](public/assets/brand/answer-record.js), a byte for byte
+copy of the brand package checked against its `VERSION.json`. Any surface can adopt it: load
+`assets/brand/answer-record.js`, then `assets/wheel.js`, build the object below, call
+`BwWheel.draw`, `BwWheel.svg` or `BwWheel.card`. For the same record the wheel and every other
+surface draw the same marks; `tests/wheel.test.mjs` holds that parity against
+`vendor/brand/answer-record.mjs`.
 
-Rings are engines, five of them, always in this order from the centre out: ChatGPT, Claude,
-Perplexity, Google AI Overviews, Google AI Mode. Spokes are buyer questions. On a measured
-ring a node is filled where the company was named, open where it was not, and dashed where
-the answer did not say. A ring that was not measured is drawn as a faint outline, labelled
-"Measured in the $490 Category Audit". The difference between the marks reads without colour.
+Rings are engines, in this order from the center out: ChatGPT, Claude, Perplexity, Google AI
+Overviews, Google AI Mode. Only measured engines get a ring, so a one-engine Free 10-question
+check draws one ring. Spokes are buyer questions. A mark is filled where the company was named,
+open where it was not, and a short bar where there was no valid answer. The three marks differ
+in shape, so the record reads without color. Every drawing carries its legend, its caption (the
+release, the category, the capture date, the base and the source) and a "Read as a table"
+control; on a phone the table form replaces the wheel whenever its marks would be smaller than
+8 pixels.
 
 ## The object
 
@@ -22,6 +31,9 @@ the answer did not say. A ring that was not measured is drawn as a faint outline
   "measured_on": "2026-07-12",
   "sample": true,
   "sample_url": "https://app.broadcastwell.com/sample",
+  "release": "Fictional measurement sample",
+  "base": "10 of the sample's 35 buyer questions, three runs on each of the five engines; a mark is filled where the company was named in at least 2 of 3 runs",
+  "source_label": "the sample account",
   "summary": { "named": 13, "asked": 50 },
   "engines": [
     { "id": "chatgpt", "measured": true },
@@ -45,57 +57,62 @@ the answer did not say. A ring that was not measured is drawn as a faint outline
 | Field | Required | Meaning |
 |-|-|-|
 | `version` | yes | `1`. A change that breaks a reader gets a new number. |
-| `brand` | yes | The company, as it calls itself. Drawn in the centre. |
+| `brand` | yes | The company, as it calls itself. It is the record's subject. A client's record is never drawn. |
 | `category` | yes | The category in a buyer's words, as the questions were asked. |
 | `website` | no | The company's site. Shown on no image; kept for the reader. |
 | `measured_on` | yes | `YYYY-MM-DD`, the day the answers were collected. |
-| `sample` | yes | `true` for fictional SAMPLE DATA. Every image then says SAMPLE DATA and never names the free check. |
-| `sample_url` | no | Where the sample can be inspected. |
-| `summary` | no | `{ named, asked }` counts for the centre line. Leave it out and the module counts true and false nodes on measured rings; give it when the source reports a count it did not itemise. |
-| `engines` | yes | Exactly five, in the order above, each `{ id, measured }`. |
-| `spokes` | yes | 3 to 12 questions, drawn clockwise from the top in the order given. Adjacent spokes with the same `type_label` share an arc. |
-| `spokes[].question` | yes | The question text, shown on hover, focus and in lists. |
+| `sample` | yes | `true` for the fictional sample. Every drawing then says "Sample data, fictional company" beside the record and never names the free check. The fictional company is drawn only as the sample. |
+| `sample_url` | no | Where the sample can be inspected; the caption's source for a sample. |
+| `release`, `base`, `source_url`, `source_label` | no | The caption. Without them a free check reads "Free 10-question check (one engine)", "N buyer questions, one run on" the engine, and the published method; a sample reads "Fictional measurement sample" and the sample account. |
+| `summary` | no | `{ named, asked }` counts kept from the source. Leave it out and the module counts true and false marks on measured rings. |
+| `engines` | yes | Exactly five, in the order above, each `{ id, measured }`; at least one measured. |
+| `spokes` | yes | 3 to 12 questions, drawn clockwise in the order given. |
+| `spokes[].question` | yes | The question text, shown in the table form. |
 | `spokes[].type` | yes | A short machine word for the question type, for example `best_of`, `alternatives`, `comparison`, `evaluation`, `use_case`, `shortlist`, `role`. |
-| `spokes[].type_label` | no | The words drawn on the arc. Falls back to `type`. Sentence case. |
-| `spokes[].named` | yes | Per engine id: `true` named, `false` not named, `null` measured but not itemised or excluded. An engine left out of the map on a measured ring is drawn as `null`. |
-| `spokes[].named_instead` | no | Up to three names that were given instead. Not drawn on the wheel yet; kept so a reader can show them beside it. |
+| `spokes[].type_label` | no | The type in words, sentence case. Falls back to `type`. |
+| `spokes[].named` | yes | Per engine id: `true` named, `false` not named, `null` no valid answer. An engine left out of the map on a measured ring is drawn as `null`. A count that does not itemise its questions is not a record: `BwWheel.itemised(data)` is false and the page draws nothing. |
+| `spokes[].named_instead` | no | Up to three names that were given instead. Not drawn; kept so a reader can show them beside it. |
 
 Counts only: the module never prints a percentage, a score or a grade.
 
 ## The calls
 
 ```js
-BwWheel.validate(data)                  // [] when usable, else a list of problems
-BwWheel.svg(data, options)              // the wheel alone, a square SVG string
-BwWheel.card(data, { width, height })   // a shareable image with headline, key and footer strip
+BwWheel.validate(data)                  // [] when usable, else a list of problems (the brand's rules included)
+BwWheel.record(data)                    // the answer record the brand draws for this data
+BwWheel.draw(data, { id })              // the brand drawing: html, svg, table, legend, caption, alt, stats
+BwWheel.svg(data, { size, id })         // the wheel form alone, a standalone square SVG string
+BwWheel.card(data, { width, height, fontCss })  // a shareable image with headline, legend and footer strip
 BwWheel.png(svgString, width, height)   // a Promise of a PNG Blob (browser only)
 BwWheel.fromFreeCheck(result, { brand, category, website })  // from a Free 10-question check result
+BwWheel.itemised(data)                  // true when every measured mark is named or not named
+BwWheel.enhance(figure)                 // wires "Read as a table" and the phone rule; returns a cleanup
 ```
 
-`svg` options: `size` (side in px, default 720), `interactive` (focusable nodes, each with an
-`aria-label` naming its question and status), `idPrefix` (unique per wheel on a page),
-`labelScale` (raise when the wheel is shown smaller than 720 px), `nodeScale` (raise on
-phones), `compact` (a phone centre: the name and "N of 10 named" only), `fontCss` (a CSS font face rule; pass it for files that leave the browser so Inter
-travels with them).
-
-`card` draws a footer strip on every image: broadcastwell.com, "Free 10-question check (one
-engine)", the engine, the measured date and "One run on one engine. Answers vary between
-runs." A sample card says SAMPLE DATA and the sample's own caveat instead.
+`card` draws a footer strip on every image, in sentences: broadcastwell.com, "Free 10-question
+check (one engine)", the engine and the measured date, then "One run on one engine. Answers
+vary between runs." A sample card says "Sample data, fictional company" and the sample's own
+caveat instead. `fontCss` is a CSS font face rule; pass it for files that leave the browser so
+Geist travels with them.
 
 The module sets no style attribute and no event handler, so it works under a strict
-Content-Security-Policy: presentation attributes only. Exporting a PNG needs `img-src blob:
-data:` and nothing else.
+Content-Security-Policy: presentation attributes from the brand palette only. Exporting a PNG
+needs `img-src blob: data:` and nothing else.
 
 ## Free check mapping
 
 A Free 10-question check result has ten questions in the upstream's fixed order: three best
 of, three alternatives, two comparison, one evaluation, one use case. `fromFreeCheck` marks
-the Claude ring as measured for current results, retains the measured ring for legacy results, maps `named` to true, `not named` to false and any other
-status to null, and carries the result's own counts in `summary`.
+the Claude ring as measured for current results, retains the measured ring for legacy results,
+maps `named` to true, `not named` to false and any other status to null, and carries the
+result's own counts in `summary`.
 
 ## Sample wheel
 
-`node scripts/build-sample-wheel.mjs` rebuilds `public/assets/sample/kalvenor-wheel.json` and
-`.svg` from the public sample endpoints on app.broadcastwell.com: ten of the sample's 35
-questions across its four types, each node named when the company was named in at least two
-of the three scheduled runs. Kalvenor Systems is fictional.
+`node scripts/build-sample-wheel.mjs` rebuilds `public/assets/sample/kalvenor-wheel.json`,
+`.svg` (the wheel form) and `.png` (the card at 1080 by 1080) from the public sample endpoints
+on app.broadcastwell.com: ten of the sample's 35 questions across its four types, each mark
+named when the company was named in at least two of the three scheduled runs. With `--json` it
+redraws the images from the committed JSON and makes no request. Kalvenor Systems is fictional.
+The page draws the same sample as an inline answer record at build time
+(`scripts/build-page.mjs`).

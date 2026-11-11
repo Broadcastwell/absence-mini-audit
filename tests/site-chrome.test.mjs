@@ -1,131 +1,142 @@
-import {test} from 'node:test';
+// The navigation and footer of audit.broadcastwell.com on brand system 3 (brief 9.1, 9.2, 11.1).
+// Through this branch the page keeps today's links, drawn in the brand markup by
+// scripts/legacy-chrome.mjs; SHARED_NAV in scripts/site-chrome.mjs switches to brand/nav.json.
+// The behavior is the brand's one script, vendor/brand/nav.js, inlined byte for byte: menus are
+// details elements that open on click and Enter without script; the script adds Escape (focus back
+// to the menu's button), outside click, focus leaving, and one desktop menu at a time. Nothing traps focus.
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { SHARED_NAV, SHARED, LEGACY } from '../scripts/site-chrome.mjs';
 
-const root=new URL('../',import.meta.url);
-const read=p=>fs.readFileSync(new URL(p,root),'utf8');
-const mode=fs.existsSync(new URL('mkdocs.yml',root))?'docs':fs.existsSync(new URL('site-chrome.js',root))?'index':'audit';
-const html=mode==='docs'?read('overrides/partials/site-header.html')+read('overrides/partials/site-footer.html'):read(mode==='audit'?'public/index.html':'index.html');
-const css=mode==='docs'?read('docs/assets/site-chrome.css'):mode==='index'?read('styles.css'):html;
-const script=mode==='docs'?read('docs/assets/site-chrome.js'):mode==='index'?read('site-chrome.js'):read('scripts/site-chrome.js');
-const navLabels=['Product','Research','Free tools','Pricing','Exchange','Company'];
-const footerLabels=[
- ['Product',['Answer Repair, $490','Fix Sprint','The program','Agency Deadline Audit, $490','Pricing','Connect an assistant']],
- ['Research',['Absence Index','Public Fix','The 2026 State of GEO','Studies','Methodology','Data and citations']],
- ['Free tools',['Free 10-question check (one engine)','llms.txt generator','Record check (free)','Agency comparisons','Sample account','Developers']],
- ['Company',['About','Company facts','Careers','Exchange','Partner Network','Security']],
- ['Contact',['hello@broadcastwell.com','Contact page','LinkedIn','Writing','Sitemap','Questions and answers']]
-];
-test('six site navigation destinations and separate sign in and outlined Audit action',()=>{
- if(mode==='audit')assert.equal(html.match(/\/\* site chrome: begin \*\/\n([\s\S]*?)\n\/\* site chrome: end \*\//)[1],script.replace(/\r\n?/g,'\n').trim(),'the single inline controller matches its authored source');
- const nav=html.match(/<nav class="bw-shared-nav"[^>]*>([\s\S]*?)<\/nav>/)[1];
- assert.deepEqual([...nav.matchAll(/<a[^>]*>([^<]+)<\/a>/g)].map(x=>x[1]),navLabels);
- assert.match(html,/class="bw-shared-audit" href="https:\/\/broadcastwell.com\/buy\/answer-repair">Fix one answer, \$490<\/a>/);
- assert.match(css,/\.bw-shared-audit\s*\{[^}]*min-height:44px;[^}]*border-radius:9px;[^}]*background:transparent/);
- assert.match(html,/href="https:\/\/app.broadcastwell.com\/signin">Sign in<\/a>/);
- assert.match(css,/height:64px/);
- assert.match(css,/--bw-font:"Inter",system-ui,sans-serif/);
-});
-test('footer has exactly five groups of six and preserves contact and legal details',()=>{
- const groups=[...html.matchAll(/<details class="bw-shared-group"[^>]*>([\s\S]*?)<\/details>/g)];
- assert.equal(groups.length,5);
- groups.forEach((group,i)=>{
-   assert.equal(group[1].match(/<h2[^>]*>([^<]+)<\/h2>/)[1],footerLabels[i][0]);
-   assert.deepEqual([...group[1].matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(x=>x[1].replace(/<wbr\s*\/?>/g,'')),footerLabels[i][1]);
- });
- assert.match(html,/<a href="mailto:hello@broadcastwell.com">hello@<wbr>broadcastwell.com<\/a>/);
- assert.match(html,/517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States/);
- assert.match(html,/href="tel:\+18123457272">\(812\) 345 7272/);
- assert.match(html,/<time datetime="\d{4}-\d{2}-\d{2}">/);
- assert.match(html,/<p class="bw-shared-allowance"><strong>Free 10-question check \(one engine\):<\/strong> No email is needed; runs are limited per network and per day, and by the site's daily allowance\.<\/p>/);
- assert.match(css,/\.bw-shared-allowance\s*\{[^}]*font-size:15px/);
- for(const slug of ['terms','privacy','cookies'])assert.ok(html.includes(`href="https://broadcastwell.com/${slug}"`));
- assert.match(css,/@media\(max-width:809px\)/);
- assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
- assert.doesNotMatch(script,/fetch\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon/);
-});
-function element(){
- const listeners={},attrs={};
- return {open:true,listeners,attrs,focused:false,addEventListener(name,callback){listeners[name]=callback},setAttribute(name,value){attrs[name]=value},getAttribute(name){return attrs[name]},removeAttribute(name){delete attrs[name]},focus(){this.focused=true}};
-}
-function simulate(width){
- const footerQuery={matches:width<=809},headerQuery={matches:width<=1099};
- for(const query of [footerQuery,headerQuery]){query.listeners=[];query.addEventListener=(_type,fn)=>query.listeners.push(fn)}
- const groups=Array.from({length:5},()=>{const group=element();group.summary=element();group.link=element();group.querySelector=()=>group.summary;group.contains=target=>target===group.summary||target===group.link;return group});
- const menu=element();menu.open=false;menu.summary=element();menu.link=element();menu.querySelector=()=>menu.summary;menu.contains=target=>target===menu.summary||target===menu.link;
- const menus=[menu],header=element(),desktopLink=element(),wordmark=element(),documentListeners={},listenerCounts={};
- menu.closest=()=>header;header.querySelector=()=>wordmark;header.querySelectorAll=()=>[desktopLink,wordmark,menu.link];header.contains=target=>menu.contains(target)||target===desktopLink||target===wordmark;
- menu.link.setAttribute('href','https://broadcastwell.com/free-tools');desktopLink.setAttribute('href','https://broadcastwell.com/free-tools');desktopLink.closest=()=>desktopLink;
- const document={body:{},documentElement:{},activeElement:null,querySelectorAll:s=>s==='[data-bw-footer-group]'?groups:s==='[data-bw-site-menu]'?menus:[header],addEventListener:(name,fn)=>{documentListeners[name]=fn;listenerCounts[name]=(listenerCounts[name]||0)+1}};
- for(const node of [menu.summary,menu.link,desktopLink,wordmark,...groups.flatMap(group=>[group.summary,group.link])])node.focus=function(){this.focused=true;document.activeElement=this;documentListeners.focusin?.({target:this})};
- const window={scrollY:0,matchMedia:s=>s.includes('809')?footerQuery:headerQuery,addEventListener(){}};
- vm.runInNewContext(script,{document,window});
- return {groups,menu,menus,header,desktopLink,wordmark,document,listenerCounts,footerQuery,headerQuery,init:window.BroadcastwellSiteChrome.init,clickSummary(group){let prevented=false;group.summary.listeners.click({preventDefault(){prevented=true}});if(!prevented)group.open=!group.open;return prevented},resize(w){footerQuery.matches=w<=809;headerQuery.matches=w<=1099;footerQuery.listeners.forEach(fn=>fn());headerQuery.listeners.forEach(fn=>fn())},documentListeners};
-}
-test('phone footer begins collapsed, desktop is expanded and resizing preserves the phone choice',()=>{
- const ui=simulate(390);
- assert.ok(ui.groups.every(group=>group.open===false));
- ui.clickSummary(ui.groups[1]);assert.equal(ui.groups[1].open,true);
- ui.resize(1440);assert.ok(ui.groups.every(group=>group.open));
- assert.equal(ui.clickSummary(ui.groups[0]),true);assert.equal(ui.groups[0].open,true);
- ui.resize(390);assert.deepEqual(ui.groups.map(group=>group.open),[false,true,false,false,false]);
- assert.equal(ui.groups[0].summary.attrs['aria-disabled'],undefined);
-});
-test('menu Escape restores focus; outside click and desktop resize dismiss the disclosure',()=>{
- const ui=simulate(390);ui.menu.open=true;
- ui.menu.listeners.toggle();assert.equal(ui.menu.summary.attrs['aria-label'],'Close Broadcastwell navigation');
- ui.menu.listeners.keydown({key:'Escape',preventDefault(){}});
- assert.equal(ui.menu.open,false);assert.equal(ui.menu.summary.focused,true);
- assert.equal(ui.menu.summary.attrs['aria-label'],'Open Broadcastwell navigation');
- ui.menu.open=true;ui.documentListeners.click({target:{}});assert.equal(ui.menu.open,false);
- ui.menu.open=true;ui.resize(1440);assert.equal(ui.menu.open,false);
-});
-test('initialization preserves existing choices and binds newly inserted groups',()=>{
- const ui=simulate(390);ui.clickSummary(ui.groups[2]);
- ui.init();assert.equal(ui.groups[2].open,true);
- const added=element();added.summary=element();added.querySelector=()=>added.summary;
- ui.groups.push(added);ui.init();assert.equal(added.open,false);
- ui.clickSummary(added);ui.init();assert.equal(added.open,true);
- ui.resize(1440);assert.ok(ui.groups.every(group=>group.open));
- ui.resize(390);assert.equal(ui.groups[2].open,true);assert.equal(added.open,true);
- ui.groups[2].summary.focus();ui.clickSummary(ui.groups[2]);ui.init();assert.equal(ui.groups[2].open,false,'focus on the visible summary does not reopen a closed group');
-});
-test('resizing retains the focused footer group and moves header focus to a visible control',()=>{
- const ui=simulate(1440);ui.groups[1].link.focus();ui.resize(390);
- assert.equal(ui.groups[1].open,true);assert.equal(ui.document.activeElement,ui.groups[1].link);
- assert.ok(ui.groups.filter((_,i)=>i!==1).every(group=>!group.open));
- ui.menu.open=true;ui.menu.link.focus();ui.resize(1440);
- assert.equal(ui.menu.open,false);assert.equal(ui.document.activeElement,ui.wordmark);
- ui.desktopLink.focus();ui.resize(390);assert.equal(ui.document.activeElement,ui.menu.summary);
-});
-test('dynamic replacement keeps only one set of global listeners and leaves detached nodes untouched',()=>{
- const ui=simulate(1440),detachedGroup=ui.groups.shift(),detachedMenu=ui.menus.pop();
- detachedMenu.open=true;ui.init();ui.init();ui.resize(390);ui.documentListeners.click({target:{}});
- assert.equal(detachedGroup.open,true);assert.equal(detachedMenu.open,true);
- assert.equal(ui.footerQuery.listeners.length,1);assert.equal(ui.headerQuery.listeners.length,1);assert.equal(ui.listenerCounts.click,1);
+const root = new URL('../', import.meta.url);
+const read = p => fs.readFileSync(new URL(p, root), 'utf8');
+const html = read('public/index.html');
+const script = read('vendor/brand/nav.js');
+const data = SHARED_NAV ? SHARED : LEGACY;
+
+test('the navigation of the committed switch, in the brand markup, after a skip link', () => {
+  assert.ok(html.includes('/* brand nav: begin */\n' + script.trim() + '\n/* brand nav: end */'), 'the one inline navigation script is the vendored nav.js');
+  const header = html.match(/<header class="bw-site-nav" data-bw-nav>[\s\S]*?<\/header>/)[0];
+  assert.ok(html.indexOf('<a class="bw-skip" href="#main">Skip to content</a>') < html.indexOf('<header class="bw-site-nav"'));
+  const desktop = header.match(/<ul class="bw-site-nav__list">([\s\S]*?)<\/ul><\/nav>/)[1];
+  assert.deepEqual([...desktop.matchAll(/<(?:a|summary) class="bw-site-nav__trigger[^"]*"[^>]*>([^<]+)</g)].map(x => x[1]), data.items.map(item => item.label));
+  assert.match(header, /<a class="bw-site-nav__action" href="https:\/\/app.broadcastwell.com\/signin">Sign in<\/a>/);
+  if (!SHARED_NAV) {
+    assert.deepEqual(data.items.map(item => item.label), ['Product', 'Research', 'Free tools', 'Pricing', 'Exchange', 'Company']);
+    assert.equal((header.match(/<a class="bw-button bw-button--secondary[^"]*" href="https:\/\/broadcastwell.com\/buy\/answer-repair" data-buy>Fix one answer, \$490<\/a>/g) || []).length, 3);
+  }
+  // The phone bar and its sheet: the menu button names itself, the sheet holds the actions first.
+  assert.match(header, /<details class="bw-site-nav__phone" data-bw-phone-menu><summary class="bw-site-nav__menu-button"><svg class="bw-icon bw-icon--24"[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/svg><span>Menu<\/span><\/summary>/);
+  const sheet = header.slice(header.indexOf('bw-site-nav__sheet'));
+  assert.ok(sheet.indexOf('bw-site-nav__doors') < sheet.indexOf('bw-site-nav__groups'));
+  // The brand's 48 px controls and its 2 px focus with offset.
+  assert.match(html, /\.bw-site-nav__trigger\{display:inline-flex;align-items:center;gap:var\(--bw-space-4\);min-height:var\(--bw-space-48\)/);
+  assert.match(html, /--bw-focus-width:2px;--bw-focus-offset:2px;/);
+  assert.doesNotMatch(script, /fetch\(|XMLHttpRequest|localStorage|sessionStorage|sendBeacon|document\.cookie/);
 });
 
-test('CSS-first breakpoint hiding restores mobile menu focus to the visible wordmark',()=>{
- const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();
- ui.document.activeElement=ui.document.body;
- ui.resize(1440);
- assert.equal(ui.menu.open,false);assert.equal(ui.document.activeElement,ui.wordmark);
+test('the footer of the committed switch: columns, contact and legal details', () => {
+  const footer = html.match(/<footer class="bw-site-footer">[\s\S]*?<\/footer>/)[0];
+  const columns = [...footer.matchAll(/<h2 class="bw-site-footer__title" id="[^"]+">([^<]+)<\/h2><ul class="bw-site-footer__list"[^>]*>([\s\S]*?)<\/ul>/g)];
+  assert.equal(columns.length, 5);
+  columns.forEach((column, i) => {
+    assert.equal(column[1], data.footer.columns[i].title);
+    assert.deepEqual([...column[2].matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(x => x[1].replace(/<wbr\s*\/?>/g, '').replace(/&amp;/g, '&')), data.footer.columns[i].links.map(link => link.label));
+  });
+  assert.match(footer, /href="tel:\+18123457272">\(812\) 345 7272/);
+  for (const slug of ['terms', 'privacy', 'cookies']) assert.ok(footer.includes(`href="https://broadcastwell.com/${slug}"`));
+  if (!SHARED_NAV) {
+    assert.match(footer, /<a href="mailto:hello@broadcastwell.com">hello@<wbr>broadcastwell.com<\/a>/);
+    assert.match(footer, /517 E Kirkwood Ave<br>Bloomington, IN 47408<br>United States/);
+    assert.match(footer, /<time datetime="\d{4}-\d{2}-\d{2}">/);
+    assert.match(footer, /<p class="bw-site-footer__note footer-allowance"><strong>Free 10-question check \(one engine\):<\/strong> No email is needed; runs are limited per network and per day, and by the site's daily allowance\.<\/p>/);
+  } else {
+    assert.match(footer, /Broadcastwell LLC, 517 E Kirkwood Ave, Bloomington, IN 47408, United States/);
+    assert.doesNotMatch(footer, /Last updated|<time/);
+  }
+  assert.match(html, /\.bw-site-footer__columns\{display:grid;grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
 });
-test('CSS-first hiding of a desktop navigation link restores focus to the phone menu',()=>{
- const ui=simulate(1440);ui.desktopLink.focus();ui.document.activeElement=ui.document.body;
- ui.resize(390);assert.equal(ui.document.activeElement,ui.menu.summary);
+
+// A small DOM for nav.js: details elements with summaries and links inside one [data-bw-nav].
+function simulate() {
+  const listeners = { document: {} };
+  function node(name, parent) {
+    const el = { name, parent, open: false, attrs: {}, children: [], listeners: {}, focused: false,
+      setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; },
+      addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); },
+      contains(other) { for (let n = other; n; n = n.parent) if (n === this) return true; return false; },
+      focus() { this.focused = true; doc.activeElement = this; },
+      closest(selector) { for (let n = this; n; n = n.parent) if (selector === 'details[open]' && n.details && n.open) return n; return null; } };
+    if (parent) parent.children.push(el);
+    return el;
+  }
+  const nav = node('nav', null);
+  const menus = [0, 1].map(i => { const d = node('menu' + i, nav); d.details = true; d.kind = 'menu'; d.summary = node('summary' + i, d); d.link = node('link' + i, d); return d; });
+  const phone = node('phone', nav); phone.details = true; phone.kind = 'phone'; phone.summary = node('phone-summary', phone); phone.link = node('phone-link', phone);
+  const outside = node('outside', null);
+  const all = [...menus, phone];
+  for (const d of all) d.querySelector = sel => sel === 'summary' ? d.summary : null;
+  nav.querySelectorAll = sel => {
+    if (sel === '.bw-site-nav__menu[data-bw-menu]') return menus;
+    if (sel === 'details[data-bw-menu][open], details[data-bw-phone-menu][open]') return all.filter(d => d.open);
+    return [];
+  };
+  nav.querySelector = sel => sel === 'details[data-bw-phone-menu][open]' ? (phone.open ? phone : null) : null;
+  const doc = { readyState: 'complete', activeElement: null, querySelectorAll: sel => sel === '[data-bw-nav]' ? [nav] : [], addEventListener(type, fn) { (listeners.document[type] = listeners.document[type] || []).push(fn); } };
+  vm.runInNewContext(script, { document: doc });
+  const fire = (target, type, event) => (target.listeners[type] || []).forEach(fn => fn(event));
+  return { nav, menus, phone, outside, doc, fire, docFire: (type, event) => (listeners.document[type] || []).forEach(fn => fn(event)) };
+}
+
+test('Escape closes the open menu and returns focus to its button', () => {
+  const ui = simulate();
+  ui.menus[0].open = true;
+  let prevented = false;
+  ui.fire(ui.nav, 'keydown', { key: 'Escape', target: ui.menus[0].link, preventDefault() { prevented = true; } });
+  assert.equal(ui.menus[0].open, false);
+  assert.equal(ui.menus[0].summary.focused, true);
+  assert.equal(prevented, true);
+  ui.phone.open = true;
+  ui.fire(ui.nav, 'keydown', { key: 'Escape', target: ui.phone.link, preventDefault() {} });
+  assert.equal(ui.phone.open, false);
+  assert.equal(ui.doc.activeElement, ui.phone.summary);
+  ui.fire(ui.nav, 'keydown', { key: 'Tab', target: ui.menus[1].summary, preventDefault() { throw new Error('nothing traps focus'); } });
 });
-test('resize does not resurrect stale header focus after another control or outside click',()=>{
- for(const leave of ['focus','click']){
-  const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();const outside={};
-  if(leave==='focus'){ui.document.activeElement=outside;ui.documentListeners.focusin({target:outside});}
-  else{ui.document.activeElement=ui.document.body;ui.documentListeners.click({target:ui.document.body});}
-  const expected=ui.document.activeElement;ui.resize(1440);assert.equal(ui.document.activeElement,expected);
- }
+
+test('opening one desktop menu closes the other; a click outside closes every open menu', () => {
+  const ui = simulate();
+  ui.menus[0].open = true; ui.fire(ui.menus[0], 'toggle', {});
+  ui.menus[1].open = true; ui.fire(ui.menus[1], 'toggle', {});
+  assert.equal(ui.menus[0].open, false);
+  assert.equal(ui.menus[1].open, true);
+  ui.phone.open = true;
+  ui.docFire('click', { target: ui.outside });
+  assert.equal(ui.menus[1].open, false);
+  assert.equal(ui.phone.open, false);
+  ui.menus[0].open = true;
+  ui.docFire('click', { target: ui.menus[0].link });
+  assert.equal(ui.menus[0].open, true, 'a click inside the open menu keeps it open');
 });
-test('detached previously focused menu is not consulted after a dynamic view replacement',()=>{
- const ui=simulate(390);ui.menu.open=true;ui.menu.link.focus();ui.menus.pop();ui.document.activeElement=ui.document.body;
- ui.init();ui.resize(1440);assert.equal(ui.document.activeElement,ui.document.body);
- assert.equal(ui.listenerCounts.focusin,1);
+
+test('focus leaving a menu closes it; focus staying inside keeps it open', () => {
+  const ui = simulate();
+  ui.menus[0].open = true;
+  ui.fire(ui.nav, 'focusout', { relatedTarget: ui.menus[0].link });
+  assert.equal(ui.menus[0].open, true);
+  ui.fire(ui.nav, 'focusout', { relatedTarget: ui.menus[1].summary });
+  assert.equal(ui.menus[0].open, false);
+  ui.phone.open = true;
+  ui.fire(ui.nav, 'focusout', { relatedTarget: ui.outside });
+  assert.equal(ui.phone.open, false);
+  ui.menus[1].open = true;
+  ui.fire(ui.nav, 'focusout', { relatedTarget: null });
+  assert.equal(ui.menus[1].open, true, 'focus leaving the window closes nothing');
+});
+
+test('the script wires each navigation once', () => {
+  const ui = simulate();
+  assert.equal(ui.nav.getAttribute('data-bw-nav-ready'), '1');
+  assert.equal(ui.nav.listeners.keydown.length, 1);
 });

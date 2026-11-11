@@ -12,17 +12,20 @@ own email app.
 
 | Path | What it is |
 |-|-|
-| `public/` | The whole front end. One page, no external requests. |
+| `public/` | The whole front end. One page on brand system 3, no external requests, and `404.html`, which Cloudflare Pages answers for any unknown path with status 404. |
+| `vendor/brand/` | The brand package (3.0.1) this site uses, copied byte for byte by `node vendor/brand/sync.mjs <bw-client-data>` and checked against its `VERSION.json` by `tests/brand.test.mjs`. |
 | `public/assets/report.js` | Responsive company and citation charts, plain answer display and offline report images. |
-| `public/assets/wheel.js` | The shortlist wheel, one dependency free module. Its contract is [WHEEL_CONTRACT.md](WHEEL_CONTRACT.md). |
+| `public/assets/wheel.js` | The shortlist wheel, drawn by the brand's answer record (`public/assets/brand/answer-record.js`). Its contract is [WHEEL_CONTRACT.md](WHEEL_CONTRACT.md). |
 | `lib/audit.js` | The request handler: validation, the three limits, the spend cap, and the response contract. It also routes the calls below. |
 | `lib/analyze.js`, `lib/guard.js`, `lib/lexicon.js` | `POST /api/analyze`: reads the visitor's homepage and at most two more pages through the fetch guard, and proposes a name and a category from the lexicon. Free: it never calls the upstream. |
 | `lib/seal.js`, `lib/link.js` | `POST /api/link`, `POST /api/unlink` and `GET /r/<id>`: private, noindex result links, made only on request, kept 30 days, only for a result this handler sealed, and deletable sooner by the browser that made them. |
 | `lib/result.js` | `GET /api/result/<id>`: the stored result of one result link as JSON, read only and noindex, for the app's free account to fetch server to server when a visitor keeps a result. Only records `/api/link` stored are served; nothing about the visitor is returned. |
 | `lib/event.js` | `POST /api/event`: the daily funnel count. No personal data. |
 | `functions/` | Entry points. Each does nothing but hand the request to `lib/audit.js`. |
-| `scripts/build-page.mjs` | Inlines the wheel and report modules, embeds the export font and recomputes the CSP hashes. Run after editing the page. |
-| `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints. |
+| `scripts/build-page.mjs` | Inlines the brand tokens and components, the navigation and footer, the Kalvenor answer record, the brand navigation and answer record scripts, the wheel and report modules, embeds the export font, writes `embed.html` and `404.html`, and recomputes the CSP hashes. Run after editing the page; `--check` fails on drift. |
+| `scripts/site-chrome.mjs`, `scripts/legacy-chrome.mjs` | The navigation and footer. `SHARED_NAV` (default false) switches from today's links, drawn in the brand markup, to the shared `brand/nav.json`. |
+| `scripts/build-social-card.mjs` | Draws the Open Graph image from the page title and the Kalvenor answer record. |
+| `scripts/build-sample-wheel.mjs` | Rebuilds the Kalvenor sample wheel from the public sample endpoints, or with `--json` from the committed JSON. |
 | `scripts/funnel.mjs` | Prints the daily funnel counts with the owner's own Cloudflare sign in. |
 | `tests/` | The limit and contract suite, the analyze and guard suite, the wheel suite, the front door suite, the frame suite and the served copy suite (`tests/copy.test.mjs`: no word that reads as a closure, pause, cap or order count, and no retired offer, in anything served). `npm test`. |
 

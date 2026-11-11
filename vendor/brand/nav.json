@@ -1,0 +1,157 @@
+{
+  "version": "3.0.0",
+  "source": "Brief sections 9.1 and 9.2. Labels and order are fixed there; every target is an absolute URL checked by tools/brand-nav-check.mjs (results in brand/NAV_TARGETS.md).",
+  "skip": { "label": "Skip to content", "target": "#main" },
+  "wordmark": { "label": "Broadcastwell", "href": "https://broadcastwell.com/" },
+  "items": [
+    {
+      "label": "Platform",
+      "href": "https://broadcastwell.com/platform",
+      "menu": [
+        { "label": "Platform overview", "href": "https://broadcastwell.com/platform" },
+        { "label": "Sample account", "href": "https://app.broadcastwell.com/sample" },
+        { "label": "Free tools", "href": "https://broadcastwell.com/free-tools" },
+        { "label": "Connect an assistant", "href": "https://app.broadcastwell.com/connect" },
+        { "label": "Developers", "href": "https://broadcastwell.com/developers" }
+      ]
+    },
+    {
+      "label": "Services",
+      "menu": [
+        { "label": "Answer Repair, $490", "href": "https://broadcastwell.com/answer-repair" },
+        { "label": "Fix Sprint", "href": "https://broadcastwell.com/fix-sprint" },
+        { "label": "Care and Program", "href": "https://broadcastwell.com/pricing#program" },
+        { "label": "For agencies", "href": "https://broadcastwell.com/for-agencies" },
+        { "label": "ChatGPT Business Hub readiness", "href": "https://docs.broadcastwell.com/chatgpt-business-hub/" },
+        { "label": "All offers", "href": "https://app.broadcastwell.com/offers" }
+      ]
+    },
+    {
+      "label": "Research",
+      "menu": [
+        { "label": "Absence Index", "href": "https://broadcastwell.com/absence-index" },
+        { "label": "Studies", "href": "https://broadcastwell.com/research" },
+        { "label": "Guides", "href": "https://broadcastwell.com/insights" },
+        { "label": "Methodology", "href": "https://broadcastwell.com/methodology" },
+        { "label": "Scorecard", "href": "https://broadcastwell.com/geo-agency-scorecard" }
+      ]
+    },
+    { "label": "Pricing", "href": "https://broadcastwell.com/pricing" },
+    {
+      "label": "Company",
+      "menu": [
+        { "label": "About", "href": "https://broadcastwell.com/about" },
+        { "label": "Exchange", "href": "https://exchange.broadcastwell.com" },
+        { "label": "Partner Network", "href": "https://broadcastwell.com/partners" },
+        { "label": "Careers", "href": "https://broadcastwell.com/careers" },
+        { "label": "Contact", "href": "https://broadcastwell.com/contact" }
+      ]
+    }
+  ],
+  "actions": [
+    { "id": "search", "label": "Search", "href": "https://app.broadcastwell.com/search", "intended": "https://app.broadcastwell.com/search", "style": "nav", "icon": "search" },
+    { "id": "signin", "label": "Sign in", "href": "https://app.broadcastwell.com/signin", "style": "nav" },
+    { "id": "talk", "label": "Talk to us", "href": "https://broadcastwell.com/contact", "style": "secondary", "door": 2 },
+    { "id": "start", "label": "Start free", "href": "https://audit.broadcastwell.com/", "style": "primary", "door": 1 }
+  ],
+  "phone": {
+    "bar": ["wordmark", "start", "menu"],
+    "menu_order": ["doors", "items", "signin", "search"],
+    "menu_label": "Menu"
+  },
+  "footer": {
+    "brand_line": "When you broadcast, broadcast well.",
+    "company": {
+      "name": "Broadcastwell LLC",
+      "street": "517 E Kirkwood Ave",
+      "locality": "Bloomington, IN 47408",
+      "country": "United States",
+      "phone": "(812) 345 7272",
+      "phone_href": "tel:+18123457272",
+      "email": "hello@broadcastwell.com",
+      "email_href": "mailto:hello@broadcastwell.com"
+    },
+    "columns": [
+      {
+        "title": "Services",
+        "links": [
+          { "label": "Answer Repair, $490", "href": "https://broadcastwell.com/answer-repair" },
+          { "label": "Fix Sprint", "href": "https://broadcastwell.com/fix-sprint" },
+          { "label": "Care and Program", "href": "https://broadcastwell.com/pricing#program" },
+          { "label": "For agencies", "href": "https://broadcastwell.com/for-agencies" },
+          { "label": "ChatGPT Business Hub readiness", "href": "https://docs.broadcastwell.com/chatgpt-business-hub/" },
+          { "label": "The Change Desk", "href": "https://broadcastwell.com/change-desk" },
+          { "label": "PHP2Shell", "href": "https://broadcastwell.com/php2shell" },
+          { "label": "Pricing", "href": "https://broadcastwell.com/pricing" },
+          { "label": "All offers", "href": "https://app.broadcastwell.com/offers" }
+        ]
+      },
+      {
+        "title": "Platform and free tools",
+        "links": [
+          { "label": "Platform overview", "href": "https://broadcastwell.com/platform" },
+          { "label": "Free 10-question check (one engine)", "href": "https://audit.broadcastwell.com/" },
+          { "label": "Free tools", "href": "https://broadcastwell.com/free-tools" },
+          { "label": "More ways to measure", "href": "https://broadcastwell.com/free-tools#more-ways-to-measure" },
+          { "label": "llms.txt generator", "href": "https://app.broadcastwell.com/tools/llms-txt" },
+          { "label": "Record check (free)", "href": "https://app.broadcastwell.com/tools/record-check" },
+          { "label": "AI-referral channel template", "href": "https://app.broadcastwell.com/tools/ai-referral-channel" },
+          { "label": "Sample account", "href": "https://app.broadcastwell.com/sample" },
+          { "label": "Connect an assistant", "href": "https://app.broadcastwell.com/connect" },
+          { "label": "Developers", "href": "https://broadcastwell.com/developers" }
+        ]
+      },
+      {
+        "title": "Research",
+        "links": [
+          { "label": "Absence Index", "href": "https://broadcastwell.com/absence-index" },
+          { "label": "Studies", "href": "https://broadcastwell.com/research" },
+          { "label": "Guides", "href": "https://broadcastwell.com/insights" },
+          { "label": "Methodology", "href": "https://broadcastwell.com/methodology" },
+          { "label": "Scorecard", "href": "https://broadcastwell.com/geo-agency-scorecard" },
+          { "label": "Agency comparisons", "href": "https://broadcastwell.com/best-geo-agencies" },
+          { "label": "Public Fix", "href": "https://broadcastwell.com/public-fix" },
+          { "label": "The 2026 State of GEO", "href": "https://broadcastwell.com/state-of-geo" },
+          { "label": "Data and citations", "href": "https://broadcastwell.com/data" },
+          { "label": "Index Source Maps", "href": "https://index.broadcastwell.com/sources/" },
+          { "label": "Observed-answer benchmark", "href": "https://index.broadcastwell.com/downloads#benchmark" },
+          { "label": "Claim Registry", "href": "https://docs.broadcastwell.com/research/claims/" },
+          { "label": "Academic access", "href": "https://docs.broadcastwell.com/research/academic-access/" },
+          { "label": "Registered field test", "href": "https://docs.broadcastwell.com/research/studies/evidence-refresh-field-test/" }
+        ]
+      },
+      {
+        "title": "Company",
+        "links": [
+          { "label": "About", "href": "https://broadcastwell.com/about" },
+          { "label": "Company facts", "href": "https://broadcastwell.com/company-facts" },
+          { "label": "Exchange", "href": "https://exchange.broadcastwell.com" },
+          { "label": "Partner Network", "href": "https://broadcastwell.com/partners" },
+          { "label": "Careers", "href": "https://broadcastwell.com/careers" },
+          { "label": "Contact", "href": "https://broadcastwell.com/contact" },
+          { "label": "Questions and answers", "href": "https://broadcastwell.com/faq" }
+        ]
+      },
+      {
+        "title": "Follow",
+        "links": [
+          { "label": "LinkedIn", "href": "https://www.linkedin.com/company/broadcastwell" },
+          { "label": "X", "href": "https://x.com/broadcastwellhq" },
+          { "label": "YouTube", "href": "https://www.youtube.com/@Broadcastwell" },
+          { "label": "Instagram", "href": "https://www.instagram.com/broadcastwell/" },
+          { "label": "TikTok", "href": "https://www.tiktok.com/@broadcastwell.com" },
+          { "label": "Substack", "href": "https://broadcastwell.substack.com/" }
+        ]
+      }
+    ],
+    "legal": [
+      { "label": "Privacy", "href": "https://broadcastwell.com/privacy" },
+      { "label": "Terms", "href": "https://broadcastwell.com/terms" },
+      { "label": "Cookies", "href": "https://broadcastwell.com/cookies" },
+      { "label": "Security", "href": "https://broadcastwell.com/security" },
+      { "label": "Integrity Standard", "href": "https://broadcastwell.com/integrity" },
+      { "label": "Sitemap", "href": "https://broadcastwell.com/sitemap" }
+    ],
+    "copyright": "Copyright 2026 Broadcastwell LLC."
+  }
+}

@@ -1,12 +1,12 @@
 {
   "name": "Broadcastwell brand system",
-  "version": "3.0.1",
-  "built_at": "2026-11-11T00:58:22.311Z",
+  "version": "3.0.2",
+  "built_at": "2026-11-12T00:01:31.377Z",
   "serif": "newsreader",
   "generator": "tools/brand-build.mjs",
   "files": {
     "brand/aliases.css": {
-      "sha256": "03b9a51f9889c7b9ed3ac471432d94eb466af97e2d5338d39a89ea1d2d143e9a",
+      "sha256": "33f55f6b23dcad53a80c4e3bf60c6aa93229352cad1e7d36775a5df6af3b6b3e",
       "bytes": 2535
     },
     "brand/ALIASES.md": {
@@ -14,32 +14,40 @@
       "bytes": 30046
     },
     "brand/components.css": {
-      "sha256": "70774faa175e0dc7c20d6d971a6c40c668ccb7e74a886359bc3e5d03241171c8",
-      "bytes": 46256
+      "sha256": "23a6fb3f814f96b84431ece0aac9077fa54ce1f1250ad45c294c0b44c3f1de59",
+      "bytes": 47157
     },
     "brand/framer/AnswerRecord.tsx": {
-      "sha256": "dcaf3ec79bea34430f8e98e298e9f1f0087443d6083eb77ec5a7b34115d3dc48",
+      "sha256": "1e716b1b62e84ed36fa91ef27f4ea29df963eb442695843dfd006fdc547bc13a",
       "bytes": 23928
     },
     "brand/framer/BrandConstants.ts": {
-      "sha256": "f757373e60b2f6a6d01ab6e3ebe3e89cf330e4847c07a652b0dcee1d444c1ec6",
-      "bytes": 28283
+      "sha256": "6bf103bebbbd5353f26ba4a6deabf86845decfc538576d76025290a6dcae33bb",
+      "bytes": 28517
     },
     "brand/framer/site-head.html": {
-      "sha256": "4830f61ef6606118697ba06771ab4ef0b24a354a6417fa967784939640656795",
-      "bytes": 51852
+      "sha256": "4ec249a293d74d3434a38d01fe0e3ad358e893e1df4c3534ad1b4eed198b400d",
+      "bytes": 52481
+    },
+    "brand/framer/site-head.part1.html": {
+      "sha256": "9cb849eb05f547d17536250eff931c03147c102f59836188704d015fa26866e7",
+      "bytes": 47403
+    },
+    "brand/framer/site-head.part2.html": {
+      "sha256": "ad5476b6ea0e4148b5a47b49524900ed93419d8eca12ccd1d9b8e89a8d4b3f1a",
+      "bytes": 5277
     },
     "brand/tokens.css": {
-      "sha256": "b93058b230f86c336b92397ed8d5586c881e9201f4a0328933973da89f2eb028",
+      "sha256": "9d5a5beb2a90e3016ca4b1bc29c383186c3f0ff55509049f777c19b933d7f20f",
       "bytes": 4935
     },
     "public/assets/brand/answer-record.js": {
-      "sha256": "ae793891d6fcf8621ded93203094554659d40ea5aff22302db04d680f392281a",
+      "sha256": "08099a3f877a7d54c95a65f862338f38db38818f983a62cb0056733d5059847e",
       "bytes": 19787
     },
     "public/assets/brand/components.css": {
-      "sha256": "70774faa175e0dc7c20d6d971a6c40c668ccb7e74a886359bc3e5d03241171c8",
-      "bytes": 46256
+      "sha256": "23a6fb3f814f96b84431ece0aac9077fa54ce1f1250ad45c294c0b44c3f1de59",
+      "bytes": 47157
     },
     "public/assets/brand/fonts/geist-latin-var.woff2": {
       "sha256": "6ba2ee738a5770309a1a3f0488ff3d9024f9cc80aa49bf7c9b1c7d1ac7b9af66",
@@ -70,13 +78,13 @@
       "bytes": 2473
     },
     "public/assets/brand/tokens.css": {
-      "sha256": "b93058b230f86c336b92397ed8d5586c881e9201f4a0328933973da89f2eb028",
+      "sha256": "9d5a5beb2a90e3016ca4b1bc29c383186c3f0ff55509049f777c19b933d7f20f",
       "bytes": 4935
     }
   },
   "sources": {
-    "brand/tokens.json": "c2438dd70b65c776bfb0a5c5f33474afa1abba525a8e8a87d0f1c8b45e3ead01",
-    "brand/nav.json": "3314ad56ed5ce8f42ba3bec66713d41c4e6672916f4c6c0cd7152ef8ee5135f3",
+    "brand/tokens.json": "6405f7746219ce30ae58d4d40419c28077a641333f03bc51c5c4be9b2a1d7d2f",
+    "brand/nav.json": "5310471cc63eedfbfeaa1af870ec85adfd3e65cd2e9f9ef32742263c3c5aedec",
     "brand/ENTITY.md": "08790478e1a5e7eeea295760fc1f7af5603a2eed2630fb8faea7bb9733351925",
     "brand/price-format.mjs": "97ca35833c1088ba260046e5a13c04cbc61a05b198380eff4f494be8cdc3f783",
     "brand/aliases.json": "bf5a35d151d45130ffc6f9ba73d28316f8a1f77192d9a05277703788e00be36c",

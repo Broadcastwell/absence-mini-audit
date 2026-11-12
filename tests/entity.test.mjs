@@ -1,10 +1,9 @@
 // STEP 3.3 batch B118 (SA-SITES3): one Organization (brief 13.4), one description of the company
-// (13.5), brand 3.0.2 over the vendored 3.0.1 package, and the buyer objection pass, round 1 (R-154).
+// (13.5), brand 3.0.2 as vendored (B146), and the buyer objection pass, round 1 (R-154).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { ORGANIZATION, ORGANIZATION_ID, withOrganization } from '../scripts/entity.mjs';
-import { PROCUREMENT, withBrand302 } from '../scripts/brand-302.mjs';
 import { SHARED } from '../scripts/site-chrome.mjs';
 
 const read = p => fs.readFileSync(new URL('../' + p, import.meta.url), 'utf8');
@@ -63,24 +62,24 @@ test('llms.txt opens with an ENTITY.md description word for word', () => {
   assert.match(read('public/llms.txt'), /^# Broadcastwell Free 10-question check \(one engine\)\n\n> Broadcastwell measures and fixes whether AI search engines name B2B software companies\. /);
 });
 
-test('brand 3.0.2: Procurement joins the footer legal row after Integrity Standard, nothing else moves', () => {
+test('brand 3.0.2: the vendored footer legal row carries Procurement after Integrity Standard, and the page draws it as shipped', () => {
   const vendored = JSON.parse(read('vendor/brand/nav.json'));
-  const labels = SHARED.footer.legal.map(item => item.label);
-  assert.deepEqual(labels, ['Privacy', 'Terms', 'Cookies', 'Security', 'Integrity Standard', 'Procurement', 'Sitemap']);
-  assert.deepEqual(SHARED.footer.legal.find(item => item.label === 'Procurement'), { ...PROCUREMENT });
-  assert.equal(PROCUREMENT.href, 'https://broadcastwell.com/procurement');
-  assert.deepEqual({ ...SHARED, footer: { ...SHARED.footer, legal: SHARED.footer.legal.filter(item => item.label !== 'Procurement') } }, vendored, 'every other navigation entry is the vendored one');
-  assert.deepEqual(withBrand302(SHARED), SHARED, 'a package that already lists Procurement is unchanged');
+  assert.deepEqual(SHARED, vendored, 'the shared navigation is the vendored nav.json, with nothing drawn over it');
+  assert.deepEqual(vendored.footer.legal.map(item => item.label), ['Privacy', 'Terms', 'Cookies', 'Security', 'Integrity Standard', 'Procurement', 'Sitemap']);
+  assert.equal(vendored.footer.legal.find(item => item.label === 'Procurement').href, 'https://broadcastwell.com/procurement');
+  assert.equal(fs.existsSync(new URL('../scripts/brand-302.mjs', import.meta.url)), false, 'the B118 overlay is gone');
   for (const file of ['public/index.html', 'public/embed.html', 'public/404.html']) {
     const legal = read(file).match(/<ul class="bw-site-footer__legal"[^>]*>([\s\S]*?)<\/ul>/)[1];
     assert.ok(legal.includes('<a href="https://broadcastwell.com/integrity">Integrity Standard</a></li><li><a href="https://broadcastwell.com/procurement">Procurement</a></li><li><a href="https://broadcastwell.com/sitemap">'), file);
   }
 });
 
-test('brand 3.0.2: the wordmark never wraps, at 320 px or any width', () => {
+test('brand 3.0.2: the wordmark never wraps, from the vendored components alone', () => {
   const css = page.match(/<style>([\s\S]*?)<\/style>/)[1];
-  const outside = css.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '');
-  assert.match(outside, /\.bw-logotype \{ white-space: nowrap; flex-shrink: 0; \}/);
+  const brand = css.slice(css.indexOf('/* brand: begin */'), css.indexOf('/* brand: end */'));
+  assert.match(brand, /\.bw-logotype\{display:inline-flex;align-items:center;flex-shrink:0;white-space:nowrap;/);
+  const own = css.slice(css.indexOf('/* brand: end */'));
+  assert.doesNotMatch(own, /\.bw-logotype \{ white-space: nowrap; flex-shrink: 0; \}/, 'no hand copy of the brand rule');
 });
 
 test('R-154 round 1: the front door explains itself to a first-time visitor', () => {

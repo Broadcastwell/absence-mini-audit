@@ -1,17 +1,17 @@
 {
   "package": "Broadcastwell brand system",
-  "version": "3.0.1",
-  "built_at": "2026-11-11T00:58:22.311Z",
-  "source_commit": "5b05514f1c297b156932762b58899bcd33f100ea",
+  "version": "3.0.2",
+  "built_at": "2026-11-12T00:01:31.377Z",
+  "source_commit": "2b54341cf1f8991bf190c7744117edd46bbfc512",
   "synced_by": "vendor/brand/sync.mjs",
   "files": {
     "tokens.css": {
       "from": "public/assets/brand/tokens.css",
-      "sha256": "b93058b230f86c336b92397ed8d5586c881e9201f4a0328933973da89f2eb028"
+      "sha256": "9d5a5beb2a90e3016ca4b1bc29c383186c3f0ff55509049f777c19b933d7f20f"
     },
     "components.css": {
       "from": "public/assets/brand/components.css",
-      "sha256": "70774faa175e0dc7c20d6d971a6c40c668ccb7e74a886359bc3e5d03241171c8"
+      "sha256": "23a6fb3f814f96b84431ece0aac9077fa54ce1f1250ad45c294c0b44c3f1de59"
     },
     "nav.js": {
       "from": "public/assets/brand/nav.js",
@@ -19,7 +19,7 @@
     },
     "answer-record.js": {
       "from": "public/assets/brand/answer-record.js",
-      "sha256": "ae793891d6fcf8621ded93203094554659d40ea5aff22302db04d680f392281a"
+      "sha256": "08099a3f877a7d54c95a65f862338f38db38818f983a62cb0056733d5059847e"
     },
     "answer-record.mjs": {
       "from": "brand/answer-record.mjs",
@@ -27,7 +27,7 @@
     },
     "nav.json": {
       "from": "brand/nav.json",
-      "sha256": "3314ad56ed5ce8f42ba3bec66713d41c4e6672916f4c6c0cd7152ef8ee5135f3"
+      "sha256": "5310471cc63eedfbfeaa1af870ec85adfd3e65cd2e9f9ef32742263c3c5aedec"
     },
     "nav-render.mjs": {
       "from": "brand/nav-render.mjs",

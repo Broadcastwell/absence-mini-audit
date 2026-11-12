@@ -9,12 +9,11 @@
 import { readFileSync } from 'node:fs';
 import { renderNav, renderFooter } from '../vendor/brand/nav-render.mjs';
 import { renderLegacyNav, renderLegacyFooter } from './legacy-chrome.mjs';
-import { withBrand302 } from './brand-302.mjs';
 
 export const SHARED_NAV = true;
 
-// The vendored navigation with brand 3.0.2 drawn over it (scripts/brand-302.mjs).
-export const SHARED = withBrand302(JSON.parse(readFileSync(new URL('../vendor/brand/nav.json', import.meta.url), 'utf8')));
+// The vendored navigation, as brand 3.0.2 ships it (vendor/brand/nav.json).
+export const SHARED = JSON.parse(readFileSync(new URL('../vendor/brand/nav.json', import.meta.url), 'utf8'));
 
 // The page this chrome is drawn for, so the shared navigation can mark it.
 export const PAGE_URL = 'https://audit.broadcastwell.com/';

@@ -49,10 +49,10 @@ const SHARED = {
   // bw-client-data: functions/lib/fix/ld-read.js. The reader of structured data changes in both repositories in the same release, or the twin test fails.
   "lib/ld-read.js": "61d8623564c022e4d279b174f913e7f6d42bd5b64935bb924b20feb8271386ed",
   // bw-client-data: functions/lib/fix/vendor/guard.js. The fetch guard changes in both repositories in the same release, or the twin test fails.
-  "lib/guard.js": "ff469621dd9090fc46e1408471b79bc99e50a97077a2b2f182836525254a6b64",
+  "lib/guard.js": "6ccce22e9042f3d0b0e3e1fec72e13fa74d2aed51df6860332ba579d699d3788",
 };
 // tests/fixtures/reader/MANIFEST.json, which names every fixture and the three files above. The app pins the same hash, so the fixtures change in both repositories in the same release, or the twin test fails.
-const MANIFEST_SHA256 = "eb9ea8f27a18d7e197fc45b9eca87b260d2a2461cd285fd6ea3300c8f232c2bf";
+const MANIFEST_SHA256 = "804e9f725262d50f45abdff77dfc43897f6608f43587ef7137231a356f5053e7";
 
 test("the shared files are the pinned bytes, the same bytes the app holds", () => {
   for (const [file, hash] of Object.entries(SHARED)) {
@@ -257,6 +257,12 @@ test("a value of structured data is set as text the way String sets it, and one 
 // The fetch guard (owner's ruling R-224, finding F-029). One table of addresses, the same file
 // in both repositories, with the answer for each.
 const TABLE = JSON.parse(fixtureText("guard-addresses.json"));
+
+test("embedded dotted addresses use unambiguous decimal octets", () => {
+  assert.equal(blockedV6("::ffff:012.0.0.1"), true);
+  assert.equal(blockedV6("2606::000.8.8.8"), true);
+  assert.equal(blockedV6("::ffff:12.0.0.1"), false);
+});
 const answering = (address) => async (url) => new Response(JSON.stringify({ Status: 0, Answer: /type=AAAA/.test(url) ? [{ type: 28, data: address }] : [] }), { headers: { "content-type": "application/dns-json" } });
 
 test("the guard gives the recorded answer for every address of the shared table", () => {

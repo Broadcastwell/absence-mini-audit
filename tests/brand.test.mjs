@@ -109,7 +109,7 @@ test("the switch both ways: off draws today's links in the brand markup, on draw
 
 test("a real 404: an unknown path gets 404.html, which says where the visitor is and offers the two doors and the way back", () => {
   // Cloudflare Pages answers an unmatched path with a top-level 404.html and status 404; without one
-  // it serves the index with 200 (a soft 404). functions/ routes only /api/* and /r/*.
+  // it serves the index with 200 (a soft 404). Only the home and embed entry points, the API and saved-result paths have Functions.
   assert.ok(existsSync(join(root, "public/404.html")));
   const page = read("public/404.html");
   assert.match(page, /<title>Page not found \| Free 10-question check \(one engine\) \| Broadcastwell<\/title>/);
@@ -125,7 +125,7 @@ test("a real 404: an unknown path gets 404.html, which says where the visitor is
   const style = (html) => html.slice(html.indexOf("<style>") + 7, html.indexOf("</style>"));
   assert.equal(style(page), style(read("public/index.html")));
   const files = execFileSync("git", ["ls-files", "functions"], { cwd: root, encoding: "utf8" }).trim().split(/\r?\n/);
-  assert.ok(files.every((file) => /^functions\/(api\/|r\/)/.test(file)), files.join(","));
+  assert.ok(files.every((file) => /^(?:functions\/(?:api|r)\/|functions\/(?:index|embed)\.js$)/.test(file)), files.join(","));
   assert.ok(!existsSync(join(root, "public/_routes.json")) && !existsSync(join(root, "public/_redirects")));
 });
 

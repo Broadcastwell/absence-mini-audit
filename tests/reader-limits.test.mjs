@@ -169,6 +169,19 @@ test("a homepage that pours bytes without end is read up to the size limit and l
   assert.ok(seen.bytes <= BODY_BYTES + 4 * 65536, `${seen.bytes} bytes were taken`);
 });
 
+test("an oversized page finishes even when its source never acknowledges cancellation", async (t) => {
+  let canceled = false;
+  const bytes = new TextEncoder().encode(HOME + "x".repeat(BODY_BYTES));
+  const net = network({ [SITE]: () => html(new ReadableStream({
+    start(controller) { controller.enqueue(bytes); },
+    cancel() { canceled = true; return new Promise(() => {}); },
+  })) });
+  const result = await check(t, "hostile.example.org", net);
+  assert.ok(canceled);
+  assert.ok(result && result.at <= REQUEST_MS, "the upstream cancel cannot hold the reader");
+  assert.equal(result.body.found, true);
+});
+
 test("an oversized body that drips is still dropped at five seconds: the size rule lifts no time limit", async (t) => {
   const seen = { bytes: 0, let_go: false };
   const result = await check(t, "hostile.example.org", network({ [SITE]: drips(1, seen) }));

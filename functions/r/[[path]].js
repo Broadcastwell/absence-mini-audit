@@ -3,5 +3,5 @@ import { firstFixDoor } from "../../lib/fix-door.js";
 
 export async function onRequest({request,env}) {
   const result = await audit.fetch(request,env);
-  return request.method === 'GET' ? firstFixDoor(result,env) : result;
+  return request.method === 'GET' ? firstFixDoor(result,env,request) : result;
 }

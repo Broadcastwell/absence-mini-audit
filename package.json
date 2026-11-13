@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/limits.test.mjs && node tests/analyze.test.mjs && node tests/wheel.test.mjs && node tests/frontdoor.test.mjs && node tests/embed.test.mjs && node tests/copy.test.mjs && node tests/llms.test.mjs && node tests/door-steps.test.mjs && node --test tests/brand.test.mjs tests/site-chrome.test.mjs tests/audit-header-purchase.test.mjs tests/claude-report.test.mjs tests/identity.test.mjs tests/health-limits.test.mjs tests/credit-lanes.test.mjs tests/entity.test.mjs tests/art-round1.test.mjs tests/art-round3.test.mjs tests/art-round4.test.mjs tests/fu3-copy.test.mjs tests/gate4.test.mjs && node --test tests/current-entry.test.mjs && node --test tests/reader-drift.test.mjs tests/reader-hostile.test.mjs"
+    "test": "node tests/limits.test.mjs && node tests/analyze.test.mjs && node tests/wheel.test.mjs && node tests/frontdoor.test.mjs && node tests/embed.test.mjs && node tests/copy.test.mjs && node tests/llms.test.mjs && node tests/door-steps.test.mjs && node --test tests/brand.test.mjs tests/site-chrome.test.mjs tests/audit-header-purchase.test.mjs tests/claude-report.test.mjs tests/identity.test.mjs tests/health-limits.test.mjs tests/credit-lanes.test.mjs tests/entity.test.mjs tests/art-round1.test.mjs tests/art-round3.test.mjs tests/art-round4.test.mjs tests/fu3-copy.test.mjs tests/gate4.test.mjs && node --test tests/current-entry.test.mjs && node --test tests/reader-drift.test.mjs tests/reader-limits.test.mjs tests/reader-hostile.test.mjs"
   }
 }

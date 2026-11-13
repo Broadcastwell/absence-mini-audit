@@ -17,6 +17,7 @@ import fs from "node:fs";
 import "../lib/audit.js";
 import { analyze, FALLBACK_REASONS } from "../lib/analyze.js";
 import { FETCH_TIMEOUT_MS, MAX_BYTES, MAX_FETCHES } from "../lib/guard.js";
+import { READ_LIMITS } from "../lib/bounded-fetch.js";
 
 // The limits a read is held to. They are the check's own: the guard has always named them.
 const REQUEST_MS = FETCH_TIMEOUT_MS; // one request, from the moment it is sent to the last byte of its page
@@ -108,6 +109,8 @@ const SITE = "https://hostile.example.org/";
 test("the limits are the check's own: five seconds a request, 1,048,576 bytes a page, three requests a check", () => {
   assert.deepEqual([REQUEST_MS, LOOKUP_MS, BODY_BYTES, REQUESTS, CHECK_MS], [5000, 3000, 1048576, 3, 24000]);
   assert.match(fs.readFileSync("lib/guard.js", "utf8"), /const RESOLVE_TIMEOUT_MS = 3000;/);
+  // They are named constants of the code, in one place, and they are these.
+  assert.deepEqual({ ...READ_LIMITS }, { lookup_ms: LOOKUP_MS, request_ms: REQUEST_MS, body_bytes: BODY_BYTES, requests: REQUESTS, check_ms: CHECK_MS });
 });
 
 test("a homepage that stalls before its first byte is dropped at five seconds", async (t) => {

@@ -3,7 +3,8 @@
  * led to the owner's ruling R-218: one block of structured data of 1,000,000 bytes, an @graph
  * of 130,000 entries, and 300,000 bytes of tags that are never closed. Before the fix the first
  * took 95 seconds in one readPage, the second threw RangeError and the third took 28 seconds.
- * Each must be read in under half a second, and none may throw.
+ * Each must be read in under half a second, and none may throw. After them comes a page of
+ * 1,048,576 bytes of each piece that makes a careless reader look again and again to its end.
  *
  * Run: node --test tests/reader-hostile.test.mjs
  */
@@ -39,4 +40,46 @@ for (const [name, html] of Object.entries(FINDINGS)) {
 test("the first of those pages is 1,000,000 bytes, the size the review timed", () => {
   const bytes = Object.values(FINDINGS)[0].length;
   assert.ok(bytes >= 1_000_000 && bytes <= 1_000_100, String(bytes));
+});
+
+// Past the pages of the findings: a page as large as the check will read at all (1,048,576
+// bytes), built of nothing but one piece that makes a reader look again and again to its end.
+// Each was read in under 0.2 seconds when this was written. Two seconds is held, so that a busy
+// machine does not fail the suite and a reader that has gone back to looking twice still does.
+const PAGE_BYTES = 1024 * 1024;
+const TWO_SECONDS_MS = 2000;
+const whole = (piece) => filled(piece, PAGE_BYTES);
+const between = (start, piece, end) => start + piece.repeat(Math.floor((PAGE_BYTES - start.length - end.length) / piece.length)) + end;
+const DOTTED = String.fromCodePoint(0x130);
+const PIECES = [
+  "<a ", "<a>", "<a href=x>", "<script ", "<script>", "<style>", "<!--", "<", "<title", "<title>", "<meta ", "<meta a=\"", "<h1>", "<h2>", "&", "&a", "&#1", "&amp;",
+  "<a <script <!-- <style> &amp <h2> </a ", "<script type=application/ld+json>", `<meta ${"a".repeat(5000)}>`, ">", " ", "href=", "href=\"", " href = ", "</a>",
+  "<a href=\"", "<a href=\"#", "<a href=\"a#", "<a href=\"x>", "<a href=\"/products/", "<a href=\"/products/x/\">", "<a href=\"/products/x/\"></a>", "<a href=\"/products/x/\">x</a>",
+  "<a href=\"/why-x\">", "<a href=\"/about\">a</a>", "/products/", `${DOTTED}<a `, `${DOTTED}<h2>`, `<a href="/why-${DOTTED}">`, "<svg <style <template <noscript <script ",
+  "<script type=\"application/ld+json\">{\"@type\":\"Organization\",\"name\":\"N\"}</script>", "<script type=\"application/ld+json\">[",
+];
+const BUILT = {
+  "product paths in one address, closed at the end": between("<a href=\"", "/products/", "\">x</a>"),
+  "product paths in one address with a tag end inside it": between("<a href=\"x>", "/products/", "\""),
+  "product links with one closer at the end": between("", "<a href=\"/products/x/\">", "</a>"),
+  "one closer, then product links": between("</a>", "<a href=\"/products/x/\">", ""),
+  "addresses in one tag, each cut short by a hash": between("<a href=\"/about\" ", "<a href=\"aaaaaaaaaaaaaaaa#", ">"),
+  "a first heading of nothing but tags": between("<h1>", "<b>", "</h1>"),
+  "structured data, a list of numbers in blocks of 10,000 bytes": whole(`<script type="application/ld+json">[${numbers(4981)}]</script>`),
+  "structured data, lists nested 90,000 deep": structured("[".repeat(90_000) + "]".repeat(90_000)),
+  "structured data, @graph inside @graph 20,000 deep": structured("{\"@graph\":[".repeat(20_000) + "{\"@type\":\"Organization\",\"name\":\"Deep\"}" + "]}".repeat(20_000)),
+};
+
+test(`a page of ${PAGE_BYTES.toLocaleString("en-US")} hostile bytes is read in a moment, whatever it is made of`, () => {
+  const pages = Object.assign(Object.fromEntries(PIECES.map((piece) => [`all "${piece.slice(0, 40)}"`, whole(piece)])), BUILT);
+  let slowest = 0;
+  for (const [name, html] of Object.entries(pages)) {
+    const started = performance.now();
+    const page = readPage(html, "https://hostile.example.com/");
+    const took = performance.now() - started;
+    slowest = Math.max(slowest, took);
+    assert.ok(took < TWO_SECONDS_MS, `${name}: readPage took ${Math.round(took).toLocaleString("en-US")} ms`);
+    assert.ok(page.links.length <= 400 && page.h2s.length <= 12 && page.orgNames.length <= 60 && page.body.length <= 20000, name);
+  }
+  assert.ok(slowest < TWO_SECONDS_MS, `slowest: ${Math.round(slowest)} ms`);
 });

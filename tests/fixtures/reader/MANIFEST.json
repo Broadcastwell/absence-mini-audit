@@ -21,7 +21,7 @@
  "20-nine-digit-reference.html": "66c0f2c9d854f81b70679526b903dc8e3c261cdb3748ae8977004c2bec97e370",
  "21-inline-image-heading.html": "91e254acdb8425cb8c5d921be135db0ef3e6d7a6749d19707394a969d5435d7f",
  "expected.json": "1d528eadc7581bb5ac5784968d4a31b19ffb18b481d0da88024c5b160b152226",
- "guard-addresses.json": "2cc995a4666accefc3d347473c66baddc8fe5613481ba974f750dd6b8f38f5be",
+ "guard-addresses.json": "881c26708d1cefeb53f269f0d1d44ebf96b4867d675de38800474d95c515de62",
  "index.json": "d7e91c27380bdc213a603a1765db4f12e98a6b0fdc7dab298e7e0d7b0b8912c8",
  "oversized.mjs": "9e85ef98bca6757d226036cb2a5b17b536c971fb53e97f5092f7b489dcf1d716",
  "built:oversized-1.2-mib": "090a5c45a1af5755c0df269fcb31b963dd2098cf6b9348d499d8d0003ddecaa5",
@@ -33,5 +33,5 @@
  "built:cut-mid-structured-data": "2df6ececd47415fc143b60cbe62bd118572721b6e23486a0b191a6f6ac840708",
  "shared:html-scan.js": "1bac3a0112a8eeb80907c277a30e1438a25111fa4da87ae11d078df9817f706f",
  "shared:ld-read.js": "61d8623564c022e4d279b174f913e7f6d42bd5b64935bb924b20feb8271386ed",
- "shared:guard.js": "c0e1150b9953bbb315ad31863624432fcc4450cf274cecdb21e616386a59c151"
+ "shared:guard.js": "ff469621dd9090fc46e1408471b79bc99e50a97077a2b2f182836525254a6b64"
 }

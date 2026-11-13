@@ -111,3 +111,16 @@ test('the capacity check never receives a domain, email, cookie, result ID or ex
     assert.deepEqual(await (await firstFixRoom(ask,env,read)).json(),{available:false});
   }
 });
+import { onRequest as capacityRoute } from '../functions/api/first-fix-room.js';
+
+test('with the switch off the capacity route serves the unchanged Pages response for every method', async () => {
+ for (const method of ['GET','HEAD','OPTIONS','POST']) {
+   const fallback = new Response(method === 'GET' ? 'Page not found' : null, {
+     status: ['GET','HEAD'].includes(method) ? 404 : 405,
+     headers: {'content-type':'text/html','x-original-response':'assets'}
+   });
+   const request = new Request('https://audit.broadcastwell.com/api/first-fix-room', {method});
+   const result = await capacityRoute({request, env:{}, next:()=>fallback});
+   assert.equal(result, fallback);
+ }
+});

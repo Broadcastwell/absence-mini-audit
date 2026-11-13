@@ -33,5 +33,5 @@
  "built:cut-mid-structured-data": "2df6ececd47415fc143b60cbe62bd118572721b6e23486a0b191a6f6ac840708",
  "shared:html-scan.js": "1bac3a0112a8eeb80907c277a30e1438a25111fa4da87ae11d078df9817f706f",
  "shared:ld-read.js": "61d8623564c022e4d279b174f913e7f6d42bd5b64935bb924b20feb8271386ed",
- "shared:guard.js": "0cb6a71adc0531c1c5ec86ee4695ad082431db104386e38b88fd15ad4433f695"
+ "shared:guard.js": "c0e1150b9953bbb315ad31863624432fcc4450cf274cecdb21e616386a59c151"
 }

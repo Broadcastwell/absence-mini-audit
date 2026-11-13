@@ -49,10 +49,10 @@ const SHARED = {
   // bw-client-data: functions/lib/fix/ld-read.js. The reader of structured data changes in both repositories in the same release, or the twin test fails.
   "lib/ld-read.js": "61d8623564c022e4d279b174f913e7f6d42bd5b64935bb924b20feb8271386ed",
   // bw-client-data: functions/lib/fix/vendor/guard.js. The fetch guard changes in both repositories in the same release, or the twin test fails.
-  "lib/guard.js": "0cb6a71adc0531c1c5ec86ee4695ad082431db104386e38b88fd15ad4433f695",
+  "lib/guard.js": "c0e1150b9953bbb315ad31863624432fcc4450cf274cecdb21e616386a59c151",
 };
 // tests/fixtures/reader/MANIFEST.json, which names every fixture and the three files above. The app pins the same hash, so the fixtures change in both repositories in the same release, or the twin test fails.
-const MANIFEST_SHA256 = "03e69bb5c546a9f1cf1742d307501e0905ffa5eda380d4a9a10dee2f132ebab7";
+const MANIFEST_SHA256 = "45c0cc0b27de3ff76f135b179f5969b3dfb0be2f4b75690adb55175fb163cfca";
 
 test("the shared files are the pinned bytes, the same bytes the app holds", () => {
   for (const [file, hash] of Object.entries(SHARED)) {

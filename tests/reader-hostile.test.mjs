@@ -373,6 +373,24 @@ test("the first words of a heading, a link or a name are looked for in its first
 const UNPARSABLE = ["<a href=\"//[\">", "<a href=\"http://[::1\">a</a>", "<a href=\"//%\">", "<a href=\"http://a b\">x</a>", "<a href='//['>"];
 const withTwoLinks = (piece) => "<title>Acme</title><a href=\"/about\">a</a><a href=\"/company\">c</a>" + piece.repeat(Math.floor((PAGE_BYTES - 80) / piece.length));
 
+test("simple navigation paths are parsed once and malformed authorities are screened first", () => {
+  const real = globalThis.URL;
+  const preflight = [];
+  globalThis.URL = class extends real {
+    static canParse(text, base) {
+      preflight.push(text);
+      return real.canParse(text, base);
+    }
+  };
+  try {
+    const html = '<a href="/about">About</a><a href="//[">Malformed</a><a href="/company">Company</a>';
+    assert.deepEqual(readPage(html, "https://fixture.example.org/").links, ["https://fixture.example.org/about", "https://fixture.example.org/company"]);
+    assert.deepEqual(preflight, ["//["]);
+  } finally {
+    globalThis.URL = real;
+  }
+});
+
 test(`a page of links that do not parse is read in under ${ONE_PAGE_MS} ms, a check of three in under ${ONE_CHECK_MS} ms, and no exception is thrown for any of them`, async () => {
   for (const piece of UNPARSABLE) {
     const html = withTwoLinks(piece);

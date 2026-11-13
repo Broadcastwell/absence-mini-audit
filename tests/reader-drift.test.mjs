@@ -8,7 +8,7 @@
  *      (lib/guard.js). Each is pinned here by its SHA-256, and the app pins the same three hashes
  *      in test/fix-freecheck-drift.test.js. A pin may change only in a pull request that names
  *      the matching commit of the other repository.
- *   2. Twenty ordinary pages, seven pages longer than the check reads and twenty-four sites
+ *   2. Twenty-one ordinary pages, seven pages longer than the check reads and twenty-five sites
  *      (tests/fixtures/reader/) are read, and every value must equal what the code of main
  *      c64f480 answered for them before the reader was changed (expected.json). If a value
  *      differs, the code is wrong, not the fixture.
@@ -52,7 +52,7 @@ const SHARED = {
   "lib/guard.js": "0cb6a71adc0531c1c5ec86ee4695ad082431db104386e38b88fd15ad4433f695",
 };
 // tests/fixtures/reader/MANIFEST.json, which names every fixture and the three files above. The app pins the same hash, so the fixtures change in both repositories in the same release, or the twin test fails.
-const MANIFEST_SHA256 = "757f6f8b3a83ceb044d2404857a7f0eee05e084614bbba1909b38219b9e092a3";
+const MANIFEST_SHA256 = "03e69bb5c546a9f1cf1742d307501e0905ffa5eda380d4a9a10dee2f132ebab7";
 
 test("the shared files are the pinned bytes, the same bytes the app holds", () => {
   for (const [file, hash] of Object.entries(SHARED)) {
@@ -104,7 +104,7 @@ test("an ordinary company's pages read exactly as they did before the reader was
       assert.deepEqual(Object.keys(now[group][name]), Object.keys(recorded), name);
     }
   }
-  assert.equal(values, 210, "27 pages of 6 values and 24 sites of 2");
+  assert.equal(values, 218, "28 pages of 6 values and 25 sites of 2");
   // The whole answer of every site, key for key and in the same order: what a visitor's page is sent.
   for (const [name, recorded] of Object.entries(expected.sites)) assert.equal(JSON.stringify(now.sites[name].body), JSON.stringify(recorded.body), name);
 });
@@ -260,7 +260,7 @@ const TABLE = JSON.parse(fixtureText("guard-addresses.json"));
 const answering = (address) => async (url) => new Response(JSON.stringify({ Status: 0, Answer: /type=AAAA/.test(url) ? [{ type: 28, data: address }] : [] }), { headers: { "content-type": "application/dns-json" } });
 
 test("the guard gives the recorded answer for every address of the shared table", () => {
-  assert.ok(TABLE.v4.length >= 20 && TABLE.v6.length >= 40);
+  assert.deepEqual([TABLE.v4.length, TABLE.v6.length], [24, 81]);
   for (const [address, answer, why] of TABLE.v4) assert.equal(blockedV4(address) ? "blocked" : "allowed", answer, `${address} (${why})`);
   for (const [address, answer, why] of TABLE.v6) assert.equal(blockedV6(address) ? "blocked" : "allowed", answer, `${address} (${why})`);
 });
@@ -268,7 +268,11 @@ test("the guard gives the recorded answer for every address of the shared table"
 const KINDS = {
   "an IPv4 address translated into IPv6 (::ffff:0:a.b.c.d) is judged by the address it carries": { refused: ["::ffff:0:169.254.169.254", "::ffff:0:7f00:1", "::ffff:0:10.0.0.1", "0:0:0:0:ffff:0:c0a8:101"], passed: ["::ffff:0:93.184.216.34"] },
   "the documentation block 3fff::/20 is refused": { refused: ["3fff::1", "3fff:0fff:ffff:ffff:ffff:ffff:ffff:ffff"], passed: ["3fff:1000::1"] },
-  "the segment routing block 5f00::/16 is refused": { refused: ["5f00::1", "5f00:ffff::1"], passed: ["5eff::1", "5f01::1"] },
+  "the segment routing block 5f00::/16 is refused": { refused: ["5f00::1", "5f00:ffff::1"], passed: [] },
+  // The second review: what the owner's words ask for past the three named kinds.
+  "local NAT64 (64:ff9b:1::/48) is judged by the IPv4 address in its RFC 6052 layout as well as by its last four bytes": { refused: ["64:ff9b:1:a00:0:100:808:808", "64:ff9b:1:7f00:0:100:808:808", "64:ff9b:1:a9fe:a9:fe00:808:808", "64:ff9b:1:5db8:d8:2200:a00:1"], passed: ["64:ff9b:1:5db8:d8:2200:808:808", "64:ff9b::5db8:d822"] },
+  "the ISATAP forms (::5efe:a.b.c.d and ::200:5efe:a.b.c.d) are refused": { refused: ["::5efe:127.0.0.1", "::200:5efe:10.0.0.1", "::5efe:93.184.216.34", "::200:5efe:a9fe:a9fe"], passed: ["2a00:1450:1:2:0:5efe:7f00:1"] },
+  "an address outside 2000::/3 is refused, unless it carries an IPv4 address the guard judges": { refused: ["1::1", "4000::1", "8000::1", "fbff::1", "100:0:0:1::1", "5eff::1", "5f01::1", "64:ff9b:2::808:808"], passed: ["::ffff:93.184.216.34", "::ffff:0:93.184.216.34", "64:ff9b::5db8:d822", "2001:200::1", "3ffe::1"] },
 };
 for (const [kind, { refused, passed }] of Object.entries(KINDS)) {
   test(`the guard: ${kind}`, async () => {
@@ -281,7 +285,9 @@ for (const [kind, { refused, passed }] of Object.entries(KINDS)) {
 }
 
 test("the guard: public IPv6 addresses still pass, and a name that resolves to one is read", async () => {
-  for (const address of ["2606:4700:4700::1111", "2001:4860:4860::8888", "2606:4700::6810:84e5", "2a00:1450:4001:80b::200e"]) {
+  const open = TABLE.v6.filter((row) => row[2] === "public").map((row) => row[0]);
+  assert.equal(open.length, 21, "the twenty addresses of the second review's table and one more");
+  for (const address of open) {
     assert.equal(blockedV6(address), false, address);
     assert.deepEqual(await checkResolves("name.example.com", answering(address)), { ok: true, addresses: 1 });
   }

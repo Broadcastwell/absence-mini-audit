@@ -345,13 +345,64 @@ test(`a whole check of pages longer than the limit ends in under ${ONE_CHECK_MS}
   }
 });
 
-// The first words of a text are looked for in its first 300,000 characters and no further, as
-// the words of the body always were. An ordinary heading has its words at its start. One that
-// opens with more than 300,000 characters of tags gives none, and costs no more to find out.
-test("the first words of a heading, a link or a name are looked for in its first 300,000 characters", () => {
-  const tags = "<b>".repeat(100_000);
-  const near = readPage(`<title>Acme</title><h1>${tags.slice(0, 297_000)}Near words</h1><h2>${tags.slice(0, 297_000)}Second</h2>`, "https://acme.example.org/");
-  assert.deepEqual([near.h1, near.h2s], ["Near words", ["Second"]]);
+// The first words of a text are looked for in its first 300,000 characters, counted after the
+// tags are taken out (second review, finding H2). A heading that opens with a long tag, an inline
+// image for one, reads as it always did: a tag is never cut in two, and markup is never given as
+// words. Only a text whose first word stands after 300,000 characters that are not tags gives none.
+test("the first words of a heading, a link or a name are looked for in its first 300,000 characters, counted after the tags are out", () => {
+  const tags = "<b>".repeat(120_000);
   const far = readPage(`<title>Acme</title><h1>${tags}Far words</h1><h2>${tags}Second</h2><a href="/products/x/">${tags}Link</a>`, "https://acme.example.org/");
-  assert.deepEqual([far.title, far.h1, far.h2s, far.productNames], ["Acme", "", [""], ["Acme"]]);
+  assert.deepEqual([far.title, far.h1, far.h2s, far.productNames], ["Acme", "Far words", ["Second"], ["Link", "Acme", "Far words"]], "360,000 characters of tags hide no words");
+  const image = (characters) => `<img alt="logo" src="data:image/png;base64,${"iVBORw0KGgoAAAANSUhEUgAA".repeat(Math.ceil(characters / 24)).slice(0, characters)}">`;
+  for (const characters of [299_000, 301_000, 320_000, 700_000]) {
+    const page = readPage(`<title>Acme Field | Field service management software</title><h1>${image(characters)} Acme Field</h1><h2>${image(1000)} Dispatch</h2><a href="/products/desk/">${image(characters)}Acme Desk</a>`, "https://acmefield.example.org/");
+    assert.deepEqual([page.h1, page.h2s, page.productNames], ["Acme Field", ["Dispatch"], ["Acme Desk", "Acme Field"]], `an inline image of ${characters} characters`);
+    assert.deepEqual(proposeProducts([page], "acmefield.example.org"), ["Acme Desk", "Acme Field"]);
+  }
+  const nothing = "&#0;".repeat(80_000);
+  const hidden = readPage(`<title>Acme</title><h1>${nothing}Hidden words</h1>`, "https://acme.example.org/");
+  assert.equal(hidden.h1, "", "320,000 characters that are not tags and leave no words: the heading is read no further");
+  const near = readPage(`<title>Acme</title><h1>${"&#0;".repeat(70_000)}Near words</h1>`, "https://acme.example.org/");
+  assert.equal(near.h1, "Near words");
+});
+
+// Second review, finding H1: a page of links whose addresses do not parse. Every one of them
+// used to be handed to the URL parser, which threw, and a throw costs far more in the Workers
+// runtime than here (0.25 ms there: 19 seconds for one such page). An address is now asked
+// about first, and one that does not parse costs no exception.
+const UNPARSABLE = ["<a href=\"//[\">", "<a href=\"http://[::1\">a</a>", "<a href=\"//%\">", "<a href=\"http://a b\">x</a>", "<a href='//['>"];
+const withTwoLinks = (piece) => "<title>Acme</title><a href=\"/about\">a</a><a href=\"/company\">c</a>" + piece.repeat(Math.floor((PAGE_BYTES - 80) / piece.length));
+
+test(`a page of links that do not parse is read in under ${ONE_PAGE_MS} ms, a check of three in under ${ONE_CHECK_MS} ms, and no exception is thrown for any of them`, async () => {
+  for (const piece of UNPARSABLE) {
+    const html = withTwoLinks(piece);
+    let page;
+    const took = quickest(3, () => { page = readPage(html, "https://hostile.example.org/"); });
+    assert.deepEqual(page.links, ["https://hostile.example.org/about", "https://hostile.example.org/company"], piece);
+    assert.ok(took < ONE_PAGE_MS, `${piece}: readPage took ${Math.round(took)} ms`);
+    const net = async (address) => {
+      const target = new URL(address);
+      return target.hostname === "cloudflare-dns.com" ? lookupAnswer(target) : new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    };
+    let best = Infinity, pages = 0;
+    for (let round = 0; round < 3; round += 1) {
+      const started = performance.now();
+      const response = await analyze(checkOf("hostile.example.org"), {}, { fetcher: net, preview: true });
+      pages = ((await response.json()).pages || []).length;
+      best = Math.min(best, performance.now() - started);
+    }
+    assert.equal(pages, 3, piece);
+    assert.ok(best < ONE_CHECK_MS, `${piece}: the check took ${Math.round(best)} ms`);
+  }
+  // Counted, not timed: the parser is not made to throw. The stand-in counts every address it refuses.
+  const real = globalThis.URL;
+  let thrown = 0;
+  globalThis.URL = class extends real { constructor(...args) { try { super(...args); } catch (error) { thrown += 1; throw error; } } };
+  try {
+    const page = readPage(withTwoLinks(UNPARSABLE[0]).slice(0, 200_000), "https://hostile.example.org/");
+    assert.equal(page.links.length, 2);
+  } finally {
+    globalThis.URL = real;
+  }
+  assert.equal(thrown, 0, `${thrown} addresses were handed to the parser to throw on`);
 });

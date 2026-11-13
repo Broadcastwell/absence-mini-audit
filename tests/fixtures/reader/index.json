@@ -1,5 +1,5 @@
 {
-  "about": "Ordinary company pages, written for this repository. No page is copied from a real company. Each page is read at the address beside it. Each site is one check: the website a visitor types and the pages that answer. Pages 16 to 20 stand at the edges of the reader's limits: forty blocks of structured data, a list of 5,000 entries, 300,000 bytes of structured data, a description of 20,000 characters, and character references of nine digits and more.",
+  "about": "Ordinary company pages, written for this repository. No page is copied from a real company. Each page is read at the address beside it. Each site is one check: the website a visitor types and the pages that answer. Pages 16 to 20 stand at the edges of the reader's limits: forty blocks of structured data, a list of 5,000 entries, 300,000 bytes of structured data, a description of 20,000 characters, and character references of nine digits and more. Page 21 opens its first heading and a product link with an inline image of 320,000 characters.",
   "pages": [
     { "file": "01-plain-marketing.html", "url": "https://www.northpeak.example.com/" },
     { "file": "02-jsonld-org-product.html", "url": "https://tallyforge.example.com/" },
@@ -20,7 +20,8 @@
     { "file": "17-five-thousand-entries.html", "url": "https://pulsegate.example.com/" },
     { "file": "18-large-structured-data.html", "url": "https://stackwell.example.com/help" },
     { "file": "19-long-meta-description.html", "url": "https://fernhollow.example.com/" },
-    { "file": "20-nine-digit-reference.html", "url": "https://cafeledger.example.com/" }
+    { "file": "20-nine-digit-reference.html", "url": "https://cafeledger.example.com/" },
+    { "file": "21-inline-image-heading.html", "url": "https://acmefield.example.com/" }
   ],
   "sites": [
     { "website": "northpeak.example.com", "routes": { "https://northpeak.example.com/": { "redirect": "https://www.northpeak.example.com/" }, "https://www.northpeak.example.com/": { "file": "01-plain-marketing.html" } } },
@@ -39,6 +40,7 @@
     { "website": "pulsegate.example.com", "routes": { "https://pulsegate.example.com/": { "file": "17-five-thousand-entries.html" } } },
     { "website": "https://stackwell.example.com/help", "routes": { "https://stackwell.example.com/help": { "file": "18-large-structured-data.html" } } },
     { "website": "fernhollow.example.com", "routes": { "https://fernhollow.example.com/": { "file": "19-long-meta-description.html" } } },
-    { "website": "cafeledger.example.com", "routes": { "https://cafeledger.example.com/": { "file": "20-nine-digit-reference.html" } } }
+    { "website": "cafeledger.example.com", "routes": { "https://cafeledger.example.com/": { "file": "20-nine-digit-reference.html" } } },
+    { "website": "acmefield.example.com", "routes": { "https://acmefield.example.com/": { "file": "21-inline-image-heading.html" } } }
   ]
 }

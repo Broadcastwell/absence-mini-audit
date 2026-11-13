@@ -344,3 +344,14 @@ test(`a whole check of pages longer than the limit ends in under ${ONE_CHECK_MS}
     if (!name.startsWith("inside the costliest")) assert.deepEqual([body.found, body.brand, body.category], [true, "Acme Field", "field service management software"], name);
   }
 });
+
+// The first words of a text are looked for in its first 300,000 characters and no further, as
+// the words of the body always were. An ordinary heading has its words at its start. One that
+// opens with more than 300,000 characters of tags gives none, and costs no more to find out.
+test("the first words of a heading, a link or a name are looked for in its first 300,000 characters", () => {
+  const tags = "<b>".repeat(100_000);
+  const near = readPage(`<title>Acme</title><h1>${tags.slice(0, 297_000)}Near words</h1><h2>${tags.slice(0, 297_000)}Second</h2>`, "https://acme.example.org/");
+  assert.deepEqual([near.h1, near.h2s], ["Near words", ["Second"]]);
+  const far = readPage(`<title>Acme</title><h1>${tags}Far words</h1><h2>${tags}Second</h2><a href="/products/x/">${tags}Link</a>`, "https://acme.example.org/");
+  assert.deepEqual([far.title, far.h1, far.h2s, far.productNames], ["Acme", "", [""], ["Acme"]]);
+});

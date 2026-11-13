@@ -1497,6 +1497,351 @@
     "what should I look for in veterinary practice management software",
     "best vet software for a multi location emergency hospital"
    ]
+  },
+  "16-forty-structured-blocks.html": {
+   "url": "https://lanternlearn.example.com/courses",
+   "readPage": {
+    "productNames": [
+     "Lanternlearn LMS",
+     "Ready courses for every shift"
+    ],
+    "title": "Course catalog | Lanternlearn",
+    "description": "Three hundred ready courses for frontline teams, in one catalog.",
+    "ogTitle": "",
+    "ogDescription": "",
+    "siteName": "",
+    "h1": "Ready courses for every shift",
+    "h2s": [
+     "Most used this month"
+    ],
+    "orgNames": [
+     {
+      "name": "Lanternlearn",
+      "type": "Organization"
+     },
+     {
+      "name": "Lanternlearn LMS",
+      "type": "SoftwareApplication"
+     }
+    ],
+    "appCategories": [
+     "Learning management system"
+    ],
+    "ldText": [
+     "Introduction course in fire safety for frontline staff, with a quiz and a certificate.",
+     "Introduction course in food hygiene for frontline staff, with a quiz and a certificate.",
+     "Introduction course in manual handling for frontline staff, with a quiz and a certificate.",
+     "Introduction course in data protection for frontline staff, with a quiz and a certificate.",
+     "Introduction course in first aid for frontline staff, with a quiz and a certificate.",
+     "Introduction course in working at height for frontline staff, with a quiz and a certificate.",
+     "Introduction course in forklift basics for frontline staff, with a quiz and a certificate.",
+     "Introduction course in customer care for frontline staff, with a quiz and a certificate.",
+     "Introduction course in line management for frontline staff, with a quiz and a certificate.",
+     "Introduction course in onboarding for frontline staff, with a quiz and a certificate.",
+     "Refresher course in fire safety for frontline staff, with a quiz and a certificate.",
+     "Refresher course in food hygiene for frontline staff, with a quiz and a certificate.",
+     "Refresher course in manual handling for frontline staff, with a quiz and a certificate.",
+     "Refresher course in data protection for frontline staff, with a quiz and a certificate.",
+     "Refresher course in first aid for frontline staff, with a quiz and a certificate.",
+     "Refresher course in working at height for frontline staff, with a quiz and a certificate.",
+     "Refresher course in forklift basics for frontline staff, with a quiz and a certificate.",
+     "Refresher course in customer care for frontline staff, with a quiz and a certificate.",
+     "Refresher course in line management for frontline staff, with a quiz and a certificate.",
+     "Refresher course in onboarding for frontline staff, with a quiz and a certificate.",
+     "Advanced course in fire safety for frontline staff, with a quiz and a certificate.",
+     "Advanced course in food hygiene for frontline staff, with a quiz and a certificate.",
+     "Advanced course in manual handling for frontline staff, with a quiz and a certificate.",
+     "Advanced course in data protection for frontline staff, with a quiz and a certificate.",
+     "Advanced course in first aid for frontline staff, with a quiz and a certificate.",
+     "Advanced course in working at height for frontline staff, with a quiz and a certificate.",
+     "Advanced course in forklift basics for frontline staff, with a quiz and a certificate.",
+     "Advanced course in customer care for frontline staff, with a quiz and a certificate.",
+     "Advanced course in line management for frontline staff, with a quiz and a certificate.",
+     "Advanced course in onboarding for frontline staff, with a quiz and a certificate.",
+     "Introduction course in fire safety for frontline staff, with a quiz and a certificate.",
+     "Introduction course in food hygiene for frontline staff, with a quiz and a certificate.",
+     "Introduction course in manual handling for frontline staff, with a quiz and a certificate.",
+     "Introduction course in data protection for frontline staff, with a quiz and a certificate.",
+     "Introduction course in first aid for frontline staff, with a quiz and a certificate.",
+     "Introduction course in working at height for frontline staff, with a quiz and a certificate.",
+     "Lanternlearn makes a learning management system for compliance training.",
+     "An LMS for employee training, course authoring and training records."
+    ],
+    "body": "Course catalog | Lanternlearn Lanternlearn Platform About Ready courses for every shift Pick a course, assign it to a team and see who has finished. 40 of the most used courses are listed here. Most used this month Fire safety Food hygiene Manual handling Data protection First aid Working at height Forklift basics Customer care Line management Onboarding",
+    "links": [
+     "https://lanternlearn.example.com/platform",
+     "https://lanternlearn.example.com/about"
+    ],
+    "empty": false
+   },
+   "classify": [
+    {
+     "id": "lms",
+     "label": "learning management system",
+     "score": 28
+    },
+    {
+     "id": "core_hr",
+     "label": "HR software",
+     "score": 6.5
+    }
+   ],
+   "proposeBrand": "Lanternlearn",
+   "proposeProducts": [
+    "Lanternlearn LMS",
+    "Ready courses for every shift"
+   ],
+   "questionsFor": [
+    "What is the best learning management system?",
+    "What are the top 10 learning management system platforms in 2026?",
+    "Which are the best learning management system tools for a mid-sized company?",
+    "What are the best alternatives to the market leader in learning management system?",
+    "What are good alternatives to the most widely used learning management system product?",
+    "Which learning management system alternatives are worth considering for a growing team?",
+    "How do the leading learning management system products compare versus each other on implementation time?",
+    "A comparison of the leading learning management system vendors for enterprise buyers",
+    "How should I evaluate pricing models when choosing a learning management system vendor?",
+    "How can learning management system reduce manual work for an operations team?"
+   ]
+  },
+  "17-five-thousand-entries.html": {
+   "url": "https://pulsegate.example.com/",
+   "readPage": {
+    "productNames": [
+     "Pulsegate Front Desk",
+     "The front desk your members never queue at"
+    ],
+    "title": "Pulsegate | Run your gym from the front desk",
+    "description": "Memberships, classes and payments in one place for independent gyms.",
+    "ogTitle": "",
+    "ogDescription": "",
+    "siteName": "Pulsegate",
+    "h1": "The front desk your members never queue at",
+    "h2s": [
+     "Memberships",
+     "Class booking"
+    ],
+    "orgNames": [
+     {
+      "name": "Pulsegate",
+      "type": "Organization"
+     },
+     {
+      "name": "Pulsegate Front Desk",
+      "type": "SoftwareApplication"
+     }
+    ],
+    "appCategories": [
+     "Gym management software"
+    ],
+    "ldText": [
+     "Pulsegate builds gym management software for independent gyms.",
+     "Membership management, class booking and billing for fitness clubs."
+    ],
+    "body": "Pulsegate | Run your gym from the front desk The front desk your members never queue at Members book a class, pay and check in from their phone. You see who is coming before the doors open. Memberships Class booking Features Why Pulsegate",
+    "links": [
+     "https://pulsegate.example.com/features",
+     "https://pulsegate.example.com/why-pulsegate"
+    ],
+    "empty": false
+   },
+   "classify": [
+    {
+     "id": "fitness",
+     "label": "gym management software",
+     "score": 31
+    }
+   ],
+   "proposeBrand": "Pulsegate",
+   "proposeProducts": [
+    "Pulsegate Front Desk",
+    "The front desk your members never queue at"
+   ],
+   "questionsFor": [
+    "What is the best gym management software?",
+    "What are the top 10 gym management software platforms in 2026?",
+    "Which are the best gym management software tools for a mid-sized company?",
+    "What are the best alternatives to the market leader in gym management software?",
+    "What are good alternatives to the most widely used gym management software product?",
+    "Which gym management software alternatives are worth considering for a growing team?",
+    "How do the leading gym management software products compare versus each other on implementation time?",
+    "A comparison of the leading gym management software vendors for enterprise buyers",
+    "How should I evaluate pricing models when choosing a gym management software vendor?",
+    "How can gym management software reduce manual work for an operations team?"
+   ]
+  },
+  "18-large-structured-data.html": {
+   "url": "https://stackwell.example.com/help",
+   "readPage": {
+    "productNames": [
+     "Stackwell Inventory",
+     "Help center"
+    ],
+    "title": "Help center | Stackwell",
+    "description": "Answers to the questions wholesalers ask about Stackwell.",
+    "ogTitle": "",
+    "ogDescription": "",
+    "siteName": "",
+    "h1": "Help center",
+    "h2s": [
+     "Topics"
+    ],
+    "orgNames": [
+     {
+      "name": "Stackwell",
+      "type": "Organization"
+     },
+     {
+      "name": "Stackwell Inventory",
+      "type": "SoftwareApplication"
+     }
+    ],
+    "appCategories": [
+     "Inventory management software"
+    ],
+    "ldText": [
+     "Stackwell makes inventory management software for wholesalers.",
+     "Stock control, purchase orders and warehouse management in one system."
+    ],
+    "body": "Help center | Stackwell Help center Four hundred and twenty answers, sorted by topic. Use the search box, or pick a topic below. Topics invoices purchase orders stock counts returns suppliers barcodes warehouses price lists user roles exports Product Company",
+    "links": [
+     "https://stackwell.example.com/product",
+     "https://stackwell.example.com/company"
+    ],
+    "empty": false
+   },
+   "classify": [
+    {
+     "id": "inventory",
+     "label": "inventory management software",
+     "score": 26
+    },
+    {
+     "id": "procurement",
+     "label": "procurement software",
+     "score": 5
+    }
+   ],
+   "proposeBrand": "Stackwell",
+   "proposeProducts": [
+    "Stackwell Inventory",
+    "Help center"
+   ],
+   "questionsFor": [
+    "What is the best inventory management software?",
+    "What are the top 10 inventory management software platforms in 2026?",
+    "Which are the best inventory management software tools for a mid-sized company?",
+    "What are the best alternatives to the market leader in inventory management software?",
+    "What are good alternatives to the most widely used inventory management software product?",
+    "Which inventory management software alternatives are worth considering for a growing team?",
+    "How do the leading inventory management software products compare versus each other on implementation time?",
+    "A comparison of the leading inventory management software vendors for enterprise buyers",
+    "How should I evaluate pricing models when choosing a inventory management software vendor?",
+    "How can inventory management software reduce manual work for an operations team?"
+   ]
+  },
+  "19-long-meta-description.html": {
+   "url": "https://fernhollow.example.com/",
+   "readPage": {
+    "productNames": [
+     "Fernhollow"
+    ],
+    "title": "Fernhollow",
+    "description": "Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is sc",
+    "ogTitle": "",
+    "ogDescription": "Salon software with online booking and a point of sale.",
+    "siteName": "Fernhollow",
+    "h1": "Fully booked, without the phone calls",
+    "h2s": [],
+    "orgNames": [],
+    "appCategories": [],
+    "ldText": [],
+    "body": "Fernhollow Fully booked, without the phone calls Clients book a chair at any hour. You open the day to a full diary. Features About us",
+    "links": [
+     "https://fernhollow.example.com/features",
+     "https://fernhollow.example.com/about-us"
+    ],
+    "empty": false
+   },
+   "classify": [
+    {
+     "id": "scheduling",
+     "label": "appointment scheduling software",
+     "score": 40
+    },
+    {
+     "id": "restaurant",
+     "label": "restaurant management software",
+     "score": 22
+    },
+    {
+     "id": "salon_spa",
+     "label": "salon and spa software",
+     "score": 20
+    }
+   ],
+   "proposeBrand": "Fernhollow",
+   "proposeProducts": [
+    "Fernhollow"
+   ],
+   "questionsFor": [
+    "What is the best appointment scheduling software?",
+    "What are the top 10 appointment scheduling software platforms in 2026?",
+    "Which are the best appointment scheduling software tools for a mid-sized company?",
+    "What are the best alternatives to the market leader in appointment scheduling software?",
+    "What are good alternatives to the most widely used appointment scheduling software product?",
+    "Which appointment scheduling software alternatives are worth considering for a growing team?",
+    "How do the leading appointment scheduling software products compare versus each other on implementation time?",
+    "A comparison of the leading appointment scheduling software vendors for enterprise buyers",
+    "How should I evaluate pricing models when choosing a appointment scheduling software vendor?",
+    "How can appointment scheduling software reduce manual work for an operations team?"
+   ]
+  },
+  "20-nine-digit-reference.html": {
+   "url": "https://cafeledger.example.com/",
+   "readPage": {
+    "productNames": [],
+    "title": "Café Ledger & Co | Restaurant management software",
+    "description": "Tables, tills and stock for cafés and restaurants & bars.",
+    "ogTitle": "",
+    "ogDescription": "",
+    "siteName": "",
+    "h1": "Run the café, not the paperwork",
+    "h2s": [
+     "Point of sale & kitchen screens",
+     "Résumé of the day"
+    ],
+    "orgNames": [],
+    "appCategories": [],
+    "ldText": [],
+    "body": "Café Ledger & Co | Restaurant management software Run the café, not the paperwork Café Ledger is restaurant management software with a point of sale, table plans and stock counts. Prices from £29 a month. Point of sale & kitchen screens Résumé of the day A reference out of range, , and one with eight digits, © 2026. Product Why us Why Café Ledger",
+    "links": [
+     "https://cafeledger.example.com/product",
+     "https://cafeledger.example.com/why-cafe-ledger"
+    ],
+    "empty": false
+   },
+   "classify": [
+    {
+     "id": "restaurant",
+     "label": "restaurant management software",
+     "score": 17.5
+    }
+   ],
+   "proposeBrand": "Cafeledger",
+   "proposeProducts": [],
+   "questionsFor": [
+    "What is the best restaurant management software?",
+    "What are the top 10 restaurant management software platforms in 2026?",
+    "Which are the best restaurant management software tools for a mid-sized company?",
+    "What are the best alternatives to the market leader in restaurant management software?",
+    "What are good alternatives to the most widely used restaurant management software product?",
+    "Which restaurant management software alternatives are worth considering for a growing team?",
+    "How do the leading restaurant management software products compare versus each other on implementation time?",
+    "A comparison of the leading restaurant management software vendors for enterprise buyers",
+    "How should I evaluate pricing models when choosing a restaurant management software vendor?",
+    "How can restaurant management software reduce manual work for an operations team?"
+   ]
   }
  },
  "sites": {
@@ -1906,6 +2251,174 @@
      "Shepherd vs Digitail for a small animal clinic",
      "what should I look for in veterinary practice management software",
      "best vet software for a multi location emergency hospital"
+    ]
+   }
+  },
+  "https://lanternlearn.example.com/courses": {
+   "status": 200,
+   "body": {
+    "found": true,
+    "website": "lanternlearn.example.com",
+    "brand": "Lanternlearn",
+    "product_names": [
+     "Lanternlearn LMS",
+     "Ready courses for every shift"
+    ],
+    "category": "learning management system",
+    "alternatives": [
+     "HR software"
+    ],
+    "read": {
+     "title": "Course catalog | Lanternlearn",
+     "description": "Three hundred ready courses for frontline teams, in one catalog."
+    },
+    "pages": [
+     "https://lanternlearn.example.com/courses"
+    ],
+    "questions_template": [
+     "What is the best {category}?",
+     "What are the top 10 {category} platforms in 2026?",
+     "Which are the best {category} tools for a mid-sized company?",
+     "What are the best alternatives to the market leader in {category}?",
+     "What are good alternatives to the most widely used {category} product?",
+     "Which {category} alternatives are worth considering for a growing team?",
+     "How do the leading {category} products compare versus each other on implementation time?",
+     "A comparison of the leading {category} vendors for enterprise buyers",
+     "How should I evaluate pricing models when choosing a {category} vendor?",
+     "How can {category} reduce manual work for an operations team?"
+    ]
+   }
+  },
+  "pulsegate.example.com": {
+   "status": 200,
+   "body": {
+    "found": true,
+    "website": "pulsegate.example.com",
+    "brand": "Pulsegate",
+    "product_names": [
+     "Pulsegate Front Desk",
+     "The front desk your members never queue at"
+    ],
+    "category": "gym management software",
+    "alternatives": [],
+    "read": {
+     "title": "Pulsegate | Run your gym from the front desk",
+     "description": "Memberships, classes and payments in one place for independent gyms."
+    },
+    "pages": [
+     "https://pulsegate.example.com/"
+    ],
+    "questions_template": [
+     "What is the best {category}?",
+     "What are the top 10 {category} platforms in 2026?",
+     "Which are the best {category} tools for a mid-sized company?",
+     "What are the best alternatives to the market leader in {category}?",
+     "What are good alternatives to the most widely used {category} product?",
+     "Which {category} alternatives are worth considering for a growing team?",
+     "How do the leading {category} products compare versus each other on implementation time?",
+     "A comparison of the leading {category} vendors for enterprise buyers",
+     "How should I evaluate pricing models when choosing a {category} vendor?",
+     "How can {category} reduce manual work for an operations team?"
+    ]
+   }
+  },
+  "https://stackwell.example.com/help": {
+   "status": 200,
+   "body": {
+    "found": true,
+    "website": "stackwell.example.com",
+    "brand": "Stackwell",
+    "product_names": [
+     "Stackwell Inventory",
+     "Help center"
+    ],
+    "category": "inventory management software",
+    "alternatives": [
+     "procurement software"
+    ],
+    "read": {
+     "title": "Help center | Stackwell",
+     "description": "Answers to the questions wholesalers ask about Stackwell."
+    },
+    "pages": [
+     "https://stackwell.example.com/help"
+    ],
+    "questions_template": [
+     "What is the best {category}?",
+     "What are the top 10 {category} platforms in 2026?",
+     "Which are the best {category} tools for a mid-sized company?",
+     "What are the best alternatives to the market leader in {category}?",
+     "What are good alternatives to the most widely used {category} product?",
+     "Which {category} alternatives are worth considering for a growing team?",
+     "How do the leading {category} products compare versus each other on implementation time?",
+     "A comparison of the leading {category} vendors for enterprise buyers",
+     "How should I evaluate pricing models when choosing a {category} vendor?",
+     "How can {category} reduce manual work for an operations team?"
+    ]
+   }
+  },
+  "fernhollow.example.com": {
+   "status": 200,
+   "body": {
+    "found": true,
+    "website": "fernhollow.example.com",
+    "brand": "Fernhollow",
+    "product_names": [
+     "Fernhollow"
+    ],
+    "category": "appointment scheduling software",
+    "alternatives": [
+     "restaurant management software",
+     "salon and spa software"
+    ],
+    "read": {
+     "title": "Fernhollow",
+     "description": "Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is scheduling software for salons and spas, with online booking, reminders by text, a point of sale and staff rotas. Fernhollow is sc"
+    },
+    "pages": [
+     "https://fernhollow.example.com/"
+    ],
+    "questions_template": [
+     "What is the best {category}?",
+     "What are the top 10 {category} platforms in 2026?",
+     "Which are the best {category} tools for a mid-sized company?",
+     "What are the best alternatives to the market leader in {category}?",
+     "What are good alternatives to the most widely used {category} product?",
+     "Which {category} alternatives are worth considering for a growing team?",
+     "How do the leading {category} products compare versus each other on implementation time?",
+     "A comparison of the leading {category} vendors for enterprise buyers",
+     "How should I evaluate pricing models when choosing a {category} vendor?",
+     "How can {category} reduce manual work for an operations team?"
+    ]
+   }
+  },
+  "cafeledger.example.com": {
+   "status": 200,
+   "body": {
+    "found": true,
+    "website": "cafeledger.example.com",
+    "brand": "Cafeledger",
+    "product_names": [],
+    "category": "restaurant management software",
+    "alternatives": [],
+    "read": {
+     "title": "Café Ledger & Co | Restaurant management software",
+     "description": "Tables, tills and stock for cafés and restaurants & bars."
+    },
+    "pages": [
+     "https://cafeledger.example.com/"
+    ],
+    "questions_template": [
+     "What is the best {category}?",
+     "What are the top 10 {category} platforms in 2026?",
+     "Which are the best {category} tools for a mid-sized company?",
+     "What are the best alternatives to the market leader in {category}?",
+     "What are good alternatives to the most widely used {category} product?",
+     "Which {category} alternatives are worth considering for a growing team?",
+     "How do the leading {category} products compare versus each other on implementation time?",
+     "A comparison of the leading {category} vendors for enterprise buyers",
+     "How should I evaluate pricing models when choosing a {category} vendor?",
+     "How can {category} reduce manual work for an operations team?"
     ]
    }
   }

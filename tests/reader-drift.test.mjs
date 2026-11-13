@@ -38,7 +38,7 @@ const PORTED = {
   "lib/ld-read.js": "bbcc111b9341449d5ac3c81115666d61144be06775c87df4cb514539f79aad6b",
 };
 // tests/fixtures/reader/MANIFEST.json. The app pins the same hash.
-const MANIFEST_SHA256 = "28c77c854692de33587dbec8110a0cb60ab6a2e2a131bc61a734997a8ab23045";
+const MANIFEST_SHA256 = "c02d1d3fe73539048f014fed51cafd61a24442f91313312427cabcdd667c2724";
 
 test("the shared reader files are the pinned bytes, the same bytes the app holds", () => {
   for (const [file, hash] of Object.entries({ ...SHARED, ...PORTED })) {
@@ -76,7 +76,7 @@ test("an ordinary company's pages read exactly as they did before the reader was
       assert.deepEqual(Object.keys(now[group][name]), Object.keys(recorded), name);
     }
   }
-  assert.equal(values, 114, "15 pages of 6 values and 12 sites of 2");
+  assert.equal(values, 154, "20 pages of 6 values and 17 sites of 2");
   // The whole answer of every site, key for key and in the same order: what a visitor's page is sent.
   for (const [name, recorded] of Object.entries(expected.sites)) assert.equal(JSON.stringify(now.sites[name].body), JSON.stringify(recorded.body), name);
 });
@@ -173,4 +173,36 @@ test("structured data is read inside the engine's limits, in the order it always
   assert.deepEqual(at(large), [{ name: "After", type: "Organization" }], "a block over 200,000 bytes is passed over, and the block after it is read");
   const ordinary = readPage(structured(`[{"@type":"WebSite","name":"Site"},{"@graph":[${org("Org")},{"@type":["SoftwareApplication"],"name":"App","applicationCategory":"CRM software","description":"Tracks deals."}]}]`), "https://acme.example.com/");
   assert.deepEqual([ordinary.orgNames.map((one) => one.name), ordinary.appCategories, ordinary.ldText, ordinary.productNames], [["Site", "Org", "App"], ["CRM software"], ["Tracks deals."], ["App", "Acme"]]);
+});
+
+// The review's findings H1 and L8: the one-pass reader must not cost an ordinary page more than
+// the reader it replaced. Both readers read the same page in the same run, turn about, and the
+// medians are compared. Each sample is long enough for the clock to measure, and the pages
+// that take the reader of c64f480 under a tenth of a millisecond are timed together as one, so
+// that a page of twenty lines is not judged on the noise of the clock.
+const SLOWER_AT_MOST = 1.10;
+const median = (list) => list.slice().sort((a, b) => a - b)[Math.floor(list.length / 2)];
+function medians(work, samples) {
+  const loops = (read) => { const started = performance.now(); let n = 0; do { work(read); n += 1; } while (performance.now() - started < 4); return n; };
+  const rounds = Math.max(1, Math.min(loops(readPage), loops(readPageBefore)));
+  const timed = (read) => { const started = performance.now(); for (let n = 0; n < rounds; n += 1) work(read); return (performance.now() - started) / rounds; };
+  const now = [], before = [];
+  for (let sample = 0; sample < samples; sample += 1) { before.push(timed(readPageBefore)); now.push(timed(readPage)); }
+  return { now: median(now), before: median(before) };
+}
+
+test("an ordinary page is read no more than a tenth slower than the reader of c64f480 read it", () => {
+  const pages = fixtureIndex().pages.map(({ file, url }) => ({ file, url, html: fixtureText(file) }));
+  for (const read of [readPage, readPageBefore]) for (let warm = 0; warm < 30; warm += 1) for (const page of pages) read(page.html, page.url);
+  const small = [], results = [];
+  for (const page of pages) {
+    const one = medians((read) => read(page.html, page.url), 5);
+    if (one.before < 0.1) small.push(page); else results.push([page.file, medians((read) => read(page.html, page.url), 15)]);
+  }
+  results.push([`${small.length} small pages together`, medians((read) => { for (const page of small) read(page.html, page.url); }, 15)]);
+  const all = pages.map((page) => page.html).join("\n");
+  results.push([`all ${pages.length} pages as one page of ${all.length.toLocaleString("en-US")} characters`, medians((read) => read(all, "https://ordinary.example.com/"), 15)]);
+  for (const [name, { now, before }] of results) {
+    assert.ok(now <= before * SLOWER_AT_MOST, `${name}: ${now.toFixed(3)} ms now, ${before.toFixed(3)} ms at c64f480, ${Math.round((now / before - 1) * 100)} percent slower`);
+  }
 });

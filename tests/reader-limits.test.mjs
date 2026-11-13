@@ -252,3 +252,70 @@ test("the page has a sentence for every reason a dropped page is given, and its 
   assert.match(sentences, /timeout: 'Your site took longer than five seconds to answer\.'/);
   assert.equal(REQUEST_MS, 5000);
 });
+
+// The review's finding L4: a request dropped at its deadline is also aborted by the check
+// itself, so that its socket is not left open on a runtime that does not act on the guard's
+// signal. The fetcher here keeps the signal it was handed and never answers.
+function listening(pages) {
+  const signals = [];
+  const net = async (address, init) => {
+    const target = new URL(address);
+    const lookup = target.hostname === "cloudflare-dns.com";
+    signals.push({ lookup, address: target.toString(), signal: init && init.signal });
+    const page = pages[lookup ? "lookup" : target.toString()];
+    if (page) return page();
+    if (!lookup) return html("not found", 404);
+    const name = target.searchParams.get("name");
+    const answer = target.searchParams.get("type") === "A" ? [{ name, type: 1, data: "93.184.216.34" }] : [];
+    return new Response(JSON.stringify({ Status: 0, Answer: answer }), { headers: { "content-type": "application/dns-json" } });
+  };
+  net.signals = signals;
+  return net;
+}
+
+test("a page that stalls is aborted at its deadline by the check itself, not left open", async (t) => {
+  const net = listening({ [SITE]: stalls() });
+  const result = await check(t, "hostile.example.org", net);
+  assertDropped(result, { at: REQUEST_MS, reason: "timeout" });
+  const asked = net.signals.filter((one) => !one.lookup);
+  assert.equal(asked.length, 1);
+  assert.ok(asked[0].signal, "the request carries a signal");
+  assert.equal(asked[0].signal.aborted, true, "the request was aborted at the deadline");
+  assert.equal(net.signals.filter((one) => one.lookup).every((one) => one.signal && !one.signal.aborted), true, "a lookup that answered is not aborted");
+});
+
+test("a lookup that never answers is aborted at its deadline by the check itself", async (t) => {
+  const net = listening({ lookup: stalls() });
+  const result = await check(t, "hostile.example.org", net);
+  assertDropped(result, { at: LOOKUP_MS, reason: "unresolved" });
+  assert.equal(net.signals.length, 2, "the two lookups of one name");
+  assert.equal(net.signals.every((one) => one.signal && one.signal.aborted), true);
+});
+
+test("a body that never ends is aborted at its deadline, and a page read in time is not", async (t) => {
+  const seen = { bytes: 0, let_go: false };
+  const net = listening({ [VAGUE_SITE]: serves(VAGUE), [VAGUE_SITE + "about"]: drips(REQUEST_MS - 100, seen) });
+  const result = await check(t, "vague.example.org", net);
+  assert.ok(result, "the check was still reading");
+  assert.deepEqual(result.body.pages, [VAGUE_SITE]);
+  const byAddress = Object.fromEntries(net.signals.filter((one) => !one.lookup).map((one) => [one.address, one.signal.aborted]));
+  assert.deepEqual(byAddress, { [VAGUE_SITE]: false, [VAGUE_SITE + "about"]: true });
+});
+
+// The review's finding L7: a runtime that does not let a script build a stream (workerd with a
+// compatibility date before 30 November 2022). The body cannot be given a deadline of our own
+// there, so it is handed on as it came and the guard's own limits hold it, as they did before
+// this file was written. Every read must still work.
+test("on a runtime that cannot build a stream, a site is still read", async (t) => {
+  const real = globalThis.ReadableStream;
+  globalThis.ReadableStream = class { constructor() { throw new TypeError("this runtime builds no streams"); } };
+  let result;
+  try {
+    result = await check(t, "hostile.example.org", network({ [SITE]: serves(HOME) }));
+  } finally {
+    globalThis.ReadableStream = real;
+  }
+  assert.ok(result, "the check was still reading");
+  assert.equal(result.body.found, true);
+  assert.equal(result.body.brand, "Acme Field");
+});

@@ -12,7 +12,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import "../lib/audit.js";
-import { analyze, proposeProducts, readPage } from "../lib/analyze.js";
+import { analyze, classify, proposeBrand, proposeProducts, readPage } from "../lib/analyze.js";
 
 const HALF_A_SECOND_MS = 500;
 const numbers = (count) => "0,".repeat(count - 1) + "0";
@@ -124,4 +124,153 @@ test("a whole check of three such pages ends in under two seconds", async () => 
   assert.deepEqual(body.pages, ["https://hostile.example.org/", "https://hostile.example.org/about", "https://hostile.example.org/company"]);
   assert.deepEqual(body.product_names, ["N1", "N2", "N3", "N4", "N5"]);
   assert.ok(took < TWO_SECONDS_MS, `the check took ${Math.round(took).toLocaleString("en-US")} ms`);
+});
+
+// The review's costliest page (finding H1), and its like. One run of text is read as the title,
+// the first heading, a second heading, the words of a product link and a structured data name at
+// once. The run is made of a piece that costs the most to clean: an entity beside the letter
+// that lower case moves, tags, entities that vanish, spaces, hyphens. The page is as large as
+// the check reads at all. Each page is read three times and the quickest is held, so that a
+// busy machine does not fail the suite and a slow reader still does.
+const ONE_PAGE_MS = 300;
+const ONE_CHECK_MS = 900;
+const encoder = new TextEncoder();
+const utf8 = (text) => encoder.encode(text).length;
+function costly(piece) {
+  const fill = (bytes) => piece.repeat(Math.max(0, Math.floor(bytes / utf8(piece))));
+  const start = "<a href=\"/about\">a</a><a href=\"/company\">c</a><title><h1><h2><a href=\"/products/x/\">";
+  const inTitle = fill(399_000 - start.length);
+  const open = "</title><script type=\"application/ld+json\">{\"@type\":\"Product\",\"name\":\"";
+  const close = "\",\"description\":\"d\"}</script>";
+  const inName = /["\\<]/.test(piece) ? "" : fill(199_000);
+  const end = "</a></h2></h1>";
+  const used = utf8(start) + utf8(inTitle) + utf8(open) + utf8(inName) + utf8(close) + utf8(end);
+  return start + inTitle + open + inName + close + fill(PAGE_BYTES - used) + end;
+}
+const EM_DASH = String.fromCodePoint(0x2014);
+const COSTLY = Object.fromEntries([`&a;${DOTTED}`, `&lt;${DOTTED}`, `&amp;${DOTTED}`, "&copy;", "&#0;", "<b>", `<i>${DOTTED}`, " ", "-", `&amp;<b>-${DOTTED} `, EM_DASH, `x${DOTTED}`].map((piece) => [piece, costly(piece)]));
+const quickest = (rounds, work) => { let best = Infinity; for (let round = 0; round < rounds; round += 1) { const started = performance.now(); work(); best = Math.min(best, performance.now() - started); } return best; };
+
+test(`the costliest page that could be built is read in under ${ONE_PAGE_MS} ms`, () => {
+  for (const [piece, html] of Object.entries(COSTLY)) {
+    assert.ok(utf8(html) <= PAGE_BYTES && utf8(html) > PAGE_BYTES - 16, `${JSON.stringify(piece)}: ${utf8(html)} bytes`);
+    const took = quickest(3, () => readPage(html, "https://hostile.example.org/"));
+    assert.ok(took < ONE_PAGE_MS, `${JSON.stringify(piece)}: readPage took ${Math.round(took)} ms`);
+  }
+  for (const [name, html] of Object.entries(Object.assign(Object.fromEntries(PIECES.map((piece) => [`all "${piece.slice(0, 40)}"`, whole(piece)])), BUILT))) {
+    const took = quickest(2, () => readPage(html, "https://hostile.example.com/"));
+    assert.ok(took < ONE_PAGE_MS, `${name}: readPage took ${Math.round(took)} ms`);
+  }
+});
+
+const lookupAnswer = (target) => new Response(JSON.stringify({ Status: 0, Answer: target.searchParams.get("type") === "A" ? [{ name: target.searchParams.get("name"), type: 1, data: "93.184.216.34" }] : [] }), { headers: { "content-type": "application/dns-json" } });
+const checkOf = (website) => new Request("https://audit.broadcastwell.com/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ website }) });
+
+test(`a whole check of three of the costliest pages ends in under ${ONE_CHECK_MS} ms`, async () => {
+  for (const [piece, html] of Object.entries(COSTLY)) {
+    const net = async (address) => {
+      const target = new URL(address);
+      return target.hostname === "cloudflare-dns.com" ? lookupAnswer(target) : new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    };
+    let best = Infinity, pages = 0;
+    for (let round = 0; round < 3; round += 1) {
+      const started = performance.now();
+      const response = await analyze(checkOf("hostile.example.org"), {}, { fetcher: net, preview: true });
+      const body = await response.json();
+      best = Math.min(best, performance.now() - started);
+      pages = (body.pages || []).length;
+    }
+    assert.equal(pages, 3, `${JSON.stringify(piece)}: three pages were read`);
+    assert.ok(best < ONE_CHECK_MS, `${JSON.stringify(piece)}: the check took ${Math.round(best)} ms`);
+  }
+});
+
+// Finding M1: readPage must never throw, whatever a page holds. A structured data value is
+// whatever JSON can spell: a type that is an object with a toString of its own, a name that is
+// a list nested thousands deep. Before the fix two such pages of 400 bytes made readPage throw,
+// and the route then gave no answer at all.
+const vague = (json) => `<html><head><title>Vague Co</title><meta name="description" content="We help teams do better work."></head><body><h1>Better work</h1><a href="/about">About</a><p>${"Our mission is to help people. ".repeat(6)}</p><script type="application/ld+json">${json}</script></body></html>`;
+const deep = (depth, leaf) => "[".repeat(depth) + leaf + "]".repeat(depth);
+const THROWERS = {
+  "a type that is an object with toString and valueOf set to 1": "{\"@type\":{\"toString\":1,\"valueOf\":1},\"name\":\"x\"}",
+  "a product whose name is such an object": "{\"@type\":\"Product\",\"name\":{\"toString\":1,\"valueOf\":1}}",
+  "a type that is a list nested 4,000 deep": `{"@type":${deep(4000, "1")}}`,
+  "a product whose name is a list nested 4,000 deep": `{"@type":"Product","name":${deep(4000, "1")}}`,
+  "a type list that holds such values beside a plain one": `{"@type":["Organization",{"toString":null},${deep(9000, "\"x\"")},7],"name":"Kept"}`,
+};
+
+for (const [name, json] of Object.entries(THROWERS)) {
+  test(`${name}: the page is read and nothing is thrown`, async () => {
+    const html = vague(json);
+    const page = readPage(html, "https://vague.example.org/");
+    assert.equal(page.title, "Vague Co");
+    classify([page]);
+    proposeBrand([page], "vague.example.org");
+    proposeProducts([page], "vague.example.org");
+    // And through the route, as the homepage and as the second page: an answer is made.
+    for (const table of [{ "/": html }, { "/": vague("{}"), "/about": html }]) {
+      const net = async (address) => {
+        const target = new URL(address);
+        if (target.hostname === "cloudflare-dns.com") return lookupAnswer(target);
+        return table[target.pathname] ? new Response(table[target.pathname], { headers: { "content-type": "text/html" } }) : new Response("no", { status: 404 });
+      };
+      const response = await analyze(checkOf("vague.example.org"), {}, { fetcher: net, preview: true });
+      assert.equal(response.status, 200);
+      assert.equal((await response.json()).website, "vague.example.org");
+    }
+  });
+}
+
+test("a value that cannot be set as text is read as nothing, and the values beside it are read as before", () => {
+  const page = readPage(vague(THROWERS["a type list that holds such values beside a plain one"]), "https://vague.example.org/");
+  assert.deepEqual(page.orgNames, [{ name: "Kept", type: "Organization" }]);
+});
+
+// 20,000 pages of structured data in hostile shapes, made from a seed so that a failure repeats.
+// Every value is one JSON can spell. None may make the reader throw, and the whole run has a
+// bound on its time: the pages are small, so a read that is slow here is slow for a reason.
+const FUZZ_PAGES = 20_000;
+const FUZZ_MS = 30_000;
+test(`${FUZZ_PAGES.toLocaleString("en-US")} pages of hostile structured data: nothing is thrown, and the run ends in under ${FUZZ_MS / 1000} seconds`, () => {
+  let seed = 222;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const pick = (list) => list[Math.floor(random() * list.length)];
+  const KEYS = ["@type", "@type", "@type", "@graph", "@graph", "name", "name", "description", "applicationCategory", "toString", "valueOf", "length", "__proto__", "constructor", "hasOwnProperty", "then", "0", "@context", "@id"];
+  const LEAVES = ["null", "true", "false", "0", "-1", "1e308", "1e-9", "\"\"", "\"Organization\"", "\"Product\"", "\"SoftwareApplication\"", "\"Brand\"", "\"toString\"", "\"<b>x</b> &amp; y\"", `"${"n".repeat(5000)}"`, `"${DOTTED}"`, "{}", "[]", "1", "\"WebSite\""];
+  const DEPTHS = [2, 5, 40, 600, 3000, 6000, 12000];
+  const value = (room) => {
+    const roll = random();
+    if (room <= 0 || roll < 0.35) return pick(LEAVES);
+    if (roll < 0.45) return deep(pick(DEPTHS), pick(LEAVES));
+    if (roll < 0.5) { const graphs = pick([1, 3, 4, 5, 9, 200]); return "{\"@graph\":[".repeat(graphs) + value(room - 1) + "]}".repeat(graphs); }
+    if (roll < 0.7) return `[${Array.from({ length: Math.floor(random() * 5) }, () => value(room - 1)).join(",")}]`;
+    return `{${Array.from({ length: 1 + Math.floor(random() * 5) }, () => `${JSON.stringify(pick(KEYS))}:${value(room - 1)}`).join(",")}}`;
+  };
+  const started = performance.now();
+  let read = 0, slowest = 0, kept = 0;
+  for (let n = 0; n < FUZZ_PAGES; n += 1) {
+    let json = value(4);
+    // A part of the pages are cut short, as broken pages are.
+    if (n % 11 === 0) json = json.slice(0, Math.floor(json.length * random()));
+    const html = `<title>Fuzz</title><script type="application/ld+json">${json}</script>${n % 7 === 0 ? `<script type="application/ld+json">${value(3)}</script>` : ""}`;
+    const one = performance.now();
+    let page;
+    try {
+      page = readPage(html, "https://fuzz.example.com/");
+      classify([page]);
+      proposeBrand([page], "fuzz.example.com");
+      proposeProducts([page], "fuzz.example.com");
+    } catch (error) {
+      assert.fail(`page ${n} threw ${error.name}: ${String(error.message).slice(0, 80)}; the page: ${html.slice(0, 300)}`);
+    }
+    slowest = Math.max(slowest, performance.now() - one);
+    read += 1;
+    kept += page.orgNames.length + page.productNames.length;
+    assert.ok(page.orgNames.length <= 60 && page.title === "Fuzz", `page ${n}`);
+  }
+  const took = performance.now() - started;
+  assert.equal(read, FUZZ_PAGES);
+  assert.ok(kept > 1000, `the pages are not empty of structured data: ${kept} names were kept`);
+  assert.ok(slowest < ONE_PAGE_MS, `the slowest of these small pages took ${Math.round(slowest)} ms`);
+  assert.ok(took < FUZZ_MS, `the run took ${Math.round(took).toLocaleString("en-US")} ms`);
 });

@@ -14,6 +14,11 @@
  "13-product.html": "a12d80c838fa7ffe9f5e65de6500ab07df4adefefa37efe41e8e6c0ffca3e5c6",
  "14-script-shell.html": "c2ee42090c31b392fd745188455868d2fa7baf686fc88a75c5be424e760de29b",
  "15-upper-case-legacy.html": "7b85344019dc2355ce0a0919f3825144a04c4624d28b5fedf23071fc966d5322",
- "expected.json": "7a9f29cc32be8de63bf6f5c7d4418b6a9af7e7204c0c00ddc4adf47ba7c5ca99",
- "index.json": "89179f22aa8fe1fed3cb6f570bc65acedc457b5c954a2c1b611f2caf094203c2"
+ "16-forty-structured-blocks.html": "51fe636a2035e6bf25a5743833328a73337b0cd903e7e78e809b2d5fa5fa4dca",
+ "17-five-thousand-entries.html": "16d6bc88ee956e2789e0c6f9bbaa7e43948b2e7a33bae1a5257de6de4f850936",
+ "18-large-structured-data.html": "01ad0a69f03555f2421b8a17efd07deb56643180a46d0cf7ab811af379834f4c",
+ "19-long-meta-description.html": "ddd1026b4c43cbd048812ef4e59a2a9e6ca73c3554ab2771fa373bc44e46a569",
+ "20-nine-digit-reference.html": "66c0f2c9d854f81b70679526b903dc8e3c261cdb3748ae8977004c2bec97e370",
+ "expected.json": "ba2f3d94208adae9b5f9f818e66763d40e0ff571572a5d4db700a99c1c771b2c",
+ "index.json": "494a9995fc1cb6683bb6b8b79083083444b4a2d899a242b86595eaa4c3186ecd"
 }

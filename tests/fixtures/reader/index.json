@@ -1,5 +1,5 @@
 {
-  "about": "Ordinary company pages, written for this repository. No page is copied from a real company. Each page is read at the address beside it. Each site is one check: the website a visitor types and the pages that answer.",
+  "about": "Ordinary company pages, written for this repository. No page is copied from a real company. Each page is read at the address beside it. Each site is one check: the website a visitor types and the pages that answer. Pages 16 to 20 stand at the edges of the reader's limits: forty blocks of structured data, a list of 5,000 entries, 300,000 bytes of structured data, a description of 20,000 characters, and character references of nine digits and more.",
   "pages": [
     { "file": "01-plain-marketing.html", "url": "https://www.northpeak.example.com/" },
     { "file": "02-jsonld-org-product.html", "url": "https://tallyforge.example.com/" },
@@ -15,7 +15,12 @@
     { "file": "12-no-structured-data.html", "url": "https://oakbridge.example.com/" },
     { "file": "13-product.html", "url": "https://oakbridge.example.com/product" },
     { "file": "14-script-shell.html", "url": "https://shellco.example.com/" },
-    { "file": "15-upper-case-legacy.html", "url": "https://pawledger.example.com/" }
+    { "file": "15-upper-case-legacy.html", "url": "https://pawledger.example.com/" },
+    { "file": "16-forty-structured-blocks.html", "url": "https://lanternlearn.example.com/courses" },
+    { "file": "17-five-thousand-entries.html", "url": "https://pulsegate.example.com/" },
+    { "file": "18-large-structured-data.html", "url": "https://stackwell.example.com/help" },
+    { "file": "19-long-meta-description.html", "url": "https://fernhollow.example.com/" },
+    { "file": "20-nine-digit-reference.html", "url": "https://cafeledger.example.com/" }
   ],
   "sites": [
     { "website": "northpeak.example.com", "routes": { "https://northpeak.example.com/": { "redirect": "https://www.northpeak.example.com/" }, "https://www.northpeak.example.com/": { "file": "01-plain-marketing.html" } } },
@@ -29,6 +34,11 @@
     { "website": "lumenroute.example.com", "routes": { "https://lumenroute.example.com/": { "file": "11-comments-wrapping-tags.html" } } },
     { "website": "oakbridge.example.com", "routes": { "https://oakbridge.example.com/": { "file": "12-no-structured-data.html" }, "https://oakbridge.example.com/product": { "file": "13-product.html" }, "https://oakbridge.example.com/about": { "file": "09-about.html" }, "https://oakbridge.example.com/pricing": { "file": "08-pricing.html" } } },
     { "website": "shellco.example.com", "routes": { "https://shellco.example.com/": { "file": "14-script-shell.html" } } },
-    { "website": "pawledger.example.com", "routes": { "https://pawledger.example.com/": { "file": "15-upper-case-legacy.html" } } }
+    { "website": "pawledger.example.com", "routes": { "https://pawledger.example.com/": { "file": "15-upper-case-legacy.html" } } },
+    { "website": "https://lanternlearn.example.com/courses", "routes": { "https://lanternlearn.example.com/courses": { "file": "16-forty-structured-blocks.html" } } },
+    { "website": "pulsegate.example.com", "routes": { "https://pulsegate.example.com/": { "file": "17-five-thousand-entries.html" } } },
+    { "website": "https://stackwell.example.com/help", "routes": { "https://stackwell.example.com/help": { "file": "18-large-structured-data.html" } } },
+    { "website": "fernhollow.example.com", "routes": { "https://fernhollow.example.com/": { "file": "19-long-meta-description.html" } } },
+    { "website": "cafeledger.example.com", "routes": { "https://cafeledger.example.com/": { "file": "20-nine-digit-reference.html" } } }
   ]
 }

@@ -394,10 +394,18 @@ test(`a page of links that do not parse is read in under ${ONE_PAGE_MS} ms, a ch
     assert.equal(pages, 3, piece);
     assert.ok(best < ONE_CHECK_MS, `${piece}: the check took ${Math.round(best)} ms`);
   }
-  // Counted, not timed: the parser is not made to throw. The stand-in counts every address it refuses.
+  // In workerd URL.parse returning null costs as much as a thrown constructor call.
   const real = globalThis.URL;
   let thrown = 0;
-  globalThis.URL = class extends real { constructor(...args) { try { super(...args); } catch (error) { thrown += 1; throw error; } } };
+  let nullParses = 0;
+  globalThis.URL = class extends real {
+    static parse(...args) {
+      const result = real.parse(...args);
+      if (result === null) nullParses += 1;
+      return result;
+    }
+    constructor(...args) { try { super(...args); } catch (error) { thrown += 1; throw error; } }
+  };
   try {
     const page = readPage(withTwoLinks(UNPARSABLE[0]).slice(0, 200_000), "https://hostile.example.org/");
     assert.equal(page.links.length, 2);
@@ -405,4 +413,5 @@ test(`a page of links that do not parse is read in under ${ONE_PAGE_MS} ms, a ch
     globalThis.URL = real;
   }
   assert.equal(thrown, 0, `${thrown} addresses were handed to the parser to throw on`);
+  assert.equal(nullParses, 0, `${nullParses} addresses cost a failed URL.parse call`);
 });

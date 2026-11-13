@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; }
+  .hero > h1 { font-size: 3rem; } /* a comment with <h2>a tag</h2> in it */
+  a[href^="/product"]::after { content: ">"; }
+</style>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function track(name) { dataLayer.push({ event: name, markup: "<h2>not a heading</h2>", link: '<a href="/about">not a link we print</a>' }); }
+  if (1 < 2 && 3 > 2) { track("load"); }
+</script>
+<title>Meadowpay | Payroll software for restaurants and shops</title>
+<meta name="description" content="Meadowpay runs payroll, files payroll taxes and pays your team by direct deposit.">
+<meta property="og:site_name" content="Meadowpay">
+<script type="text/javascript">var config = {"title":"<title>Wrong title</title>","cta":"Start"};</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Meadowpay","applicationCategory":"Payroll software","description":"Payroll processing with tax filing for hourly teams."}</script>
+</head>
+<body>
+<noscript><p>Please enable JavaScript to see pay runs.</p><img src="/pixel.gif" alt=""></noscript>
+<svg width="24" height="24" viewBox="0 0 24 24"><title>Logo mark</title><path d="M2 2 L22 22"/><text>Meadow</text></svg>
+<div class="hero">
+  <h1>Run payroll in <em>four</em> minutes</h1>
+  <p>Meadowpay is payroll software for hourly teams. It handles pay runs, payroll taxes, tips and direct deposit.</p>
+</div>
+<template id="row"><tr><td>Template text that is never shown</td></tr></template>
+<h2>Payroll processing</h2>
+<p>Hours come in from the schedule. Review, approve, done.</p>
+<script>document.write("<h2>Written by script</h2>");</script>
+<h2>Payroll tax filing</h2>
+<p>Federal, state and local forms are filed for you.</p>
+<style media="print">h2 { page-break-before: always; }</style>
+<h2>Benefits</h2>
+<p>Health plans and time off, deducted on every pay run.</p>
+<a href="/how-it-works">How it works</a>
+<a href="/Product/">Product</a>
+<a href="/why-meadowpay/">Why Meadowpay</a>
+<a href="/products/payroll/"><svg width="10" height="10"><title>arrow</title></svg> Meadowpay Payroll</a>
+<script async src="https://cdn.example.net/analytics.js"></script>
+<script>
+  // A closing tag written in a string: "</scr" + "ipt>"
+  var late = "<p>late text</p>";
+</script>
+</body>
+</html>

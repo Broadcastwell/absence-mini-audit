@@ -1,7 +1,8 @@
 {
   "lib/audit.js": "75819d2a7724936251b5d05f1c0e065f65623df37c44e808df4332080be074d9",
-  "lib/analyze.js": "91ccd63faba5d41c2867893c2be3ddae7416da90a100226c5090272e5c3a1a7d",
-  "lib/guard.js": "64f75bbd60721a3c2659211b301dba5f5874a3e4b6a94136346aaaffc378fdbf",
+  "lib/analyze.js": "4ee9047a4dc39fd2921aa3ea3bbe8bc32c53c180b2ee0e447fcdfb630cc3cc46",
+  "lib/guard.js": "6ccce22e9042f3d0b0e3e1fec72e13fa74d2aed51df6860332ba579d699d3788",
+  "lib/bounded-fetch.js": "b233e3770456ea0330547a6ea94f4401d6277b83a10726028b62603dd8c0d690",
   "lib/seal.js": "c2f81b33a68534117473a8601307ddc5fbdaba88d5fcc094270e329aecf4c9c5",
   "lib/link.js": "de54c5a8f03436dfce21743af369ec184c1ebb34dbe7715a1b876cead68d2a6d",
   "lib/event.js": "757a9db778bdea410a3eb028a2f886c3c5de53b78975b5ae5e9bf11b6c275896"

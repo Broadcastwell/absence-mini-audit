@@ -21,10 +21,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { FIXTURE_DIR, fixtureIndex, fixtureManifest, fixtureText, readerOutputs, sha256 } from "../scripts/reader-fixtures.mjs";
-import { readPage } from "../lib/analyze.js";
+import { proposeProducts, readPage } from "../lib/analyze.js";
 import { firstElement, lowerInPlace, stripCode } from "../lib/html-scan.js";
 import { LD_LIMITS } from "../lib/ld-read.js";
-import { readPageBefore } from "./reader-reference.mjs";
+import { proposeProductsBefore, readPageBefore } from "./reader-reference.mjs";
 
 // The files this repository shares with the app, byte for byte.
 const SHARED = {
@@ -123,6 +123,7 @@ test("on 4,000 small awkward pages the reader gives what the reader of c64f480 g
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   const pick = (list) => list[Math.floor(random() * list.length)];
   const gave = { title: 0, h2s: 0, orgNames: 0, links: 0, productNames: 0 };
+  let earlier = readPage("", "https://fuzz.example.com/");
   for (let n = 0; n < 4000; n += 1) {
     const length = 1 + Math.floor(random() * (n % 3 === 0 ? 150 : 40));
     let html = "";
@@ -130,6 +131,10 @@ test("on 4,000 small awkward pages the reader gives what the reader of c64f480 g
     const address = pick(ADDRESSES);
     const now = readPage(html, address);
     assert.deepEqual(now, readPageBefore(html, address), `page ${n}: ${JSON.stringify(html)}`);
+    // The names proposed from this page and the one before it, for a site with no known products
+    // and for one with a list of its own.
+    for (const host of ["fuzz.example.com", "salesforce.com"]) assert.deepEqual(proposeProducts([now, earlier], host), proposeProductsBefore([now, earlier], host), `page ${n}: products for ${host}`);
+    earlier = now;
     for (const key of Object.keys(gave)) if (now[key].length) gave[key] += 1;
   }
   // The pages are not empty of what is compared: each field was given by hundreds of them.
@@ -138,6 +143,17 @@ test("on 4,000 small awkward pages the reader gives what the reader of c64f480 g
 
 test("every fixture page reads as the reader of c64f480 read it, field for field", () => {
   for (const { file, url } of fixtureIndex().pages) assert.deepEqual(readPage(fixtureText(file), url), readPageBefore(fixtureText(file), url), file);
+});
+
+// proposeProducts stops at its fifth name. The names it gives are the ones it always gave.
+test("the products proposed are the ones the code of c64f480 proposed, for one page and for many", () => {
+  const pages = fixtureIndex().pages.map(({ file, url }) => readPage(fixtureText(file), url));
+  const many = Array.from({ length: 40 }, (_unused, n) => ({ productNames: ["Home", "", `Name ${n % 7}`, `NAME ${n % 7}`, "x".repeat(81), `Other ${n}`] }));
+  // Hosts with no known products, and with 3, 2, 4, 5 and 10 of their own.
+  for (const host of ["fuzz.example.com", "salesforce.com", "www.hubspot.com", "avenhospitality.com", "vertafore.com", "oracle.com"]) {
+    for (const set of [pages, pages.slice(1, 4), [pages[6]], many, many.slice(0, 1), [], [{}]]) assert.deepEqual(proposeProducts(set, host), proposeProductsBefore(set, host), host);
+    for (const page of pages) assert.deepEqual(proposeProducts([page], host), proposeProductsBefore([page], host), host);
+  }
 });
 
 // What is past a limit of the structured data is not read, and what is inside it still is.

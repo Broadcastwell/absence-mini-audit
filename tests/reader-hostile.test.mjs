@@ -11,7 +11,8 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readPage } from "../lib/analyze.js";
+import "../lib/audit.js";
+import { analyze, proposeProducts, readPage } from "../lib/analyze.js";
 
 const HALF_A_SECOND_MS = 500;
 const numbers = (count) => "0,".repeat(count - 1) + "0";
@@ -82,4 +83,45 @@ test(`a page of ${PAGE_BYTES.toLocaleString("en-US")} hostile bytes is read in a
     assert.ok(page.links.length <= 400 && page.h2s.length <= 12 && page.orgNames.length <= 60 && page.body.length <= 20000, name);
   }
   assert.ok(slowest < TWO_SECONDS_MS, `slowest: ${Math.round(slowest)} ms`);
+});
+
+// A page of nothing but links into a product section, each with its own words. Reading it gives
+// tens of thousands of names, and the five that are proposed must not cost a pass over all of
+// them for each one. Before the fix proposeProducts took 9 seconds on one such page.
+const productLinks = (bytes) => {
+  let html = "<a href=\"/about\">About</a><a href=\"/company\">Company</a>";
+  for (let n = 1; html.length < bytes - 40; n += 1) html += `<a href="/products/x/">N${n}</a>`;
+  return html;
+};
+
+test("a page of 32,000 different product links: five names are proposed in under half a second", () => {
+  const html = productLinks(PAGE_BYTES);
+  const started = performance.now();
+  const page = readPage(html, "https://hostile.example.com/");
+  const products = proposeProducts([page, page, page], "hostile.example.com");
+  const took = performance.now() - started;
+  assert.ok(page.productNames.length > 30_000, String(page.productNames.length));
+  assert.deepEqual(products, ["N1", "N2", "N3", "N4", "N5"]);
+  assert.ok(took < HALF_A_SECOND_MS, `reading and proposing took ${Math.round(took).toLocaleString("en-US")} ms`);
+});
+
+test("a whole check of three such pages ends in under two seconds", async () => {
+  const html = productLinks(PAGE_BYTES);
+  const net = async (address) => {
+    const target = new URL(address);
+    if (target.hostname === "cloudflare-dns.com") {
+      const answer = target.searchParams.get("type") === "A" ? [{ name: target.searchParams.get("name"), type: 1, data: "93.184.216.34" }] : [];
+      return new Response(JSON.stringify({ Status: 0, Answer: answer }), { headers: { "content-type": "application/dns-json" } });
+    }
+    return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+  };
+  const request = new Request("https://audit.broadcastwell.com/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ website: "hostile.example.org" }) });
+  const started = performance.now();
+  const response = await analyze(request, {}, { fetcher: net, preview: true });
+  const body = await response.json();
+  const took = performance.now() - started;
+  assert.equal(response.status, 200);
+  assert.deepEqual(body.pages, ["https://hostile.example.org/", "https://hostile.example.org/about", "https://hostile.example.org/company"]);
+  assert.deepEqual(body.product_names, ["N1", "N2", "N3", "N4", "N5"]);
+  assert.ok(took < TWO_SECONDS_MS, `the check took ${Math.round(took).toLocaleString("en-US")} ms`);
 });

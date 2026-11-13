@@ -1,11 +1,14 @@
 /**
  * The page reader as it was at main c64f480, before it was changed to read in one forward pass.
- * These are the lines of lib/analyze.js at that commit, unchanged (lines 26 to 27, 56 to 109 and
- * 127 to 188), with readPage named readPageBefore. They are kept as the measure: on any page
- * that is small enough for the old patterns, the reader of today must give the same answer.
+ * These are the lines of lib/analyze.js at that commit, unchanged (lines 26 to 27, 56 to 109,
+ * 127 to 188 and 117 to 125), with readPage named readPageBefore and proposeProducts named
+ * proposeProductsBefore. They are kept as the measure: on any page that is small enough for
+ * the old patterns, the reader of today must give the same answer.
  * tests/reader-drift.test.mjs holds it to that. This file is used by tests only. Never read a
  * stranger's page with it: its patterns are the ones a hostile page can hold for minutes.
  */
+
+import { vendorFor } from "../lib/analyze.js";
 
 // Paths worth a second look when the homepage alone does not settle the category.
 const MORE_PAGES = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?(about(?:-us)?|company|product|products|platform|solution|solutions|features|what-we-do|how-it-works|overview|why-[a-z0-9-]+)\/?$/i;
@@ -126,4 +129,14 @@ export function readPageBefore(html, pageUrl) {
     // A page that needs JavaScript to show anything gives us almost no text.
     empty: body.length < 120 && !(titleMatch && titleMatch[1].trim()) && !meta.description && !meta["og:description"],
   };
+}
+
+export function proposeProductsBefore(pages, host) {
+  const mapped = vendorFor(host);
+  const out = [...(mapped?.products || [])];
+  const generic = /^(home|products?|platform|solutions?|features|services|about|contact|resources|company|support|blog|login|sign in|learn more|overview|software|g2 reviews|reviews|ratings|read more|watch video)$/i;
+  for (const page of pages) for (const name of page.productNames || []) {
+    if (name && name.length <= 80 && !generic.test(name) && !out.some(v=>v.toLowerCase()===name.toLowerCase())) out.push(name);
+  }
+  return out.slice(0,5);
 }

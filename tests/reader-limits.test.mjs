@@ -1,12 +1,22 @@
 /**
  * The limits of one website read, held against four hostile pages: a page that stalls before
  * its first byte, a page whose body never ends, a page that is too large, and a redirect loop.
- * Each must be dropped inside a fixed limit, the pages already read must still count, the check
- * must carry on to its result, and the result must say that the page could not be read.
+ * A page that stalls, never ends or loops must be dropped inside a fixed limit, the pages
+ * already read must still count, the check must carry on to its result, and the result must
+ * say that the page could not be read. A page that is too large is read up to the size limit
+ * and no further (owner's ruling R-224).
  *
  * The network here is a table, and the clock is the test's own: time moves only when the test
  * moves it, so a wait of five seconds takes a few milliseconds and its length is exact. Nothing
  * in this file reaches the internet.
+ *
+ * What the red run of these tests showed, and what it did not (the review's finding L6). The
+ * tests of a page that stalls or never ends were red before lib/bounded-fetch.js because the
+ * clock here is the test's own, and the runtime's abort timer does not follow it: they show
+ * that the check kept no time of its own, not that production waited. In workerd the fetch
+ * guard alone already dropped such a page at five seconds, by the runtime's signal. The timer
+ * this branch adds is a second line for those two cases. What is new in behavior is the list
+ * of unread pages and that a dropped request is aborted by the check itself.
  *
  * Run: node --test tests/reader-limits.test.mjs
  */
@@ -135,18 +145,46 @@ test("a homepage whose body never ends is dropped at five seconds, though a byte
   assert.equal(seen.let_go, true);
 });
 
-test("an oversized homepage is dropped whole: nothing of it is read", async (t) => {
+// A page over the size limit is not dropped (owner's ruling R-224): its first 1,048,576 bytes
+// are read and the check runs on that part, as it did before. The read stops at the limit. It
+// does not wait for the rest and it does not keep more.
+test("an oversized homepage is read up to its first 1,048,576 bytes, and the check runs on that part", async (t) => {
   const result = await check(t, "hostile.example.org", network({ [SITE]: oversized() }));
-  assertDropped(result, { at: 0, reason: "unreachable" });
-  assert.equal(result.body.brand, "", "no name is proposed from a page that was dropped");
+  assert.ok(result, "the check was still reading");
+  assert.equal(result.at, 0, "no wait");
+  assert.equal(result.body.found, true);
+  assert.equal(result.body.brand, "Acme Field");
+  assert.equal(result.body.category, "field service management software");
+  assert.equal("unread" in result.body, false);
 });
 
-test("a homepage that pours bytes without end is dropped at the size limit, with no wait", async (t) => {
+test("a homepage that pours bytes without end is read up to the size limit and let go, with no wait", async (t) => {
   const seen = { bytes: 0, let_go: false };
   const result = await check(t, "hostile.example.org", network({ [SITE]: pours(seen) }));
-  assertDropped(result, { at: 0, reason: "unreachable" });
-  assert.equal(seen.let_go, true);
+  assert.ok(result, "the check was still reading");
+  assert.equal(result.at, 0, "no wait");
+  assert.equal(result.status, 200);
+  assert.equal(result.body.reason, "unclassified", "a megabyte of one letter names no category");
+  assert.equal(seen.let_go, true, "the body is let go at the limit");
   assert.ok(seen.bytes <= BODY_BYTES + 4 * 65536, `${seen.bytes} bytes were taken`);
+});
+
+test("an oversized body that drips is still dropped at five seconds: the size rule lifts no time limit", async (t) => {
+  const seen = { bytes: 0, let_go: false };
+  const result = await check(t, "hostile.example.org", network({ [SITE]: drips(1, seen) }));
+  assertDropped(result, { at: REQUEST_MS, reason: "timeout" });
+  assert.equal(seen.let_go, true);
+});
+
+test("an oversized second page is read in part too, and the third page is still read", async (t) => {
+  const about = () => html(VAGUE_ABOUT + "<p>" + "filler ".repeat(BODY_BYTES / 7 + 10) + "</p>");
+  const net = network({ [VAGUE_SITE]: serves(VAGUE), [VAGUE_SITE + "about"]: about, [VAGUE_SITE + "product"]: serves(VAGUE_PRODUCT) });
+  const result = await check(t, "vague.example.org", net);
+  assert.ok(result, "the check was still reading");
+  assert.equal(result.body.found, true);
+  assert.equal(result.body.category, "dental practice management software");
+  assert.deepEqual(result.body.pages, [VAGUE_SITE, VAGUE_SITE + "about", VAGUE_SITE + "product"]);
+  assert.equal("unread" in result.body, false);
 });
 
 test("a redirect loop ends at the third request", async (t) => {
@@ -175,7 +213,6 @@ const VAGUE_SITE = "https://vague.example.org/";
 const KINDS = {
   "stalls before its first byte": { page: () => stalls(), at: REQUEST_MS, reason: "timeout" },
   "never ends": { page: () => drips(REQUEST_MS - 100, { bytes: 0 }), at: REQUEST_MS, reason: "timeout" },
-  "is oversized": { page: () => oversized(), at: 0, reason: "unreachable" },
   "redirects to itself without end": { page: (self) => redirects(self), at: 0, reason: "unreachable" },
 };
 
@@ -307,8 +344,15 @@ test("a body that never ends is aborted at its deadline, and a page read in time
 // there, so it is handed on as it came and the guard's own limits hold it, as they did before
 // this file was written. Every read must still work.
 test("on a runtime that cannot build a stream, a site is still read", async (t) => {
+  // The stand-in refuses a stream built by a script, and still builds the byte streams the
+  // runtime makes for its own responses, which is what such a runtime does.
   const real = globalThis.ReadableStream;
-  globalThis.ReadableStream = class { constructor() { throw new TypeError("this runtime builds no streams"); } };
+  globalThis.ReadableStream = class extends real {
+    constructor(source, strategy) {
+      if (source && typeof source.pull === "function" && source.type !== "bytes") throw new TypeError("this runtime builds no streams");
+      super(source, strategy);
+    }
+  };
   let result;
   try {
     result = await check(t, "hostile.example.org", network({ [SITE]: serves(HOME) }));

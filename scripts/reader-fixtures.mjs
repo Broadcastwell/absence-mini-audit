@@ -42,9 +42,14 @@ export function fixtureNetwork(routes) {
     const route = routes[target.toString()];
     if (!route) return new Response("not found", { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
     if (route.redirect) return new Response("", { status: 301, headers: { location: route.redirect } });
-    return new Response(fixtureText(route.file), { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
+    return new Response(route.html === undefined ? fixtureText(route.file) : route.html, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
   };
 }
+
+// The files this repository shares with the app, byte for byte. Their hashes stand in the
+// manifest beside the fixtures, so one manifest says what both sides must hold.
+export const SHARED_FILES = { "shared:html-scan.js": "lib/html-scan.js", "shared:ld-read.js": "lib/ld-read.js", "shared:guard.js": "lib/guard.js" };
+const REPOSITORY = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function checkRequest(website) {
   return new Request("https://audit.broadcastwell.com/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ website }) });
@@ -72,13 +77,37 @@ export async function readerOutputs() {
     const response = await analyze(checkRequest(website), {}, { fetcher: fixtureNetwork(routes), preview: true });
     sites[website] = { status: response.status, body: await response.json() };
   }
+  // The pages longer than the check reads (tests/fixtures/reader/oversized.mjs): what is read of
+  // the first 1,048,576 bytes of each, and what a whole check of the site answers.
+  const { oversizedPages, cutText } = await import(pathToFileURL(path.join(FIXTURE_DIR, "oversized.mjs")).href);
+  for (const { name, website, url, html } of oversizedPages()) {
+    const page = readPage(cutText(html), url);
+    const ranked = classify([page]);
+    pages[name] = {
+      url,
+      readPage: page,
+      classify: ranked,
+      proposeBrand: proposeBrand([page], website),
+      proposeProducts: proposeProducts([page], website),
+      questionsFor: questionsFor(ranked.length ? ranked[0].label : "business software"),
+    };
+    const response = await analyze(checkRequest(website), {}, { fetcher: fixtureNetwork({ [url]: { html } }), preview: true });
+    sites[website] = { status: response.status, body: await response.json() };
+  }
   return JSON.parse(JSON.stringify({ pages, sites }));
 }
 
-/** The SHA-256 of every fixture file, the index and the expected answers. */
-export function fixtureManifest() {
+/**
+ * The SHA-256 of every fixture file, the index and the expected answers, of every page that
+ * oversized.mjs builds, and of the files shared with the app.
+ */
+export async function fixtureManifest() {
   const names = fs.readdirSync(FIXTURE_DIR).filter((name) => name !== "MANIFEST.json").sort();
-  return Object.fromEntries(names.map((name) => [name, sha256(fs.readFileSync(path.join(FIXTURE_DIR, name)))]));
+  const manifest = Object.fromEntries(names.map((name) => [name, sha256(fs.readFileSync(path.join(FIXTURE_DIR, name)))]));
+  const { oversizedPages } = await import(pathToFileURL(path.join(FIXTURE_DIR, "oversized.mjs")).href);
+  for (const { name, html } of oversizedPages()) manifest[`built:${name}`] = sha256(Buffer.from(html, "utf8"));
+  for (const [key, file] of Object.entries(SHARED_FILES)) manifest[key] = sha256(fs.readFileSync(path.join(REPOSITORY, file)));
+  return manifest;
 }
 
 const asFile = (value) => JSON.stringify(value, null, 1) + "\n";
@@ -90,7 +119,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     console.log("wrote expected.json");
   }
   if (mode === "--record" || mode === "--manifest") {
-    fs.writeFileSync(path.join(FIXTURE_DIR, "MANIFEST.json"), asFile(fixtureManifest()));
+    fs.writeFileSync(path.join(FIXTURE_DIR, "MANIFEST.json"), asFile(await fixtureManifest()));
     console.log("wrote MANIFEST.json");
   } else {
     const expected = JSON.parse(fixtureText("expected.json"));

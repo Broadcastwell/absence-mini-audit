@@ -274,3 +274,73 @@ test(`${FUZZ_PAGES.toLocaleString("en-US")} pages of hostile structured data: no
   assert.ok(slowest < ONE_PAGE_MS, `the slowest of these small pages took ${Math.round(slowest)} ms`);
   assert.ok(took < FUZZ_MS, `the run took ${Math.round(took).toLocaleString("en-US")} ms`);
 });
+
+// Owner's ruling R-224: a page longer than 1,048,576 bytes is read up to that length, and the
+// cut can fall anywhere: in a tag, in a character of several bytes, in a script, in a block of
+// structured data, or inside one of the costly pages above. The cut is made here as the fetch
+// guard makes it (the first bytes, set as text without complaint). Whatever it leaves must be
+// read without an error and inside the same bounds as any other page.
+const cutAsTheGuardDoes = (html) => new TextDecoder("utf-8", { fatal: false }).decode(encoder.encode(html).slice(0, PAGE_BYTES));
+const ORDINARY_START = "<!doctype html><html><head><title>Acme Field | Field service management software</title><meta name=\"description\" content=\"Dispatch software for service teams.\"></head><body><h1>Dispatch every technician</h1><a href=\"/about\">About</a><p>Work orders, dispatch and invoicing for service technicians.</p>";
+const endingWith = (piece, inside) => {
+  const room = PAGE_BYTES - utf8(ORDINARY_START) - inside;
+  return ORDINARY_START + "<p>" + "word ".repeat(Math.floor((room - 7) / 5)) + " ".repeat((room - 7) % 5) + "</p>" + piece + "<p>the rest of the page, which is never read</p>".repeat(3000);
+};
+const CUTS = {
+  "in the middle of a tag": endingWith("<a class=\"button\" href=\"/products/desk/\">Acme Desk</a>", 11),
+  "in the middle of a tag's quoted address": endingWith("<a class=\"button\" href=\"/products/desk/\">Acme Desk</a>", 30),
+  "in the middle of a character of three bytes": endingWith(`<h2>Prices from ${String.fromCodePoint(0x20ac)}40</h2>`, 17),
+  "in the middle of a character of four bytes": endingWith(`<p>${String.fromCodePoint(0x1f680)} fast</p>`, 5),
+  "in the middle of an entity": endingWith("<p>Fish &amp; chips</p>", 11),
+  "inside a script block": endingWith(`<script>var photos = ["${"photo\", \"".repeat(500)}last"];</script>`, 2000),
+  "inside a style block": endingWith(`<style>${".a{color:red}".repeat(400)}</style>`, 2000),
+  "inside a block of structured data": endingWith("<script type=\"application/ld+json\">{\"@type\":\"Organization\",\"name\":\"Acme Field Holdings\",\"description\":\"The group.\"}</script>", 70),
+  "inside a comment": endingWith(`<!-- ${"note ".repeat(600)} -->`, 1500),
+  "inside the first heading that was opened": "<title>Acme Field</title><h1>" + "word ".repeat(PAGE_BYTES / 4),
+  "inside the title": "<title>" + "word ".repeat(PAGE_BYTES / 4),
+};
+for (const [piece, html] of Object.entries(COSTLY)) {
+  // The same costly pages, half as long again, so that the cut falls inside the run of text that
+  // is the heading, the link and the name at once, and none of them is ever closed.
+  CUTS[`inside the costliest page made of ${JSON.stringify(piece)}`] = html.replace("</a></h2></h1>", "") + piece.repeat(Math.ceil(PAGE_BYTES / 2 / utf8(piece)));
+}
+
+test(`a page cut at ${PAGE_BYTES.toLocaleString("en-US")} bytes is read without an error in under ${ONE_PAGE_MS} ms, wherever the cut falls`, () => {
+  for (const [name, html] of Object.entries(CUTS)) {
+    assert.ok(utf8(html) > PAGE_BYTES, `${name}: the page is ${utf8(html)} bytes, longer than the limit`);
+    const cut = cutAsTheGuardDoes(html);
+    let page;
+    const took = quickest(2, () => { page = readPage(cut, "https://cut.example.org/"); });
+    assert.ok(took < ONE_PAGE_MS, `${name}: readPage took ${Math.round(took)} ms`);
+    assert.equal(typeof page.title, "string", name);
+    classify([page]);
+    proposeBrand([page], "cut.example.org");
+    proposeProducts([page], "cut.example.org");
+  }
+  // What stood before the cut is read as on any page, and a block cut in two is passed over.
+  const data = readPage(cutAsTheGuardDoes(CUTS["inside a block of structured data"]), "https://cut.example.org/");
+  assert.deepEqual([data.title, data.h1, data.orgNames, data.links], ["Acme Field | Field service management software", "Dispatch every technician", [], ["https://cut.example.org/about"]]);
+  const tag = readPage(cutAsTheGuardDoes(CUTS["in the middle of a tag's quoted address"]), "https://cut.example.org/");
+  assert.deepEqual([tag.title, tag.productNames], ["Acme Field | Field service management software", ["Dispatch every technician"]], "a link cut in two gives no product name");
+});
+
+test(`a whole check of pages longer than the limit ends in under ${ONE_CHECK_MS} ms, and the answer is made from the part that was read`, async () => {
+  for (const name of ["in the middle of a tag", "in the middle of a character of three bytes", "inside a script block", "inside a block of structured data", `inside the costliest page made of ${JSON.stringify(`&a;${DOTTED}`)}`, "inside the costliest page made of \"<b>\""]) {
+    const html = CUTS[name];
+    const net = async (address) => {
+      const target = new URL(address);
+      return target.hostname === "cloudflare-dns.com" ? lookupAnswer(target) : new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    };
+    let best = Infinity, body = null;
+    for (let round = 0; round < 2; round += 1) {
+      const started = performance.now();
+      const response = await analyze(checkOf("acmefield.example.org"), {}, { fetcher: net, preview: true });
+      body = await response.json();
+      best = Math.min(best, performance.now() - started);
+      assert.equal(response.status, 200, name);
+    }
+    assert.ok(best < ONE_CHECK_MS, `${name}: the check took ${Math.round(best)} ms`);
+    assert.equal("unread" in body, false, `${name}: a page read in part is not called unread`);
+    if (!name.startsWith("inside the costliest")) assert.deepEqual([body.found, body.brand, body.category], [true, "Acme Field", "field service management software"], name);
+  }
+});

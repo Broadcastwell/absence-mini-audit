@@ -1,0 +1,19 @@
+{
+ "01-plain-marketing.html": "6a1da6601be0bd9bbd40848aa2be2d4a3bb5c27c44f830675a6d6c2ec2278e70",
+ "02-jsonld-org-product.html": "365a1c5e2eb762baccb2ad0f716b8b4cf4727250505b0de50bd2cd1b1c0a5c30",
+ "03-jsonld-graph.html": "6f988740ca8e31f1232460fea9ac1381a84de52af4bd7de159dcb5e018e64f66",
+ "04-nested-lists-tables.html": "dd6eb16f8cce73661d2a32ca34d1ae740e92cb1e1ddee70756bee1ab5396247e",
+ "05-inline-scripts-styles.html": "78d15e311a2fb594faae0111b5f38aa93cd3373fe1fdff9fb173df9dc9237975",
+ "06-entities-non-ascii.html": "fb684664b61ec7c04c9461c4a661fa75616888d11c5a6d0f311330fbe6882833",
+ "07-huge-navigation.html": "3921b7a50c4567a6e4ca06628f195bcffc048f9e1772c25aab77d41648bbc7bf",
+ "08-pricing.html": "b2a4004c6d862910081e8f78d563df3a988285df0cf21326ee3f50b31e321d0d",
+ "09-about.html": "af81106096eda1c63c830acc5f68c53a295c175ee067077d852d86485a1f04fd",
+ "10-malformed.html": "ad77a8e5d2e8538d33c0cd3ed87064334b52a697e25720dbeabd557ebdfc583a",
+ "11-comments-wrapping-tags.html": "19d7d6ababdfcfa32110b6a15b8718ed01d463e18390ba21d74094b53311d4a2",
+ "12-no-structured-data.html": "60c18fce3a7aa0900eaeb3bfd5585fd9d4b14c5ea8fbab49ce3c9aa1725338c2",
+ "13-product.html": "a12d80c838fa7ffe9f5e65de6500ab07df4adefefa37efe41e8e6c0ffca3e5c6",
+ "14-script-shell.html": "c2ee42090c31b392fd745188455868d2fa7baf686fc88a75c5be424e760de29b",
+ "15-upper-case-legacy.html": "7b85344019dc2355ce0a0919f3825144a04c4624d28b5fedf23071fc966d5322",
+ "expected.json": "7a9f29cc32be8de63bf6f5c7d4418b6a9af7e7204c0c00ddc4adf47ba7c5ca99",
+ "index.json": "89179f22aa8fe1fed3cb6f570bc65acedc457b5c954a2c1b611f2caf094203c2"
+}

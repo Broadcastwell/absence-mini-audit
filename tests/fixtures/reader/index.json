@@ -1,0 +1,34 @@
+{
+  "about": "Ordinary company pages, written for this repository. No page is copied from a real company. Each page is read at the address beside it. Each site is one check: the website a visitor types and the pages that answer.",
+  "pages": [
+    { "file": "01-plain-marketing.html", "url": "https://www.northpeak.example.com/" },
+    { "file": "02-jsonld-org-product.html", "url": "https://tallyforge.example.com/" },
+    { "file": "03-jsonld-graph.html", "url": "https://www.harborline.example.com/" },
+    { "file": "04-nested-lists-tables.html", "url": "https://quillstack.example.com/" },
+    { "file": "05-inline-scripts-styles.html", "url": "https://meadowpay.example.com/" },
+    { "file": "06-entities-non-ascii.html", "url": "https://isbulut.example.com/" },
+    { "file": "07-huge-navigation.html", "url": "https://corvanta.example.com/" },
+    { "file": "08-pricing.html", "url": "https://oakbridge.example.com/pricing" },
+    { "file": "09-about.html", "url": "https://oakbridge.example.com/about" },
+    { "file": "10-malformed.html", "url": "https://dentaflow.example.com/" },
+    { "file": "11-comments-wrapping-tags.html", "url": "https://lumenroute.example.com/" },
+    { "file": "12-no-structured-data.html", "url": "https://oakbridge.example.com/" },
+    { "file": "13-product.html", "url": "https://oakbridge.example.com/product" },
+    { "file": "14-script-shell.html", "url": "https://shellco.example.com/" },
+    { "file": "15-upper-case-legacy.html", "url": "https://pawledger.example.com/" }
+  ],
+  "sites": [
+    { "website": "northpeak.example.com", "routes": { "https://northpeak.example.com/": { "redirect": "https://www.northpeak.example.com/" }, "https://www.northpeak.example.com/": { "file": "01-plain-marketing.html" } } },
+    { "website": "tallyforge.example.com", "routes": { "https://tallyforge.example.com/": { "file": "02-jsonld-org-product.html" } } },
+    { "website": "https://www.harborline.example.com/", "routes": { "https://www.harborline.example.com/": { "file": "03-jsonld-graph.html" } } },
+    { "website": "quillstack.example.com", "routes": { "https://quillstack.example.com/": { "file": "04-nested-lists-tables.html" } } },
+    { "website": "meadowpay.example.com", "routes": { "https://meadowpay.example.com/": { "file": "05-inline-scripts-styles.html" } } },
+    { "website": "isbulut.example.com", "routes": { "https://isbulut.example.com/": { "file": "06-entities-non-ascii.html" } } },
+    { "website": "corvanta.example.com", "routes": { "https://corvanta.example.com/": { "file": "07-huge-navigation.html" } } },
+    { "website": "dentaflow.example.com", "routes": { "https://dentaflow.example.com/": { "file": "10-malformed.html" } } },
+    { "website": "lumenroute.example.com", "routes": { "https://lumenroute.example.com/": { "file": "11-comments-wrapping-tags.html" } } },
+    { "website": "oakbridge.example.com", "routes": { "https://oakbridge.example.com/": { "file": "12-no-structured-data.html" }, "https://oakbridge.example.com/product": { "file": "13-product.html" }, "https://oakbridge.example.com/about": { "file": "09-about.html" }, "https://oakbridge.example.com/pricing": { "file": "08-pricing.html" } } },
+    { "website": "shellco.example.com", "routes": { "https://shellco.example.com/": { "file": "14-script-shell.html" } } },
+    { "website": "pawledger.example.com", "routes": { "https://pawledger.example.com/": { "file": "15-upper-case-legacy.html" } } }
+  ]
+}
